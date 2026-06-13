@@ -484,8 +484,7 @@ Departing from the identification assumptions of the ATE for the regression adju
 Therefore, the estimator is given by
 $$
 \text{ATE}\,=\,\frac{1}{n}\sum^{n}_{i=1}\left(\frac{A_{i}}{P(A_{i}=1\mid\boldsymbol{W}_{i})}\,-\,\frac{1\,-\,A_{i}}{(1\,-\,P(A_{i}=1\mid\boldsymbol{W}_{i}))}\right)Y_{i}.
-$$
- {#eq-iptw}
+$$ {#eq-iptw}
 
 #### Defining Weights for ATE, ATT, and ATU
 

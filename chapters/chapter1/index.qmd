@@ -185,7 +185,7 @@ A marginal association between A and B has an odds ratio of 1.00 @tbl-ColliderAB
 
 **Conditional associations**
 
-Table @tbl-ColliderABC shows the tabulation of the association between A and B within levels of C. The association between A and B, conditional on C = 1, has an odds ratio (OR) of:
+Table Table 1.1 shows the tabulation of the association between A and B within levels of C. The association between A and B, conditional on C = 1, has an odds ratio (OR) of:
 $$
 \text{OR}_{C=1} = \frac{(21/9)}{(54/6)} = 0.26
 $$

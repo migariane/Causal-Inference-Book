@@ -196,8 +196,7 @@ $$
     & \frac{1}{n} \underbrace{\sum_{i=1}^{n} \left( E(Y_i \mid A_i=1, \boldsymbol{W}_i) - E(Y_i \mid A_i=0, \boldsymbol{W}_i) \right)}_{\text{Outcome regression component}} + \\
     & \frac{1}{n} \sum_{i=1}^{n} \underbrace{\left( \frac{A_i [Y_i - E(Y_i \mid A_i=1, \boldsymbol{W}_i)]}{g(A_i=1 \mid \boldsymbol{W}_i)} - \frac{(1 - A_i) [Y_i - E(Y_i \mid A_i=0, \boldsymbol{W}_i)]}{g(A_i=0 \mid \boldsymbol{W}_i)} \right)}_{\text{Augmentation term with mean zero}}.
 \end{aligned}
-$$
-{#eq-aiptw}
+$$ {#eq-aiptw}
 
 The estimated ATE using AIPTW is:
 $$

@@ -16,8 +16,7 @@ Using $n$independent and identically distributed copies of$O=(W, A, Y)$, many me
 The conditional *conditional independence assumption* states that there exists a set of measured pre-treatment covariates (**W**) such that treatment is conditionally independent of the potential outcomes given **W**, i.e.,
 $$
 Y(a) \perp A \mid \textbf{W} \quad \text{ for } a=0,1;
-$$
- {#eq-ci}
+$$ {#eq-ci}
 
 implies that there are no unmeasured confounders (**U**) between treatment and outcome.
 
