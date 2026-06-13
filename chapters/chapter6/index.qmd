@@ -78,6 +78,17 @@ head(data)
 
 A DAG helps illustrate the challenge of time-varying confounding. Consider the following structure over two time points:
 
+```default
+graph LR
+  L0((L0)) --> A0((A0))
+  A0 --> L1((L1))
+  L1 --> A1((A1))
+  A1 --> Y((Y))
+  L0 -.-> L1
+  L1 -.-> Y
+  A0 -.-> A1
+```
+
 ::: {#fig-longitudinal-dag}
 
 ```{.mermaid}
