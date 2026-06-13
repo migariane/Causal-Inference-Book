@@ -18,8 +18,8 @@ book:
     This book introduces the concepts of causal inference from a beginner's perspective
     and leads the interested reader to numerous approaches to answer counterfactual questions
     using computational methods in R and Stata.
-  cover-image: chapters/chapter1/figures/DAG.png
-  favicon: chapters/chapter1/figures/DAG.png
+  cover-image: figures/logo.png
+  favicon: figures/logo.png
   repo-url: https://github.com/migariane/Causal-Inference-Book
   repo-actions: [edit, issue, source]
   sharing: [twitter, linkedin]
@@ -53,7 +53,7 @@ book:
     - references.qmd
 
 bibliography: references.bib
-csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa.csl
+csl: apa.csl
 
 language:
   code-tools-menu-caption: "Code"

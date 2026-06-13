@@ -16,8 +16,8 @@ In the sections that follow, we will build on the concepts introduced in previou
 
 An estimator is said to be *double robust* if it yields a consistent estimate of the causal effect as long as either:
 
-1. The model for the outcome given treatment and covariates, $ \mathbb{E}[Y \mid A, X] $, is correctly specified, or
-2. The model for the treatment assignment mechanism, i.e., the propensity score $ e(X) = \mathbb{P}(A = 1 \mid X) $, is correctly specified.
+1. The model for the outcome given treatment and covariates, $\mathbb{E}[Y \mid A, X]$, is correctly specified, or
+2. The model for the treatment assignment mechanism, i.e., the propensity score $e(X) = \mathbb{P}(A = 1 \mid X)$, is correctly specified.
 
 In contrast to singly robust estimators---such as ordinary regression or IPW---double-robust methods incorporate information from both models, and the estimator remains valid if at least one is correctly specified.
 
