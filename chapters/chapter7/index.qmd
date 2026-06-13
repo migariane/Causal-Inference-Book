@@ -88,6 +88,8 @@ These assumptions are not testable from data alone. Drawing a DAG helps clarify 
 #### Example DAG
 
 ```{mermaid}
+#| label: fig-example-dag
+#| fig-cap: "Simple mediation DAG showing direct and indirect paths"
 flowchart TD
     A[A] --> M[M]
     M --> Y[Y]
@@ -107,6 +109,8 @@ Mediation analysis helps disentangle causal pathways by estimating direct and in
 Consider the causal diagram in @fig-M1 with exposure X, mediator M, and outcome Y (for simplicity, assume there are no confounders). There are two effects of X on Y that can be measured in this scenario: the **direct effect** (DE) and the **indirect effect** (IE). The direct effect (i.e., $X \rightarrow Y$) is the effect of the exposure on the outcome that is not through the mediator. The indirect effect is the effect of the exposure on the outcome that operates through the mediator (i.e., $X \rightarrow M \rightarrow Y$).
 
 ```{mermaid}
+#| label: fig-M1
+#| fig-cap: "Mediation DAG showing total effect decomposition into direct and indirect paths"
 flowchart TD
     X[X] --> M[M]
     M --> Y[Y]
@@ -130,6 +134,8 @@ Baron and Kenny also proposed that the **indirect effect** be calculated by esti
 To illustrate this, consider @fig-M2 below. The arrows have now been labelled with their respective coefficients from @eq-ContMed and @eq-ContOut.
 
 ```{mermaid}
+#| label: fig-M2
+#| fig-cap: "Mediation DAG with labelled path coefficients from the regression models"
 flowchart TD
     X[X] -->|"β₁"| M[M]
     M -->|"θ₂"| Y[Y]
@@ -212,6 +218,8 @@ Notice that the potential outcome notation for $Y^{0,M^{1}}$relies on us knowing
 To illustrate the assumptions for mediation analysis, first consider the causal diagram in @fig-Assum. The DAG consists of the exposure (X), mediator (M), outcome (Y), exposure-outcome confounder ($C$), and mediator-outcome confounder ($Z$). For simplicity, we do not include exposure-mediator confounder but this variable is likely to occur in a wide range of scenarios and should be carefully considered when doing such an analysis.
 
 ```{mermaid}
+#| label: fig-Assum
+#| fig-cap: "Mediation DAG with exposure-outcome confounder C and mediator-outcome confounder Z"
 flowchart TD
     C[C] --> X[X]
     C --> Y[Y]
@@ -861,11 +869,48 @@ ggplot(effects, aes(x = Effect, y = Estimate, fill = Effect)) +
   geom_hline(yintercept = 0, linetype = "dashed")
 ```
 
-#### Conclusion
+## Conclusion
 
-This case study shows how mediation analysis can be used to unpack the mechanisms behind occupational income disparities. By applying mediation models to real-world data, we can quantify how much of a treatment effect operates through a hypothesized mediator. In this example, education explains a substantial portion---but not all---of the income differences associated with professional work. The analysis also highlights the importance of DAGs for clarifying assumptions and visual tools for communicating complex causal pathways.
+Mediation analysis provides a formal framework for decomposing total causal effects into direct and indirect pathways, addressing questions about mechanisms that are central to scientific understanding. This chapter has covered the full spectrum of approaches — from the classical Baron-Kenny regression method to modern counterfactual-based estimators.
+
+The classical regression approach is intuitive and easy to implement but has important limitations: it does not extend naturally to non-linear models, cannot handle exposure-mediator interactions, and is vulnerable to mediator-outcome confounding. The counterfactual framework overcomes these limitations by defining controlled and natural direct and indirect effects using potential outcomes notation. Under the key sequential ignorability assumptions — that there is no unmeasured confounding of the exposure-outcome, mediator-outcome, or exposure-mediator relationships — these effects are identified and estimable.
+
+For estimation, the regression-based approach using the `mediation` package in R provides a straightforward implementation for simple settings. The doubly-robust approach via `medltmle` extends these ideas to high-dimensional and longitudinal contexts, offering protection against model misspecification. As with all causal inference methods, sensitivity analysis is essential: the mediated effect can be highly sensitive to unmeasured mediator-outcome confounding, and tools such as the E-value or simulation-based approaches should be reported alongside point estimates.
+
+Key takeaways from this chapter:
+- Mediation analysis decomposes the total effect into direct effect (DE) and indirect effect (IE).
+- The controlled direct effect (CDE) fixes the mediator at a specific value; natural effects allow the mediator to vary counterfactually.
+- Identification requires no unmeasured confounding of the exposure-outcome, mediator-outcome, and exposure-mediator relationships.
+- The classic Baron-Kenny approach uses the product of coefficients but is limited to linear models.
+- The counterfactual approach defines effects via potential mediators and outcomes, accommodating interactions and non-linearities.
+- The `mediation` and `medltmle` R packages provide practical tools for estimation and inference.
+- Sensitivity analysis for unmeasured mediator-outcome confounding is critical for credible mediation analyses.
 
 ## Glossary
 
-**Main term**
-:   Description of main term.
+**CDE**
+:   Controlled Direct Effect — the causal effect of exposure on outcome when the mediator is fixed at a specific value for all individuals.
+
+**DE**
+:   Direct Effect — the effect of exposure on outcome not operating through the mediator.
+
+**IE**
+:   Indirect Effect — the effect of exposure on outcome that operates through the mediator.
+
+**Mediation**
+:   The process by which an exposure affects an outcome through an intermediate variable (mediator).
+
+**Mediator**
+:   A variable on the causal pathway between exposure and outcome; affected by the exposure and affecting the outcome.
+
+**NDE**
+:   Natural Direct Effect — the direct effect when the mediator is set to the value it would naturally take under the control condition.
+
+**NIE**
+:   Natural Indirect Effect — the indirect effect when the exposure is changed but the mediator is set to the value it would take under the new exposure level.
+
+**Sequential ignorability**
+:   The assumption that there is no unmeasured confounding of (1) the exposure-outcome relationship, (2) the mediator-outcome relationship, and (3) the exposure-mediator relationship.
+
+**TE**
+:   Total Effect — the sum of the direct and indirect effects; the overall causal effect of exposure on outcome.
