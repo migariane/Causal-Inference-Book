@@ -1032,6 +1032,8 @@ This indicates that most of the effect of the intervention on blood pressure is 
 We can represent the assumed causal model using a DAG, which helps clarify identification assumptions and model structure.
 
 ```{mermaid}
+#| label: fig-dag-lifestyle
+#| fig-cap: "DAG for lifestyle intervention mediation"
 flowchart TD
     A[A] --> M[M]
     M --> Y[Y]
@@ -1108,6 +1110,8 @@ We also control for the percentage of women in the occupation ($X$), as it may i
 We can represent this scenario with the following directed acyclic graph (DAG):
 
 ```{mermaid}
+#| label: fig-dag-profession
+#| fig-cap: "DAG for profession-education-income mediation"
 flowchart TD
     A[A (Professional)] --> M[M (Education)]
     M --> Y[Y (Income)]
