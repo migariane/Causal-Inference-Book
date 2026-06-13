@@ -78,6 +78,8 @@ head(data)
 
 A DAG helps illustrate the challenge of time-varying confounding. Consider the following structure over two time points:
 
+::: {#fig-longitudinal-dag}
+
 ```{.mermaid}
 graph LR
   L0((L0)) --> A0((A0))
@@ -88,6 +90,9 @@ graph LR
   L1 -.-> Y
   A0 -.-> A1
 ```
+
+Time-varying confounding DAG: $L_1$ is influenced by prior treatment $A_0$ and affects subsequent treatment $A_1$, creating treatment-confounder feedback.
+:::
 
 In this DAG, $L_1$is influenced by$A_0$, and $A_1$is influenced by$L_1$, which in turn affects the outcome $Y$. Adjusting for $L_1$blocks part of the effect of$A_0$, resulting in bias.
 
