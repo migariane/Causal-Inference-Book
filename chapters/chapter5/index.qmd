@@ -660,7 +660,54 @@ Cross-validated TMLE extends the benefits of TMLE to smaller samples and high-di
 
 ## Conclusion
 
+Double-robust estimators represent a major advance in causal inference methodology, offering protection against model misspecification that singly robust methods cannot provide. This chapter has traced the evolution from the simple combination of IPW with outcome regression, through the augmented IPW (AIPW) estimator, to the fully developed Targeted Maximum Likelihood Estimation (TMLE) framework.
+
+AIPW achieves double robustness by combining a weighting term with an augmentation term derived from the outcome model. When either the propensity score model or the outcome model is correctly specified, AIPW is consistent. However, AIPW can be unstable with extreme weights and does not incorporate a targeting step that directly optimizes the estimator for the causal parameter of interest.
+
+TMLE addresses these limitations through its defining innovation: the targeting step. By updating the initial outcome predictions using a fluctuation model parameterized by a clever covariate — constructed from the inverse probability weights — TMLE ensures that the final estimator solves the efficient influence curve equation. This grants TMLE three essential properties: double robustness, semiparametric efficiency when both models are correct, and improved finite-sample performance compared to AIPW.
+
+The integration of Super Learner — a cross-validated ensemble of machine learning algorithms — allows TMLE to estimate nuisance parameters flexibly and adaptively. The Oracle inequality guarantees that Super Learner performs asymptotically at least as well as the best algorithm in the library, making TMLE with Super Learner the current gold standard for robust, data-adaptive causal effect estimation.
+
+CV-TMLE further improves upon standard TMLE by embedding cross-validation into the targeting step itself, mitigating overfitting and improving inference in small samples. The mathematical foundations — the efficient influence curve, von Mises expansion, and second-order remainder — provide the theoretical guarantees that underpin these methods.
+
+Key takeaways from this chapter:
+- Doubly-robust estimators are consistent if *either* the outcome model *or* the treatment model is correctly specified.
+- AIPW combines inverse probability weighting with outcome regression augmentation but does not include a targeting step.
+- TMLE adds a targeting step via a fluctuation model and clever covariate, solving the EIC equation for the target parameter.
+- Super Learner provides data-adaptive estimation of nuisance functions with optimality guarantees.
+- CV-TMLE extends TMLE with cross-validation for improved small-sample performance and valid inference.
+- The EIC is the central mathematical object: it provides both the blueprint for estimation and the basis for inference.
+
+When both nuisance models can be estimated well — and particularly when using Super Learner — TMLE provides the most robust, efficient, and theoretically grounded framework currently available for estimating causal effects from observational data.
+
 ## Glossary
 
+**AIPW**
+:   Augmented Inverse Probability of Treatment Weighting — a doubly-robust estimator combining IPW with outcome regression augmentation.
+
+**Clever covariate**
+:   A function of the propensity score, $H(A, W) = \frac{A}{g(1|W)} - \frac{1-A}{g(0|W)}$, used in the TMLE targeting step to update the initial outcome predictions.
+
+**Double robustness**
+:   A property of an estimator that remains consistent if either the outcome model or the treatment model is correctly specified.
+
+**Efficient influence curve (EIC)**
+:   The canonical gradient of the target parameter; characterizes the semiparametric efficiency bound and provides the basis for the TMLE targeting step and inference.
+
+**Fluctuation parameter**
+:   The coefficient $\epsilon$ in the TMLE targeting model, estimated by solving the score equation derived from the EIC.
+
+**IPTW**
+:   Inverse Probability of Treatment Weighting — reweights observations by the inverse of the propensity score to estimate marginal causal effects.
+
+**Super Learner**
+:   A cross-validated ensemble method that optimally combines multiple candidate algorithms to estimate nuisance functions in TMLE.
+
+**Targeting step**
+:   The procedure in TMLE that updates initial outcome predictions using a fluctuation model to ensure the estimator solves the EIC equation.
+
 **TMLE**
-:   Targeted Maximum Likelihood Estimation $
+:   Targeted Maximum Likelihood Estimation — a doubly-robust, semiparametric efficient plug-in estimator that uses a targeting step to align estimation with the causal parameter of interest.
+
+**von Mises expansion**
+:   A functional Taylor expansion used to decompose the estimation error into a first-order (influence function) term and a second-order remainder, providing the theoretical basis for double robustness.
