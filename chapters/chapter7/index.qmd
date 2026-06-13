@@ -123,17 +123,17 @@ flowchart TD
     A --> Y
 ```
 
-::: {#fig-example-dag}
-
-```{.mermaid}
+```{=html}
+<pre class="mermaid-js" data-label="fig-example-dag">
 flowchart TD
-    A[A] --> M[M]
-    M --> Y[Y]
-    A --> Y
+    A[A] --&gt; M[M]
+    M --&gt; Y[Y]
+    A --&gt; Y
+</pre>
 ```
 
-Simple mediation DAG showing direct and indirect paths
-:::
+**Figure 7.1:** Simple mediation DAG showing direct and indirect paths
+
 
 This simple DAG illustrates the decomposition of the total effect into a direct path ($A \rightarrow Y$) and an indirect path ($A \rightarrow M \rightarrow Y$). Any omitted arrows (e.g., from unmeasured confounders) must be considered when evaluating the validity of the assumptions.
 
@@ -154,17 +154,17 @@ flowchart TD
     X --> Y
 ```
 
-::: {#fig-M1}
-
-```{.mermaid}
+```{=html}
+<pre class="mermaid-js" data-label="fig-M1">
 flowchart TD
-    X[X] --> M[M]
-    M --> Y[Y]
-    X --> Y
+    X[X] --&gt; M[M]
+    M --&gt; Y[Y]
+    X --&gt; Y
+</pre>
 ```
 
-Mediation DAG showing total effect decomposition into direct and indirect paths
-:::
+**Figure 7.2:** Mediation DAG showing total effect decomposition into direct and indirect paths
+
 
 Early proponents of evaluating this model suggested using the "product of coefficients method" (also known as "product method") (Baron and Kenny, 1986). Let M and Y be continuous variables, consider the following regression models:
 $$
@@ -189,17 +189,17 @@ flowchart TD
     X -->|"θ₁"| Y
 ```
 
-::: {#fig-M2}
-
-```{.mermaid}
+```{=html}
+<pre class="mermaid-js" data-label="fig-M2">
 flowchart TD
-    X[X] -->|"β₁"| M[M]
-    M -->|"θ₂"| Y[Y]
-    X -->|"θ₁"| Y
+    X[X] --&gt;|&quot;β₁&quot;| M[M]
+    M --&gt;|&quot;θ₂&quot;| Y[Y]
+    X --&gt;|&quot;θ₁&quot;| Y
+</pre>
 ```
 
-Mediation DAG with labelled path coefficients from the regression models
-:::
+**Figure 7.3:** Mediation DAG with labelled path coefficients from the regression models
+
 
 This classic regression approach can accommodate simplistic causal diagrams. However, this approach has its drawbacks. Firstly, in more complex scenarios, the mediator could be a collider between the exposure and an unmeasured variable (see lecture on causal diagrams). Therefore, adjusting for the mediator (e.g., in @eq-ContOut) would induce an association between the exposure and the unmeasured variable (something we do not want to do!). Other complex scenarios could also incorporate interactions or non-linear terms for certain covariates. Secondly, the techniques used in this classic regression approach does not easily carry over into non-linear regression models, such as non-collapsibility. For example, consider the mediator was continuous and the outcome was binary. The product between the coefficients (i.e., $\beta_{1}\theta_{2}$) would be a combination of a mean difference (i.e., $\beta_{1}$) and a log-odds ratio (i.e., $\theta_{2}$) - something that is very difficult to interpret! In the next section (Counterfactual approach) we will explore an alternative approach to estimating direct and indirect effects, which is more commonly used today and is the preferred approach.
 
@@ -288,22 +288,22 @@ flowchart TD
     X --> Z
 ```
 
-::: {#fig-Assum}
-
-```{.mermaid}
+```{=html}
+<pre class="mermaid-js" data-label="fig-Assum">
 flowchart TD
-    C[C] --> X[X]
-    C --> Y[Y]
-    X --> M[M]
-    M --> Y[Y]
-    X --> Y
-    Z[Z] --> M
-    Z --> Y
-    X --> Z
+    C[C] --&gt; X[X]
+    C --&gt; Y[Y]
+    X --&gt; M[M]
+    M --&gt; Y[Y]
+    X --&gt; Y
+    Z[Z] --&gt; M
+    Z --&gt; Y
+    X --&gt; Z
+</pre>
 ```
 
-Mediation DAG with exposure-outcome confounder C and mediator-outcome confounder Z
-:::
+**Figure 7.4:** Mediation DAG with exposure-outcome confounder $C$ and mediator-outcome confounder $Z$
+
 
 With such a DAG, and to estimate effects of interest, we need to make certain assumptions. The assumptions relate not only to the relationship between the exposure and the outcome but also the relationships with the mediator:
 
@@ -1085,19 +1085,19 @@ flowchart TD
     X --> Y
 ```
 
-::: {#fig-dag-lifestyle}
-
-```{.mermaid}
+```{=html}
+<pre class="mermaid-js" data-label="fig-dag-lifestyle">
 flowchart TD
-    A[A] --> M[M]
-    M --> Y[Y]
-    A --> Y
-    X[X = {age, activity}] --> M
-    X --> Y
+    A[A] --&gt; M[M]
+    M --&gt; Y[Y]
+    A --&gt; Y
+    X[X = {age, activity}] --&gt; M
+    X --&gt; Y
+</pre>
 ```
 
-DAG for lifestyle intervention mediation
-:::
+**Figure 7.5:** DAG for lifestyle intervention mediation
+
 
 This DAG shows the treatment affecting both the mediator and the outcome, and baseline covariates $X$ confounding both mediator and outcome relationships. There are no arrows from unmeasured variables, indicating we assume no unmeasured confounding.
 
@@ -1175,19 +1175,19 @@ flowchart TD
     X --> Y
 ```
 
-::: {#fig-dag-profession}
-
-```{.mermaid}
+```{=html}
+<pre class="mermaid-js" data-label="fig-dag-profession">
 flowchart TD
-    A[A (Professional)] --> M[M (Education)]
-    M --> Y[Y (Income)]
-    A --> Y
-    X[X (% Women)] --> M
-    X --> Y
+    A[A (Professional)] --&gt; M[M (Education)]
+    M --&gt; Y[Y (Income)]
+    A --&gt; Y
+    X[X (% Women)] --&gt; M
+    X --&gt; Y
+</pre>
 ```
 
-DAG for profession-education-income mediation
-:::
+**Figure 7.6:** DAG for profession-education-income mediation
+
 
 #### Data Preparation and Mediation Models in R
 

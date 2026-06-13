@@ -85,21 +85,21 @@ graph LR
   A0 -.-> A1
 ```
 
-::: {#fig-longitudinal-dag}
-
-```{.mermaid}
+```{=html}
+<pre class="mermaid-js" data-label="fig-longitudinal-dag">
 graph LR
-  L0((L0)) --> A0((A0))
-  A0 --> L1((L1))
-  L1 --> A1((A1))
-  A1 --> Y((Y))
-  L0 -.-> L1
-  L1 -.-> Y
-  A0 -.-> A1
+  L0((L0)) --&gt; A0((A0))
+  A0 --&gt; L1((L1))
+  L1 --&gt; A1((A1))
+  A1 --&gt; Y((Y))
+  L0 -.-&gt; L1
+  L1 -.-&gt; Y
+  A0 -.-&gt; A1
+</pre>
 ```
 
-Time-varying confounding DAG: $L_1$ is influenced by prior treatment $A_0$ and affects subsequent treatment $A_1$, creating treatment-confounder feedback.
-:::
+**Figure 6.1:** Time-varying confounding DAG: $L_1$ is influenced by prior treatment $A_0$ and affects subsequent treatment $A_1$, creating treatment-confounder feedback.
+
 
 In this DAG, $L_1$is influenced by$A_0$, and $A_1$is influenced by$L_1$, which in turn affects the outcome $Y$. Adjusting for $L_1$blocks part of the effect of$A_0$, resulting in bias.
 
