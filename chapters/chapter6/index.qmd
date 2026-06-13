@@ -58,6 +58,8 @@ $$
 This framework forms the foundation for the causal models and estimators introduced in subsequent sections.
 
 **R Example (Simulating Longitudinal Data):**
+
+**Box 6.1 (R):** LTMLE for survival with the ltmle package
 ```r
 n <- 1000
 set.seed(123)
@@ -80,6 +82,8 @@ A DAG helps illustrate the challenge of time-varying confounding. Consider the f
 In this DAG, $L_1$is influenced by$A_0$, and $A_1$is influenced by$L_1$, which in turn affects the outcome $Y$. Adjusting for $L_1$blocks part of the effect of$A_0$, resulting in bias.
 
 **R Example (Illustrating Bias with Standard Regression):**
+
+**Box 6.2 (R):** Pooled TMLE for survival data (manual implementation)
 ```r
 # Simulate data
 set.seed(123)
@@ -131,6 +135,8 @@ In practice, this formula is approximated using parametric regression models and
 
 We now provide a full example using simulated data with two time points.
 
+
+**Box 6.3 (R):** Estimating survival curve under intervention using g-formula
 ```r
 # Simulate longitudinal data
 set.seed(42)
@@ -203,6 +209,8 @@ long_data <- data.frame(L0, A0, L1, A1, Y)
 
 We now implement parametric g-computation to estimate the outcome under the intervention $A_0 = 1, A_1 = 1$.
 
+
+**Box 6.4 (R):** Simulating time-to-event data for survival g-formula
 ```r
 # Step 1: Fit models for L1 and Y
 model_L1 <- lm(L1 ~ A0 + L0, data = long_data)
@@ -302,6 +310,8 @@ If these assumptions are violated, the MSM estimates may be biased or unstable. 
 
 ### Weighted Regression to Estimate the Causal Effect
 
+
+**Box 6.5 (R):** Inverse probability of censoring weights (IPCW)
 ```r
 # Simulated longitudinal data
 set.seed(123)
@@ -338,6 +348,8 @@ summary(data$sw)
 
 Once the stabilized weights are estimated, they are used to fit a weighted regression model to estimate the marginal causal effect:
 
+
+**Box 6.6 (R):** Competing risks analysis with the cmprsk package
 ```r
 model_weighted <- glm(Y ~ A0 + A1, weights = sw, data = data)
 summary(model_weighted)
@@ -419,6 +431,8 @@ $$
 $$
 We then plug in the values $A_0 = d_0, A_1 = d_1$and average the final predictions to obtain$\hat{\psi}_T$.
 
+
+**Box 6.7 (R):** LTMLE using the ltmle R package
 ```r
 # Simulate simple data
 set.seed(123)
@@ -465,6 +479,8 @@ This provides a manual implementation of TMLE for a simple longitudinal setup.
 
 **Example Using `ltmle` in R**
 
+
+**Box 6.8 (R):** LTMLE manual implementation (two time points)
 ```r
 library(ltmle)
 data(longData)
@@ -511,6 +527,8 @@ In some longitudinal studies, individuals may experience one of several mutually
 Standard survival analysis methods, such as the Kaplan-Meier estimator or Cox proportional hazards model, treat competing events as censoring, which can overestimate the cumulative incidence of the primary event. Instead, the correct estimand is often the *cumulative incidence function* (CIF), which estimates the marginal probability of experiencing each event over time.
 
 **R Example (Competing Risks using the `cmprsk` package):**
+
+**Box 6.9 (R):** Fitting weighted MSM to estimate marginal causal effect
 ```r
 library(cmprsk)
 # Simulated data: time = event time, status = event type (0=censoring, 1=event, 2=competing risk)
@@ -527,6 +545,8 @@ plot(cif, lty = 1:2, col = c("blue", "red"))
 
 ### R Example: Inverse Probability of Censoring Weights (IPCW)
 
+
+**Box 6.10 (R):** Computing stabilized IP weights for a marginal structural model
 ```r
 # Simulate dropout indicator
 library(survival)
@@ -583,6 +603,8 @@ In practice, this approach involves specifying parametric regression models for:
 
 We simulate a simple time-to-event dataset with time-varying covariates and treatment:
 
+
+**Box 6.11 (R):** Parametric g-computation for longitudinal data
 ```r
 set.seed(123)
 n <- 1000
@@ -637,6 +659,8 @@ replace surv_curve = surv_curve[_n-1] * surv if time > 1
 
 To estimate the survival curve under a hypothetical intervention $A_t = 1$for all$t$:
 
+
+**Box 6.12 (R):** Simulating longitudinal data for g-computation example
 ```r
 pred_data <- long_data
 pred_data$A <- 1
@@ -723,6 +747,8 @@ We now describe the procedure following Petersen et al. (2014) for static interv
 
 We simulate a simplified dataset for illustration. Suppose we have baseline treatment $A$, covariate $W$, and time-to-event outcome $T$ (censored at time 5).
 
+
+**Box 6.13 (R):** Illustrating bias with standard regression adjustment for L1
 ```r
 library(survival)
 library(dplyr)
@@ -765,6 +791,8 @@ The subsequent steps include estimating censoring weights, constructing the clev
 
 We now implement TMLE for a longitudinal survival setting using the `ltmle` package. This automates estimation of survival curves under static interventions.
 
+
+**Box 6.14 (R):** Simulating longitudinal data with two time points
 ```r
 library(ltmle)
 data(exampleData)

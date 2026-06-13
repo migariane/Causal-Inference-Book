@@ -84,6 +84,8 @@ Another important consideration is **variance inflation**. If the estimated prop
 
 Here is a basic implementation of the regression + IPW estimator in R:
 
+
+**Box 5.1 (R):** IPTW with regression adjustment (IPTW-RA)
 ```r
 # Simulate data
 set.seed(123)
@@ -186,6 +188,8 @@ The second component in @eq-aiptw reflects the residuals of the outcome regressi
 
 **R Example (AIPTW with linear models):**
 
+
+**Box 5.2 (R):** AIPTW with linear models
 ```r
 # Estimate propensity scores
 data$ps <- glm(A ~ W1 + W2, data = data, family = binomial)$fitted.values
@@ -246,6 +250,8 @@ TMLE has six main steps:
 
 As an example, suppose we are interested in estimating the effect of $A$ (a binary treatment variable) on $Y$ (a binary outcome variable) while adjusting for some confounders $W$ (a vector of binary and continuous variables). Below is the simulated data. The steps for TMLE are given after.
 
+
+**Box 5.3 (R):** Loading and preparing RHC data for TMLE
 ```r
 library(readr)
 library(knitr)
@@ -281,6 +287,8 @@ $$
 We can use logistic regression to model the conditional expectation of Y:
 $$
  E[Y|A,\mathbf{W}] = \beta_{0} + \beta_{1}A + \beta^{T}_{w}\mathbf{W}$$
+
+**Box 5.4 (R):** Step 1: Initial prediction of the outcome (G-computation)
 ```r
 # Step 1
 Gcomp <- glm(Y ~ A + C + w1 + w2 + as.factor(w3) + as.factor(w4), family="binomial", data=data2)
@@ -291,6 +299,8 @@ $$
 Q^{0}(A=1,\mathbf{W}) \quad = \quad E[Y|A=1,\mathbf{W}] \quad = \quad expit( \widehat{\beta}_{0} + \widehat{\beta}_{1}(A=1) + \widehat{\beta}^{T}_{w}\mathbf{W})$$
 $$
 Q^{0}(A=0,\mathbf{W}) \quad = \quad E[Y|A=0,\mathbf{W}] \quad = \quad expit( \widehat{\beta}_{0} + \widehat{\beta}_{1}(A=0) + \widehat{\beta}^{T}_{w}\mathbf{W})$$
+
+**Box 5.5 (R):** Predicting potential outcomes under treatment and control
 ```r
 # Predict Q for A, A=1, and A=0
 QAW <- predict(Gcomp)
@@ -384,6 +394,8 @@ g(A,W) = Pr(A=1 | \mathbf{W})$$
 Again, we could use logistic regression to define the propensity score model:
 $$
 \widehat{g}(A=1,\mathbf{W}) \quad = \quad  \widehat{E}[A=1 | \mathbf{W}] \quad = \quad expit( \widehat{\alpha}_{0} + \widehat{\alpha}^{T}_{1}\mathbf{W} )$$
+
+**Box 5.6 (R):** Step 2: Estimation of the propensity score
 ```r
 # Step 2 estimation of the propensity score (ps)
 psm <- glm(A ~ C + w1 + w2 + as.factor(w3) + as.factor(w4), family = binomial, data=data2)
@@ -413,6 +425,8 @@ $$
 H(A=a, \mathbf{W}) \quad = \quad \frac{A}{\widehat{g}(A=1,\mathbf{W})} \, - \, \frac{1-A}{\widehat{g}(A=0,\mathbf{W})}$$
 When $A=1$, the right hand side will be $\frac{1}{\widehat{g}(A=1,\mathbf{W})}$. When $A=0$, the right hand side will be $\frac{-1}{\widehat{g}(A=0,\mathbf{W})}$. You may notice that the clever covariates are of the same form as inverse probability of treatment weights.
 
+
+**Box 5.7 (R):** Step 3: Computing the clever covariate H(A,W)
 ```r
 # Step 3 computation of H and estimation of epsilon
 HAW <- (data2$A / gW -(1-data2$A) / (1 - gW))
@@ -442,6 +456,8 @@ While this equation might seem complicated to compute, this equation is simply s
 
 If we take the fluctuation model above, you will see that its form is very similar to the form of a logistic regression model, such as $logit(E[Y|X]) = \beta_{0} + \beta_{1}X$. The difference is that in the right hand side of our fluctuation model the "intercept" ($logit(Q^{0}(A,W))$) is not a constant value like $\beta_{0}$; it is a vector of values of the initial prediction of the outcome. Thus, instead of a constant-value intercept, we use $logit(Q^{0}(A,W))$ as an offset (a fixed intercept) in a logistic regression model. We can now solve our estimating equation for the EIC by using a logistic regression model with the observed outcome $Y$ as the outcome, $logit(\widehat{Q}^{0}(A,W))$ as an offset, and one covariate, $H(A,W)$. The coefficient for the one covariate provides us with an estimate of the fluctuation parameter ($\epsilon$).
 
+
+**Box 5.8 (R):** Step 3b: Estimating epsilon via logistic regression with offset
 ```r
 epsilon <- coef(glm(data2$Y ~ -1 + HAW + offset(QAW), family = "binomial"))
 ```
@@ -471,6 +487,8 @@ From this model, we can obtain three variables:
 2. $Q^{1}(A=1,\mathbf{W})$: update of the expected outcome, **conditional on receiving the treatment** and their baseline confounders.
 3. $Q^{1}(A=0,\mathbf{W})$: update of the expected outcome, **conditional on receiving the control** and their baseline confounders.
 
+
+**Box 5.9 (R):** Step 4: Updating initial outcome predictions (targeting step)
 ```r
 # Step 4 update from Q0 to Q1 ATE
 Q1W_1 <- plogis(Q1W + epsilon * H1W)
@@ -483,6 +501,8 @@ Q0W_1 <- plogis(Q0W + epsilon * H0W)
 Now that we have updated predictions of the outcome, we can compute the ATE. The ATE (the causal estimand) in this case is evaluated using the risk difference (the statistical estimand). The risk difference is the average of the difference in the updated outcome estimates:
 $$
 \widehat{ATE} = \widehat{\psi} = \frac{1}{N} \sum^{N}_{i=1} \left( \widehat{Q}^{1}_{i}(A=1,\mathbf{W}) - \widehat{Q}^{1}_{i}(A=0,\mathbf{W}) \right)$$
+
+**Box 5.10 (R):** Step 5: Computing the targeted ATE estimate
 ```r
 # Step 5 targeted estimate of the ATE
 ATE <- mean(Q1W_1 - Q0W_1); ATE
@@ -501,6 +521,8 @@ $$
 \widehat{\sigma}_{EIC} = \widehat{SE}_{EIC} = \sqrt{ \frac{\widehat{Var}(\widehat{EIC})}{n} }$$
 where $\widehat{Var}(\widehat{EIC})$ represents the sample variance of the EIC.
 
+
+**Box 5.11 (R):** Step 6: Computing the efficient influence curve for standard errors
 ```r
 # Step 6 statistical inference
 d1 <- ((data2$A * (Y - Q1W_1)/gW)) + Q1W_1 - mean(Q1W_1)
@@ -514,6 +536,8 @@ varEIC <- var(EIC)/n
 95% confidence intervals are calculated in the conventional way:
 $$
 95\% CI: \quad  \widehat{ATE} \pm 1.96 (\widehat{SE}_{EIC})$$
+
+**Box 5.12 (R):** Step 6b: Computing 95% Wald confidence intervals
 ```r
 LCI <- ATE - 1.96*sqrt(varEIC)
 UCI <- ATE + 1.96*sqrt(varEIC)
@@ -525,17 +549,25 @@ We obtain an estimate of 0.0837, corresponding to a risk difference of 8.37% (95
 
 #### Automating the TMLE process
 
-The `eltmle` Stata package (available at [github.com/migariane/eltmle](https://github.com/migariane/eltmle)) provides a complete implementation of TMLE with Super Learner integration for Stata users. To install:
+The `eltmle` Stata package (available at [github.com/migariane/eltmle](https://github.com/migariane/eltmle)) provides a complete implementation of TMLE with Super Learner integration for Stata users:
+
+**Box 5.4 (Stata):** Installing eltmle via SSC
 
 ```stata
 ssc install eltmle
 ```
 Or from GitHub:
+
+**Box 5.5 (Stata):** Installing eltmle from GitHub
+
 ```stata
 github install migariane/eltmle
 ```
 
 For cross-validated TMLE, use the `cveltmle` option which implements CV-TMLE for improved small-sample performance:
+
+**Box 5.6 (Stata):** Cross-validated TMLE with cveltmle
+
 ```stata
 eltmle Y A W, tmle cveltmle
 ```
@@ -544,6 +576,8 @@ eltmle Y A W, tmle cveltmle
 
 We could do all of the above automatically using the 'tmle' package. The 'tmle' package uses Super Learner (see @sec-SuperLearner), which is a library of machine learning algorithms for defining the outcome (Q.SL.library) and exposure (g.SL.library) models. This requires us to first define the seed (set.seed(1)). We then create a data set called *w* that contains the set of confounders, which are used to define the parameters for the exposure model. Finally, we run the 'tmle' function to conduct TMLE. Since we are using a large data set, this will take a couple of minutes to run.
 
+
+**Box 5.13 (R):** TMLE using the tmle R package with Super Learner
 ```r
 set.seed(1)
 
@@ -712,6 +746,8 @@ The CV-TMLE algorithm proceeds as follows:
 
 **Stata:** The `eltmle` package ([github.com/migariane/eltmle](https://github.com/migariane/eltmle)) implements TMLE with the `cveltmle` option for cross-validated TMLE:
 
+**Box 5.7 (Stata):** Standard and cross-validated TMLE with eltmle
+
 ```stata
 * Standard TMLE
 eltmle Y A W, tmle
@@ -725,6 +761,8 @@ eltmle Y A W, tmle cveltmle
 
 `tmle3` provides a modular, object-oriented interface for performing TMLE and CV-TMLE in `R`. A typical implementation involves specifying the likelihood, the treatment mechanism, the outcome regression, and the TMLE task.
 
+
+**Box 5.14 (R):** CV-TMLE using the tmle3 R package
 ```r
 library(tmle3)
 library(sl3)

@@ -43,8 +43,7 @@ To facilitate these sensitivity analyses, an R package ("EValue")[@Mathur2018] w
 
 The E-value seminal publication considered the historical study conducted by Hammond and Horn[@Hammond1958] as an example to describe it. The study focused on the tobacco effect on lung cancer with a point estimate of the observed RR of cigarette smoking on lung cancer of 10.73 (95% CI 8.02, 14.36). Based on it we will illustrate the use of the R package to evaluate the effect of a common genetic confounder (U) on the observed RR of the treatment or exposure (E) on the outcome (D) using a set of boxes including the code and a detailed commented explanation.
 
-**Box 7.1. Use of the E-value: R-package**
-
+**Box 8.1 (R):** E-value for shifting a binary exposure under different scenarios
 ```r
 # You can install the EValue from CRAN using:
 install.packages("EValue")
@@ -61,8 +60,7 @@ The E-value of 20.95 tells us that a confounder, or set of confounders (U), woul
 
 The package provides a plot functionality that allows the user to see how the magnitude of the exposure-confounder and the confounder-outcome relationships would have to vary to fully explain the observed association.
 
-**Box 7.2. Plotting the E-value: R-package**
-
+**Box 8.2 (R):** Computing E-value with bias, confounding, and selection parameters
 ```r
 bias_plot(10.73, xmax = 40)
 ```
@@ -73,8 +71,7 @@ This tells us, for example, that if the exposure-confounder parameter $RR_{EU}$w
 
 It is also possible to plot the lower bound of the confidence interval
 
-**Box 7.3. Plotting the E-value: R-package**
-
+**Box 8.3 (R):** Plotting the E-value as a function of risk ratio
 ```r
 bias_plot(8.02, xmax = 40)
 ```
@@ -83,10 +80,9 @@ which we calculated an E-value of 15.52 for the above.
 
 ![E-value lower bound](figures/Evalue2.png){#fig-e-value-lower-bound fig-align="center"}
 
-Scholars may evaluate the potential for confounding influences to alter the observed relationship to any other value, such as diminishing the observed relationship to a true causal effect that lacks scientific significance or amplifying a near-null observed relationship to one of scientific importance. For instance, to adjust an observed relative risk of 3.5 down to a true causal relative risk of 2.5, the E-value is 2.15. This represents the smallest amount of unmeasured confounding necessary to shift both the estimate and confidence interval toward your defined true value instead of the null value (Box 7.4).
+Scholars may evaluate the potential for confounding influences to alter the observed relationship to any other value, such as diminishing the observed relationship to a true causal effect that lacks scientific significance or amplifying a near-null observed relationship to one of scientific importance. For instance, to adjust an observed relative risk of 3.5 down to a true causal relative risk of 2.5, the E-value is 2.15. This represents the smallest amount of unmeasured confounding necessary to shift both the estimate and confidence interval toward your defined true value instead of the null value (Box 8.4).
 
-**Box 7.4. E-value shifts: R-package**
-
+**Box 8.4 (R):** Computing the E-value from observed risk ratio and CI limits
 ```r
 # summary() used to print the E-value only
 summary(evalues.RR(est = 3.5, true = 2.5))
@@ -95,7 +91,7 @@ summary(evalues.RR(est = 3.5, true = 2.5))
 
 The E-value for the association between cigarette smoking and lung cancer as observed by Hammond and Horn in 1958 can be computed in Stata as follows [@Linden2020]:
 
-**Box 7.5. E-value: Stata**
+**Box 8.5 (Stata):** Computing the E-value in Stata
 
 ```stata
 evalue rr 10.73, lcl(8.02) ucl(14.36) figure
@@ -136,9 +132,9 @@ Employing a Stata excerpt dataset from [@Cattaneo2010] and [@almond2005costs], a
 
 Treatment-effects modeling serves as a vital method for deriving causal effects akin to those from experiments, even when working with observational data. While conducting an experiment would be ideal, such endeavors are often impractical due to ethical or financial constraints. For instance, consider assessing the impact of cigarette smoking (the intervention) on infant birthweight (the resultant outcome). Ideally, an experiment would involve selecting a representative group of pregnant women, dividing them into a control group instructed not to smoke and a treatment group required to smoke a designated number of cigarettes each day.
 
-Consider addressing this question by employing the Stata command **teffects**. To ensure our estimates are reliable, it is crucial to confirm that when we account for observable characteristics, it appears as though pregnant mothers were randomly distributed between control and treatment groups. We model the birthweight (bweight) as a function of the number of prenatal visits (nprenatal), whether the mother is married (mmarried), whether this baby is her first pregnancy (fbaby), and maternal education (medu). The treatment, smoking during pregnancy (mbsmoke), is modeled as a function of the same variables and concerning whether the mother consumed alcohol during her pregnancy.  For reference, we start by estimating the ATE of these experimental and non-experimental samples based on maternal smoking using the **eltmle** Stata package. [@Luque-Fernandez2019] (Box 7.5)
+Consider addressing this question by employing the Stata command **teffects**. To ensure our estimates are reliable, it is crucial to confirm that when we account for observable characteristics, it appears as though pregnant mothers were randomly distributed between control and treatment groups. We model the birthweight (bweight) as a function of the number of prenatal visits (nprenatal), whether the mother is married (mmarried), whether this baby is her first pregnancy (fbaby), and maternal education (medu). The treatment, smoking during pregnancy (mbsmoke), is modeled as a function of the same variables and concerning whether the mother consumed alcohol during her pregnancy.  For reference, we start by estimating the ATE of these experimental and non-experimental samples based on maternal smoking using the **eltmle** Stata package. [@Luque-Fernandez2019] (Box 8.6)
 
-**Box 7.6. ATE using effects and eltmle in Stata**
+**Box 8.6 (Stata):** ATE using teffects and eltmle
 
 ```stata
 # To allow intalling Stata programs from GitHub:
@@ -212,7 +208,7 @@ The ATE is interpreted as the mean risk difference of 217.9 fewer grams in the b
 
 Under the standard unconfoundedness assumption, the treatment effect is negative and statistically significant. Now we will use the **tesensitivity** package to analyze how sensitive these results are to this assumption. The main subcommand of the **tesensitivity** package is **cpi**, i.e., conditional partial independence. This command estimates bounds on the ATE given a set of c-dependence values and calculates the breakdown point for the conclusion that the treatment effect statistic is above a given threshold. First, we calculate bounds on the ATE. By default, the command calculates bounds for a uniform grid of 40 values of c, and the breakdown point for the conclusion that the ATE estimation does not contain the null.
 
-**Box 7.7. tesensitivity: Stata**
+**Box 8.7 (Stata):** tesensitivity: bounds on ATE under conditional c-dependence
 
 ```stata
 # Running the command:
@@ -252,7 +248,7 @@ Outcome variable : bweight
 
 The grid of values show that the breakdown point computation for c is 0.077. Remember that the breakdown point is the maximum value of c under which the conclusion still holds. For example, if we consider the conclusion that the ATE is negative as in our example, then the breakdown point is the minimum value of c such that 0 is included in the identified 95% CI for the ATE in the set. The package also includes tools to visualize the analysis, interpret the scale of c-dependence, and compare results of multiple sensitivity analyses. Note that the value of c is small indicating weak unconfoundeness assumption based on the observed data.
 
-**Box 7.8. tesensitivity visual tools in Stata**
+**Box 8.8 (Stata):** tesensitivity visual tools: cpiplot
 
 ```stata
 tesensitivity cpiplot

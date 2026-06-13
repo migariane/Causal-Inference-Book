@@ -117,6 +117,8 @@ ATU = \sum_{w} \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(
 $$
 These quantities correspond to different policy questions. While the ATE estimates the effect of treatment if everyone were treated versus if no one were treated, the ATT and ATU estimate effects in subgroups based on actual treatment assignment.
 
+
+**Box 3.1 (R):** Bootstrap inference for multivariate G-computation
 ```r
 library(dplyr)
 
@@ -197,6 +199,8 @@ The choice of interval depends on the observed shape of the bootstrap distributi
 
 #### R Implementation
 
+
+**Box 3.2 (R):** Parametric G-computation with multiple confounders
 ```r
 library(boot)
 
@@ -263,6 +267,8 @@ This approach is fully non-parametric in the sense that it does not rely on para
 
 #### R Implementation (Point Estimation)
 
+
+**Box 3.3 (R):** Bootstrap for parametric G-computation with multiple confounders
 ```r
 set.seed(123)
 data <- data.frame(
@@ -326,6 +332,8 @@ cat("ATE (saturated model):", round(ate_saturated, 3), "\n")
 
 As with other g-formula implementations, there is no closed-form variance expression for the ATE when using a fully saturated model. The bootstrap provides a practical approach for inference by approximating the sampling distribution of the ATE estimator.
 
+
+**Box 3.4 (R):** Bootstrap inference for parametric G-computation (one confounder)
 ```r
 library(boot)
 
@@ -423,6 +431,8 @@ This approximation assumes that the sample means $\hat{\mu}_{1,w}$and$\hat{\mu}_
 
 #### R Implementation
 
+
+**Box 3.5 (R):** Parametric G-computation with a single confounder
 ```r
 # Estimate conditional means, variances, and sample sizes
 summary_stats <- data %>%
@@ -506,6 +516,8 @@ This procedure estimates what would happen if, counter to fact, everyone in the 
 
 #### R Implementation
 
+
+**Box 3.6 (R):** Bootstrap inference for the non-parametric G-formula ATE
 ```r
 set.seed(123)
 data <- data.frame(
@@ -543,6 +555,8 @@ In the parametric g-formula, the ATE is computed by plugging model-based predict
 
 The bootstrap offers a solution by approximating the full sampling distribution of the ATE through repeated resampling. Each bootstrap replicate involves refitting the outcome model and re-estimating the ATE. The resulting distribution of ATEs captures uncertainty due to both the model fitting and the g-formula estimation process.
 
+
+**Box 3.7 (R):** Non-parametric G-computation for the ATE
 ```r
 library(boot)
 
@@ -616,6 +630,8 @@ $$
 $$
 #### R Implementation (Multiple Confounders)
 
+
+**Box 3.8 (R):** Computing ATE, ATT, and ATU from simulated data
 ```r
 set.seed(123)
 data <- data.frame(
@@ -674,6 +690,8 @@ The bootstrap resamples the data with replacement, refits the model in each resa
 
 **R Implementation:**
 
+
+**Box 3.9 (R):** Simulating data for ATE, ATT, and ATU estimation
 ```r
 library(boot)
 
