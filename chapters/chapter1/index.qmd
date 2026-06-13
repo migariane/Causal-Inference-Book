@@ -28,7 +28,7 @@ Constructing a causal analysis in a structured manner is necessary to obtain unb
 
 First, a causal question is defined. The question encapsulates the population of interest (eligibility criteria), the treatment (or exposure), the follow-up period (time from starting-point to end-point), the outcome of interest, and the causal estimand. The causal estimand is a description of the statistical estimate that answers the question (e.g., causal risk difference, causal relative risk, causal odds ratio).
 
-The causal model is a graphical tool that helps to identify the causal pathways between the exposure and the outcome. The causal model is commonly shown using a directed acyclic graph (DAG): detailed explanation of causal models is in @sec-causalDAGs. Briefly, a diagram for the causal model shows what we know and, importantly, what we do not know about how the data is generated in the real world. The diagram is created using background knowledge, advice from experts, and assumptions about other possible variables.
+The causal model is a graphical tool that helps to identify the causal pathways between the exposure and the outcome. The causal model is commonly shown using a directed acyclic graph (DAG): detailed explanation of causal models is in @sec-causalDAGs Briefly, a diagram for the causal model shows what we know and, importantly, what we do not know about how the data is generated in the real world. The diagram is created using background knowledge, advice from experts, and assumptions about other possible variables.
 
 It is important at this stage to go back to the causal question, we must critique whether the causal model is able to answer the causal question. The causal model could have identified a variable that has been overlooked and, if so, the causal question needs to be adapted: we call this process "redefining the causal question".
 
@@ -38,7 +38,7 @@ The causal model from Step 1 illustrates our knowledge of how the exposure cause
 
 **Step 3: Identifiability assumptions**
 
-If the observed data is sufficient to answer the causal question, we must first make certain assumptions. The main assumptions. also known as (AKA) as identifiability assumptions, are conditional exchangeability, consistency, no interference, and positivity. Identifiability in causal inference refers to the fact that the main assumptions are necessary before one can infer a causal effect, they are discussed in more detail in @sec-identifiabilityassumptions. The identifiability assumptions provide a way of writing the causal question (a hypothetical two-world causal contrast in terms of potential outcomes [see @sec-POframework]) in terms of a model for the observed data.
+If the observed data is sufficient to answer the causal question, we must first make certain assumptions. The main assumptions. also known as (AKA) as identifiability assumptions, are conditional exchangeability, consistency, no interference, and positivity. Identifiability in causal inference refers to the fact that the main assumptions are necessary before one can infer a causal effect, they are discussed in more detail in @sec-identifiabilityassumptions The identifiability assumptions provide a way of writing the causal question (a hypothetical two-world causal contrast in terms of potential outcomes [see @sec-POframework]) in terms of a model for the observed data.
 
 **Step 4: Define the statistical estimand**
 
@@ -46,7 +46,7 @@ If the identifiability assumptions are deemed plausible, we can move on to defin
 $$
 ATE \quad = \quad E_{w} (P[Y=1 \mid A=1, \textbf{W}] - P[Y=1 \mid A=0, \textbf{W}])
 $$
-and is the expected difference (causal risk difference) in the outcome (Y) between two exposure groups (A) conditioned on the set of variables that confound the exposure-outcome relationship (**W**). More details on estimands and measures of association are given in @sec-estimands.
+and is the expected difference (causal risk difference) in the outcome (Y) between two exposure groups (A) conditioned on the set of variables that confound the exposure-outcome relationship (**W**). More details on estimands and measures of association are given in @sec-estimands
 
 **Step 5: Statistical model and estimator**
 
@@ -56,7 +56,7 @@ Once the statistical model has been defined, the next step is to choose the esti
 
 **Step 6: Sensitivity analysis**
 
-Once the statistical estimator provides a quantitative value for our causal question, we must go back to the identifiability assumptions and ask how our result would change if the assumptions were violated. For example, if we were not able to measure a potentially important variable, then our result is potentially biased. We would need to assess whether the unmeasured variable is a strong confounder of the relationship between the treatment and the outcome. This topic of sensitivity analysis is revisited in @sec-sensitivity.
+Once the statistical estimator provides a quantitative value for our causal question, we must go back to the identifiability assumptions and ask how our result would change if the assumptions were violated. For example, if we were not able to measure a potentially important variable, then our result is potentially biased. We would need to assess whether the unmeasured variable is a strong confounder of the relationship between the treatment and the outcome. This topic of sensitivity analysis is revisited in @sec-sensitivity
 
 **Step 7: Alternative study designs**
 
@@ -72,7 +72,9 @@ The distribution of the observed data can be shown as a graphical representation
 
 ![Sufficient set of variables to control for confounding. **Y**: outcome, **A**: treatment, **W**: confounders.](figures/DAG.png){#fig-DAG fig-align="center"}
 
-This causal diagram makes several assumptions: all variables that confound the exposure-outcome relationship are included in **W**, there are no intermediate variables, and there is no residual confounding. Therefore, the set of covariates included in **W** suffices to assume the conditional mean independence to estimate the ATE. To more formally illustrate DAGs, we first define some terminology along with examples using the DAG in @fig-DAG1.
+![Three types of DAGs: causal fork (confounding), inverted fork (collider), and chain (mediation). Adapted from Luque-Fernandez et al.](figures/Figure1.png){#fig-DAG1 fig-align="center"}
+
+This causal diagram makes several assumptions: all variables that confound the exposure-outcome relationship are included in **W**, there are no intermediate variables, and there is no residual confounding. Therefore, the set of covariates included in **W** suffices to assume the conditional mean independence to estimate the ATE. To more formally illustrate DAGs, we first define some terminology along with examples using the DAG in @fig-DAG1
 
 ```{=latex}
 \begin{figure}[ht!]
@@ -127,7 +129,11 @@ To ensure conditional exchangeability holds, variables along the *path* from $A$
 
 ### Impact of colliders
 
-To illustrate the induced association of conditioning on a collider, three variables are defined A (unrelated to B), B (unrelated to A), and C (collider, a child of A and B). The association between these variables are shown in @fig-DAG4. We now simulate some data for A, B and C and tabulate the data in Tables @tbl-ColliderAB, @tbl-ColliderAC, and @tbl-ColliderBC.
+To illustrate the induced association of conditioning on a collider, three variables are defined A (unrelated to B), B (unrelated to A), and C (collider, a child of A and B). The association between these variables are shown in @fig-DAG4.
+
+![Collider bias illustration: A and B are marginally independent but become associated when conditioning on their common effect C.](figures/Figure2.png){#fig-DAG4 fig-align="center"}
+
+We now simulate some data for A, B and C and tabulate the data in Tables @tbl-ColliderAB, @tbl-ColliderAC, and @tbl-ColliderBC
 
 ```{=latex}
 \begin{figure}[ht!]
@@ -175,7 +181,7 @@ In @tbl-ColliderBC, those with C=1 are much less likely to have B=1 (n=30) compa
 | **B=0**   | 60  | 40  | 100       |
 | **Total** | 90  | 110 | 200        |
 
-A marginal association between A and B has an odds ratio of 1.00 @tbl-ColliderAB. This is a marginal association because we do not condition on the collider. The marginal associations between A and C, and B and C, are also explored to assess whether conditioning on the collider could potentially bias the association between A and B. From the above, it is clear that the associations (odds ratios) between A and C (and B and C) are very different from 1.00. Suggesting that conditioning on the collider (C) will induce a bias. To illustrate this, we now condition on the collider. If the collider did not induce bias, we should expect an odds ratio of the association between A and B to be 1.00 for both values of C (i.e., where C is 0 or 1).
+A marginal association between A and B has an odds ratio of 1.00 @tbl-ColliderAB This is a marginal association because we do not condition on the collider. The marginal associations between A and C, and B and C, are also explored to assess whether conditioning on the collider could potentially bias the association between A and B. From the above, it is clear that the associations (odds ratios) between A and C (and B and C) are very different from 1.00. Suggesting that conditioning on the collider (C) will induce a bias. To illustrate this, we now condition on the collider. If the collider did not induce bias, we should expect an odds ratio of the association between A and B to be 1.00 for both values of C (i.e., where C is 0 or 1).
 
 **Conditional associations**
 
@@ -187,7 +193,7 @@ The association between A and B, conditional on C = 0, has an odds ratio of:
 $$
 \text{OR}_{C=0} = \frac{(59/11)}{(26/14)} = 2.89
 $$
-: {#tbl-ColliderABC}
+: Collider data {#tbl-ColliderABC}
 
 |       | C=1: B=1 | C=1: B=0 | C=0: B=1 | C=0: B=0 | Total |
 |-------|----------|----------|----------|----------|-------|

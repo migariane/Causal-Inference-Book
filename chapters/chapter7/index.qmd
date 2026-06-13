@@ -160,7 +160,7 @@ E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m$$
 
 Baron and Kenny also proposed that the **indirect effect** be calculated by estimating $\beta_{1}\theta_{2}$. The indirect effect is the effect on the outcome of changes of the exposure which operate through mediator levels.
 
-To illustrate this, consider @fig-M2 below. The arrows have now been labelled with their respective coefficients from @eq-ContMed and @eq-ContOut.
+To illustrate this, consider @fig-M2 below. The arrows have now been labelled with their respective coefficients from @eq-ContMed and @eq-ContOut
 
 ```{mermaid}
 #| label: fig-M2
@@ -244,7 +244,7 @@ Notice that the potential outcome notation for $Y^{0,M^{1}}$relies on us knowing
 
 ### Assumptions
 
-To illustrate the assumptions for mediation analysis, first consider the causal diagram in @fig-Assum. The DAG consists of the exposure (X), mediator (M), outcome (Y), exposure-outcome confounder ($C$), and mediator-outcome confounder ($Z$). For simplicity, we do not include exposure-mediator confounder but this variable is likely to occur in a wide range of scenarios and should be carefully considered when doing such an analysis.
+To illustrate the assumptions for mediation analysis, first consider the causal diagram in @fig-Assum The DAG consists of the exposure (X), mediator (M), outcome (Y), exposure-outcome confounder ($C$), and mediator-outcome confounder ($Z$). For simplicity, we do not include exposure-mediator confounder but this variable is likely to occur in a wide range of scenarios and should be carefully considered when doing such an analysis.
 
 ```{mermaid}
 #| label: fig-Assum
