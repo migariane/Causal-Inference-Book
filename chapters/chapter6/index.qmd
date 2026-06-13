@@ -2545,12 +2545,6 @@ group <- rbinom(n, 1, 0.5)
 cif <- cuminc(time, status, group)
 plot(cif, lty = 1:2, col = c("blue", "red"))
 ```
-**Box 6.9 (Stata):** Stata equivalent
-
-```stata
-* See StataCodeBoxes.do in TutorialComputationalCausalInferenceEstimators
-```
-
 
 ### R Example: Inverse Probability of Censoring Weights (IPCW)
 
@@ -3632,12 +3626,6 @@ surv_curve <- cumprod(surv_probs)
 plot(1:K, surv_curve, type = "s", ylim = c(0,1),
      ylab = "Survival Probability", xlab = "Time")
 ```
-**Box 6.12 (Stata):** Stata equivalent
-
-```stata
-* See StataCodeBoxes.do in TutorialComputationalCausalInferenceEstimators
-```
-
 
 #### Interpretation and Uses
 
@@ -4256,12 +4244,6 @@ ltmle_fit <- ltmle(exampleData, Anodes=paste0("A", timepoints),
 
 summary(ltmle_fit)
 ```
-**Box 6.14 (Stata):** Stata equivalent
-
-```stata
-* See StataCodeBoxes.do in TutorialComputationalCausalInferenceEstimators
-```
-
 
 This returns survival probability estimates under the static intervention $A = 1$, along with standard errors and confidence intervals based on the efficient influence function.
 
