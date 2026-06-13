@@ -148,11 +148,11 @@ flowchart TD
 
 Early proponents of evaluating this model suggested using the "product of coefficients method" (also known as "product method") (Baron and Kenny, 1986). Let M and Y be continuous variables, consider the following regression models:
 $$
-E(M \mid X=x) = \beta_{0} + \beta_{1}x$$
- {#eq-ContMed}
+E(M \mid X=x) = \beta_{0} + \beta_{1}x
+$$ {#eq-ContMed}
 $$
-E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m$$
- {#eq-ContOut}
+E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m
+$$ {#eq-ContOut}
 
 @eq-ContMed is the regression model for the mediator. The coefficient $\beta_{1}$ is the expected increase in the value of the mediator for a unit increase in the exposure (for a binary exposure this coefficient would be the difference in means between two treatment groups).
 
@@ -181,13 +181,13 @@ The CDE corresponds to a situation in which a hypothetical intervention controls
 
 The CDE and the direct effect is equivalent when there is no interaction between the exposure and the mediator (see Richiardi *et al* 2013, for further explanation). To illustrate this concept, consider again the model for the mediator (which is the same as @eq-ContMed)
 $$
-E(M \mid X=x) = \beta_{0} + \beta_{1}x$$
- {#eq-ContMed2}
+E(M \mid X=x) = \beta_{0} + \beta_{1}x
+$$
 
 and now a model for the outcome that includes an interaction between the exposure and the mediator
 $$
-E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m + \theta_{3}xm$$
- {#eq-ContOutEM}
+E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m + \theta_{3}xm
+$$ {#eq-ContOutEM}
 
 Using @eq-ContMed2 and @eq-ContOutEM, the CDE, DE, and IE can be estimated as follows (where $x$is exposed and$x^{*}$ is not exposed):
 $$
