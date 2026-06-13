@@ -146,7 +146,7 @@ AIPTW uses information from both the treatment model and the outcome model. The 
 
 The IPTW estimator for the expected potential outcome under treatment level $ a $, denoted $ \mu_a $, is given by:
 $$
-    \hat\mu_{a} = \mathbb{E}\left(\frac{I(A=a)}{g(A\mid \boldsymbol{W})}\,Y\right),
+    \hat{\mu}_{a} = \mathbb{E}\left(\frac{I(A=a)}{g(A\mid \boldsymbol{W})}\,Y\right),
 $$
 where $ I(\cdot) $ is the indicator function and $ g(A \mid \boldsymbol{W}) $ is the estimated propensity score.
 
@@ -172,7 +172,9 @@ $$\begin{aligned}
     & \frac{1}{n} \underbrace{\sum_{i=1}^{n} \left( E(Y_i \mid A_i=1, \boldsymbol{W}_i) - E(Y_i \mid A_i=0, \boldsymbol{W}_i) \right)}_{\text{Outcome regression component}} + \\
     & \frac{1}{n} \sum_{i=1}^{n} \underbrace{\left( \frac{A_i [Y_i - E(Y_i \mid A_i=1, \boldsymbol{W}_i)]}{g(A_i=1 \mid \boldsymbol{W}_i)} - \frac{(1 - A_i) [Y_i - E(Y_i \mid A_i=0, \boldsymbol{W}_i)]}{g(A_i=0 \mid \boldsymbol{W}_i)} \right)}_{\text{Augmentation term with mean zero}}.
 \end{aligned}
-$$ {#eq-aiptw}
+$$
+
+{#eq-aiptw}
 
 The estimated ATE using AIPTW is:
 $$

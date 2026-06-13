@@ -1,6 +1,149 @@
 # Discussion {#sec-discussion}
 
+This book has presented a computational introduction to causal inference for applied researchers, progressing from foundational concepts through to advanced methods for estimating causal effects in observational studies. We have covered classical approaches---regression adjustment, the g-formula, and propensity score methods---as well as modern doubly-robust estimators, longitudinal methods, mediation analysis, and sensitivity analysis. This final chapter reflects on the themes that emerge across the book, offers practical guidance for choosing among methods, and outlines directions for future development.
+
+## Summary of Methods and Their Relationships
+
+The methods presented in this book form a natural progression. Each advance was motivated by limitations of the preceding approach.
+
+**Regression adjustment** (@sec-regression) is the simplest approach: model the outcome as a function of treatment and confounders, then estimate the treatment coefficient. Its simplicity is appealing, but it relies on strong parametric assumptions and does not naturally target a marginal causal effect when effect modification is present.
+
+**The g-formula** (@sec-g-formula) generalizes regression adjustment by explicitly estimating the marginal counterfactual distribution through standardization. It requires modelling the outcome across the full covariate distribution, making it flexible but sensitive to model misspecification and positivity violations.
+
+**Propensity score methods** (@sec-ps) approach the problem from the treatment side. Matching, stratification, and inverse probability weighting (IPW) use the probability of treatment to balance confounders across groups. These methods separate the design stage (modelling treatment assignment) from the analysis stage (estimating treatment effects), but they can be unstable when propensity scores are extreme.
+
+**Doubly-robust estimators** (@sec-doublerobust) combine outcome and treatment models. AIPW and TMLE offer consistency if at least one of the two models is correctly specified, providing substantial protection against model misspecification. TMLE goes further by incorporating a targeting step that aligns the estimator with the causal parameter of interest and, when combined with Super Learner, achieves semiparametric efficiency.
+
+**Longitudinal methods** (@sec-longitudinal) extend these ideas to settings with time-varying treatments and confounders. Marginal structural models and longitudinal TMLE address the unique challenges of time-dependent confounding, where confounders affected by prior treatment must be handled carefully.
+
+**Mediation analysis** (@sec-mediation) decomposes total causal effects into direct and indirect pathways, addressing questions about mechanisms. The methods presented build on the counterfactual framework introduced in Chapter 1.
+
+**Sensitivity analysis** (@sec-sensitivity) acknowledges that all causal estimates from observational data rely on untestable assumptions---most critically, the assumption of no unmeasured confounding. The E-value and related techniques provide quantitative tools for assessing how strongly an unmeasured confounder would need to be associated with both treatment and outcome to explain away an observed effect.
+
+## Practical Recommendations
+
+### Choosing an Estimator
+
+The choice of estimator depends on the research question, data structure, and the analyst's confidence in model specification:
+
+1. **For simple cross-sectional studies** with a binary treatment and a well-understood set of confounders, regression adjustment or IPW with careful diagnostics may be sufficient.
+
+2. **When model misspecification is a concern**, doubly-robust methods (AIPW or TMLE) are strongly recommended. They offer protection against misspecification of either the outcome or treatment model.
+
+3. **When the goal is the most robust possible estimate**, TMLE with Super Learner provides the strongest theoretical guarantees: double robustness, semiparametric efficiency, and data-adaptive estimation of nuisance parameters.
+
+4. **For longitudinal data with time-varying confounding**, standard regression methods are generally biased. G-computation, IPW (via marginal structural models), or LTMLE are required.
+
+5. **For mediation questions**, the choice depends on the number of mediators and whether interactions between treatment and mediator are of interest. The regression-based approaches are simpler; the doubly-robust and weighting-based methods offer greater robustness.
+
+6. **Always conduct sensitivity analysis.** No observational study can guarantee that all confounders have been measured. The E-value and related tools provide a transparent way to communicate the robustness of findings to unmeasured confounding.
+
+### Software and Implementation
+
+Throughout this book we have provided code in **R** and, where appropriate, **Stata**. The R ecosystem for causal inference is particularly rich, with packages including `tmle`, `tmle3`, `ltmle`, `SuperLearner`, `MatchIt`, `WeightIt`, `mediation`, and `EValue`. For Stata users, the `eltmle`, `cvAUROC`, and `cmatch` packages (developed by the authors) extend these capabilities.
+
+We encourage readers to:
+
+- **Reproduce the examples** in each chapter using the provided code.
+- **Adapt the code** to their own datasets and research questions.
+- **Consult the package documentation** for up-to-date functionality and best practices.
+- **Share code and data** to promote transparency and reproducibility.
+
+## Limitations and Caveats
+
+### Assumptions
+
+All causal inference methods from observational data rely on three core assumptions:
+
+1. **Exchangeability (no unmeasured confounding):** All confounders of the treatment-outcome relationship have been measured and correctly included in the analysis.
+2. **Positivity:** Every individual has a non-zero probability of receiving each treatment level, given their covariates.
+3. **Consistency:** The observed outcome equals the potential outcome under the treatment actually received.
+
+Violations of these assumptions can produce severely biased estimates. Positivity violations---when certain covariate patterns are almost always or never treated---are particularly common in practice and can cause IPW-based methods to fail. Sensitivity analysis (§@sec-sensitivity) provides tools to assess the impact of unmeasured confounding, but it cannot replace careful study design and data collection.
+
+### Model Dependence
+
+While doubly-robust methods offer protection against misspecification of a single model, they are not immune to bias when both models are misspecified. The quality of machine learning predictions depends on the available covariates and sample size. In small samples, simpler parametric models may outperform flexible machine learning methods.
+
+### Generalizability
+
+The methods presented in this book estimate causal effects for the study population. Transporting these estimates to different populations or settings requires additional assumptions and methods (e.g., transportability analysis), which are beyond the scope of this book.
+
+## Future Directions
+
+The field of causal inference continues to evolve rapidly. Several areas of active development are particularly relevant to applied researchers:
+
+### Machine Learning and Causal Inference
+
+The integration of machine learning into causal estimation is one of the most active areas of research. Methods such as causal forests, Bayesian additive regression trees (BART), and deep learning for causal inference are expanding the toolkit. However, ensuring valid inference (confidence intervals, p-values) with these methods remains an active challenge. TMLE and AIPW provide a framework for incorporating machine learning while maintaining valid inference.
+
+### Heterogeneous Treatment Effects
+
+This book has focused on the average treatment effect (ATE). Increasingly, researchers are interested in treatment effect heterogeneity---how causal effects vary across subgroups defined by covariates. Methods for estimating conditional average treatment effects (CATE) include causal forests, meta-learners, and targeted learning approaches.
+
+### Continuous and Time-Varying Treatments
+
+We have focused primarily on binary treatments. Extensions to continuous treatments, doses, and dynamic treatment regimes are available but more complex. The `tmle3` framework in R provides infrastructure for these settings.
+
+### Transportability and External Validity
+
+As randomized trials and observational studies are increasingly combined (e.g., in "target trial" emulations), methods for assessing and ensuring transportability of causal estimates across populations are becoming essential.
+
+### Interference and Spillover Effects
+
+The stable unit treatment value assumption (SUTVA) rules out interference between units. In many settings---infectious diseases, social networks, cluster-randomized trials---this assumption is violated. Methods for causal inference under interference are an active area of development.
+
+## Concluding Remarks
+
+Causal inference from observational data is fundamentally about making transparent the assumptions required to move from association to causation. The methods presented in this book provide a structured framework for doing so---from the clear articulation of causal questions using the potential outcomes framework and DAGs, through identification and estimation, to sensitivity analysis that quantifies the robustness of conclusions.
+
+No method can replace careful study design or substantive knowledge. The most sophisticated estimator cannot rescue a poorly conceived study or compensate for unmeasured confounding. However, when applied thoughtfully, the methods in this book can provide credible answers to causal questions that cannot be addressed through randomized experiments.
+
+We hope this book has equipped readers with both the conceptual understanding and the practical tools to conduct rigorous computational causal inference in their own research.
+
 ## Glossary
 
-**Main term**
-:   Description of main term.
+**ATE**
+:   Average Treatment Effect — the average causal effect of a treatment on an outcome in the population.
+
+**ATT**
+:   Average Treatment Effect on the Treated — the average causal effect among those who actually received the treatment.
+
+**AIPW**
+:   Augmented Inverse Probability Weighting — a doubly-robust estimator combining outcome regression and propensity score weighting.
+
+**CATE**
+:   Conditional Average Treatment Effect — how the treatment effect varies across subgroups defined by covariates.
+
+**DAG**
+:   Directed Acyclic Graph — a graphical representation of causal relationships among variables.
+
+**Double robustness**
+:   A property of an estimator that is consistent if either the outcome model or the treatment model is correctly specified.
+
+**E-value**
+:   The minimum strength of association an unmeasured confounder would need to have with both treatment and outcome to explain away an observed effect.
+
+**G-formula**
+:   A method for estimating marginal causal effects by standardizing outcome predictions across the confounder distribution.
+
+**IPW / IPTW**
+:   Inverse Probability (of Treatment) Weighting — a method that reweights observations by the inverse of the probability of receiving their observed treatment.
+
+**LTMLE**
+:   Longitudinal Targeted Maximum Likelihood Estimation — TMLE for settings with time-varying treatments and confounders.
+
+**MSM**
+:   Marginal Structural Model — a model for the marginal distribution of counterfactual outcomes, typically estimated using IPW.
+
+**Positivity**
+:   The assumption that every individual has a non-zero probability of receiving each treatment level.
+
+**SUTVA**
+:   Stable Unit Treatment Value Assumption — the assumption that the treatment assignment of one unit does not affect the outcomes of others.
+
+**Super Learner**
+:   An ensemble machine learning method that combines multiple candidate algorithms using cross-validation to produce optimal predictions.
+
+**TMLE**
+:   Targeted Maximum Likelihood Estimation — a doubly-robust, semiparametric efficient estimator that incorporates a targeting step to align estimation with the causal parameter of interest.
