@@ -192,7 +192,7 @@ $$
 E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m + \theta_{3}xm
 $$ {#eq-ContOutEM}
 
-Using @eq-ContMed2 and @eq-ContOutEM, the CDE, DE, and IE can be estimated as follows (where $x$is exposed and$x^{*}$ is not exposed):
+Using @eq-ContMed and @eq-ContOutEM, the CDE, DE, and IE can be estimated as follows (where $x$is exposed and$x^{*}$ is not exposed):
 $$
 \begin{aligned} \operatorname{CDE}(m) & =\left(\theta_{1}+\theta_{3} m\right)\left(x-x^{*}\right) \\ D E & =\left(\theta_{1}+\theta_{3} \beta_{0}+\theta_{3} \beta_{1} x^{*}  \right)\left(x-x^{*}\right) \\ I E & =\left(\theta_{2} \beta_{1}+\theta_{3} \beta_{1} x\right)\left(x-x^{*}\right)
 \end{aligned}
