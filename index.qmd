@@ -1,0 +1,19 @@
+# Preface {.unnumbered}
+
+A question often asked by anyone is *"what would have happened if we had done this instead?"* The answer is impossible to know for certain, but there are mathematical methods that allow us to estimate this answer. These methods are called **causal inference**. This book introduces the concepts of causal inference from a beginner's perspective and leads the interested reader to numerous approaches to answer these impossible questions.
+
+The purpose of many health studies is to estimate the effect of an exposure on an outcome. It is not always ethical to assign an exposure to individuals in randomised controlled trials; instead, observational data and appropriate study design must be used. There are major challenges with observational studies, one of which is confounding that can lead to biased estimates of the causal effects. Controlling for confounding is commonly performed by simple adjustment for measured confounders; although, often this is not enough. Recent advances in the field of causal inference have dealt with confounding by building on classical standardisation methods. However, these recent advances have progressed quickly with a relative paucity of computational-oriented applied tutorials, contributing to some confusion in the use of these methods among applied researchers.
+
+In this book, we show the computational implementation of different causal inference estimators from a historical perspective, where different estimators were developed to overcome the limitations of the previous ones. We introduce the potential outcomes framework, illustrate the use of different methods using examples from health care settings, and most importantly, we provide reproducible and commented code in **R** and **Stata** for researchers to apply in their own observational studies.
+
+The code can be accessed at [github.com/migariane/TutorialCausalInferenceEstimators](https://github.com/migariane/TutorialCausalInferenceEstimators).
+
+## Who this book is for {.unnumbered}
+
+This book is targeted towards epidemiologists, statisticians, psychologists, economists, sociologists, political scientists, and computer scientists — anyone interested in learning and applying causal inference methods to real-world data.
+
+## Author Biographies {.unnumbered}
+
+**Dr Miguel Angel Luque-Fernandez** is an Associate Professor of Biostatistics in the Department of Statistics and Operations Research at the University of Granada (UGR), Spain, and an Honorary Associate Professor at the London School of Hygiene and Tropical Medicine (LSHTM). He holds a PhD in Epidemiology and Public Health (UGR/ULB), an MSc in Biostatistics (Newcastle), an MSc in Epidemiology (ULB), and a BSc in Mathematics and Statistics (Open University). His research focuses on causal inference methods, comparative effectiveness research, and computational epidemiology.
+
+**Dr Matthew J. Smith** is a researcher at the London School of Hygiene and Tropical Medicine, specialising in causal inference methods and their application to population health research.

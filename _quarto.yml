@@ -1,0 +1,138 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "Computational Causal Inference for Applied Researchers"
+  subtitle: "A Practical Guide for Epidemiologists and Biostatisticians"
+  author:
+    - name: "Miguel Angel Luque-Fernandez"
+      affiliation: "Dpto. de Estadistica e Investigacion Operativa, Universidad de Granada"
+      email: "mluquefe@ugr.es"
+      url: "https://migariane.github.io"
+    - name: "Matthew J. Smith"
+      affiliation: "London School of Hygiene & Tropical Medicine"
+  date: "2026"
+  date-format: "YYYY"
+  description: |
+    This book introduces the concepts of causal inference from a beginner's perspective
+    and leads the interested reader to numerous approaches to answer counterfactual questions
+    using computational methods in R and Stata.
+  cover-image: chapters/chapter1/figures/DAG.png
+  favicon: chapters/chapter1/figures/DAG.png
+  repo-url: https://github.com/migariane/Causal-Inference-Book
+  repo-actions: [edit, issue, source]
+  sharing: [twitter, linkedin]
+  downloads: []
+  search: true
+  page-footer:
+    left: |
+      Computational Causal Inference for Applied Researchers, M.A. Luque-Fernandez & M.J. Smith
+    right: |
+      &copy; 2026 Universidad de Granada
+
+  chapters:
+    - index.qmd
+    - part: "Foundations"
+      chapters:
+        - chapters/chapter1/index.qmd
+        - chapters/chapter2/index.qmd
+    - part: "G-Methods"
+      chapters:
+        - chapters/chapter3/index.qmd
+        - chapters/chapter4/index.qmd
+    - part: "Advanced Methods"
+      chapters:
+        - chapters/chapter5/index.qmd
+        - chapters/chapter6/index.qmd
+        - chapters/chapter7/index.qmd
+    - part: "Sensitivity Analysis & Discussion"
+      chapters:
+        - chapters/chapter8/index.qmd
+        - chapters/chapter9/index.qmd
+    - references.qmd
+
+bibliography: references.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa.csl
+
+language:
+  code-tools-menu-caption: "Code"
+  code-tools-show-all-code: "Show all code"
+  code-tools-hide-all-code: "Hide all code"
+  code-summary: "Show the code"
+
+crossref:
+  lst-title: "Listing"
+  lst-prefix: "Listing"
+  chapters: true
+
+format:
+  html:
+    lang: en
+    theme: cosmo
+    css: styles.css
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
+    html-math-method: mathjax
+    code-fold: true
+    code-summary: "Show the code"
+    code-tools:
+      source: false
+      toggle: true
+      caption: "Code"
+    code-copy: true
+    code-overflow: wrap
+    smooth-scroll: true
+    fig-align: center
+    fig-width: 7
+    fig-height: 5
+    base-url: /Causal-Inference-Book/
+    include-in-header:
+      text: |
+        <script>
+        MathJax = {
+          tex: {
+            macros: {
+              btheta: "\\boldsymbol{\\theta}",
+              bbeta: "\\boldsymbol{\\beta}",
+              bmu: "\\boldsymbol{\\mu}",
+              bSigma: "\\boldsymbol{\\Sigma}",
+              bx: "\\mathbf{x}",
+              bX: "\\mathbf{X}",
+              by: "\\mathbf{y}",
+              bY: "\\mathbf{Y}",
+              bU: "\\mathbf{U}",
+              E: "\\mathbb{E}",
+              Var: ["\\operatorname{Var}"],
+              Cov: ["\\operatorname{Cov}"],
+              Corr: ["\\operatorname{Corr}"],
+              iid: "\\stackrel{\\text{i.i.d.}}{\\sim}",
+              tendD: "\\stackrel{\\mathcal{D}}{\\longrightarrow}",
+              reals: "\\mathbb{R}",
+              PP: "\\mathbb{P}",
+              P: "\\mathbb{P}",
+              I: "\\mathbb{I}",
+              A: "\\mathbb{A}",
+              SE: ["\\operatorname{SE}"],
+              SD: ["\\operatorname{SD}"],
+              MSE: ["\\operatorname{MSE}"],
+              argmax: ["\\operatorname{argmax}"],
+              argmin: ["\\operatorname{argmin}"],
+              logit: ["\\operatorname{logit}"],
+              expit: ["\\operatorname{expit}"],
+              odds: ["\\operatorname{odds}"],
+              Pr: ["\\operatorname{Pr}"],
+              indep: "\\perp\\!\\!\\!\\perp"
+            }
+          }
+        };
+        </script>
+
+execute:
+  warning: false
+  message: false
+  echo: true
+  cache: false
+  eval: false

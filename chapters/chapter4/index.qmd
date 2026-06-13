@@ -1,0 +1,623 @@
+# Methods Based on the Propensity Score {#sec-ps}
+
+## Introduction {#sec-ps-intro}
+
+In observational studies, estimating causal effects is complicated by the presence of confounding---systematic differences in baseline characteristics between treatment groups. While one approach to adjusting for confounding is through outcome modeling (e.g., the g-formula), an alternative strategy involves balancing the distribution of confounders between treatment groups. This is the central idea behind propensity score methods.
+
+The *propensity score*, introduced by [@Rosenbaum1983], is defined as the probability of receiving the treatment given a set of observed covariates:
+$$
+e(W) = P(A = 1 \mid W),
+$$
+where $A$ is the binary treatment indicator and $W$ is a vector of observed covariates. The key insight is that, under certain assumptions, conditioning on the propensity score is sufficient to control for confounding. Specifically, if treatment assignment is strongly ignorable given the covariates $W$, then it is also ignorable given the scalar quantity $e(W)$. That is:
+$$
+Y^0, Y^1 \perp A \mid e(W),
+$$
+where $Y^0$ and $Y^1$ are the potential outcomes under control and treatment, respectively.
+
+This property makes the propensity score a powerful tool: it allows us to reduce a potentially high-dimensional confounding problem into a one-dimensional balancing problem. By adjusting for the propensity score---rather than all covariates directly---we can remove confounding bias due to observed covariates, provided certain conditions are met.
+
+In settings with multiple confounders, the validity of the propensity score relies heavily on correctly modeling the propensity score. In a perfectly randomized experiment, exchangeability is inherent due to the randomization process. However, in an observational study, conditional exchangeability can only be assumed if all confounders have been accurately captured by the propensity score. To fully exploit this conditional exchangeability, the propensity score, which is inherently unknown, must be appropriately modeled using the available data.
+
+In this chapter, we explore the range of methods built upon the propensity score. These include:
+- **Matching**, where treated and control individuals with similar propensity scores are compared;
+- **Stratification**, where the data are divided into strata (e.g., quintiles) of the propensity score and comparisons are made within strata;
+- **Covariate adjustment using the propensity score**, where the score is included as a covariate in a regression model;
+- **Inverse probability of treatment weighting (IPTW)**, which uses the propensity score to create a pseudo-population in which treatment is independent of covariates;
+- And **doubly robust estimators**, which combine propensity score modeling with outcome modeling.
+
+Each method has strengths and limitations. Unlike outcome modeling approaches such as the g-formula, propensity score methods do not rely on specifying the correct model for the outcome. Instead, they shift the modeling burden to the treatment assignment mechanism. This can be advantageous when the outcome is difficult to model, but it also introduces new challenges, including the need for careful diagnostic checks and attention to positivity and overlap.
+
+In the sections that follow, we describe each of these methods in detail, illustrate them with examples and code, and provide guidance on when and how to apply them in practice.
+
+## The Propensity Score {#sec-ps-ps}
+
+### Key Properties of the Propensity Score {#sec-ps-properties}
+
+The usefulness of the propensity score in causal inference stems from a set of key theoretical properties. These properties justify the use of the propensity score as a balancing score and support its role in adjusting for confounding in observational studies.
+
+### The Balancing Property
+
+The fundamental property of the propensity score is its ability to balance covariates between treated and untreated individuals. Formally, for individuals with the same value of the propensity score, the distribution of observed covariates $W$ is independent of treatment assignment $A$. That is,
+
+$$
+A \perp W \mid e(W),
+$$
+
+where $e(W) = P(A = 1 \mid W)$. This means that within strata of the propensity score, the treated and untreated groups are expected to have similar distributions of baseline covariates. This balancing property is essential, as it enables causal comparisons by mimicking the balance achieved through randomization.
+
+### Unconfoundedness Given the Propensity Score
+
+If the potential outcomes are independent of treatment assignment conditional on covariates---that is,
+
+$$
+Y^0, Y^1 \perp A \mid W,
+$$
+
+then this also holds conditional on the propensity score:
+
+$$
+Y^0, Y^1 \perp A \mid e(W).
+$$
+
+This result, sometimes called the *strong ignorability given the propensity score*, implies that adjusting for the propensity score alone is sufficient to remove confounding bias due to measured covariates, under the assumption that all confounders are included in $W$.
+
+### Common Support and Positivity
+
+For propensity score methods to be valid, there must be sufficient overlap in the distribution of the propensity score between the treated and untreated groups. This is known as the *common support* or *overlap* condition. Formally, for every value of the covariates $W$, we require:
+
+$$
+0 < P(A = 1 \mid W) < 1.
+$$
+
+This assumption, known as *positivity*, ensures that each individual has a positive probability of receiving both treatment and control, given their covariates. If some individuals are deterministically treated or untreated based on their covariates, causal effects for those individuals are not identifiable.
+
+In practice, violations of positivity are detected when there are extreme propensity scores close to 0 or 1. These lead to practical issues such as poor covariate balance and unstable estimates, particularly in weighting-based methods like IPTW.
+
+### Bias--Variance Trade-off in Propensity Score Methods
+
+Propensity score methods often involve a trade-off between bias and variance. For example, narrowing the matching caliper or stratifying into more finely grained subclasses can reduce bias but may also increase variance due to smaller effective sample sizes. Conversely, wider matches or coarser stratification increase the sample size but risk residual confounding.
+
+The choice of propensity score method (e.g., matching, stratification, weighting) and implementation details (e.g., number of strata, use of replacement in matching) should be guided by diagnostics such as covariate balance measures and sensitivity analyses.
+
+### Estimating the Propensity Score {#sec-ps-estimation}
+
+The first step in applying propensity score methods is to estimate the propensity score---defined as the probability of receiving the treatment, given observed covariates:
+
+$$
+e(W) = P(A = 1 \mid W).
+$$
+
+In practice, this conditional probability is not known and must be estimated from the data. The choice of model for estimating the propensity score is crucial, as all subsequent causal inferences depend on its quality. An incorrectly specified propensity score model may result in poor covariate balance and biased effect estimates, even if the methods used afterward are correctly implemented.
+
+### Logistic Regression
+
+The most common method for estimating the propensity score is *logistic regression*. In this approach, the treatment assignment $A \in \{0,1\}$ is modeled as a function of the covariates $W$:
+
+$$
+\text{logit}(P(A = 1 \mid W)) = \alpha_0 + \alpha_1 W_1 + \alpha_2 W_2 + \cdots + \alpha_k W_k.
+$$
+
+This yields a predicted probability for each individual of receiving the treatment, given their covariate profile. Logistic regression has the advantages of being interpretable, familiar, and easy to implement, and it often performs adequately when the number of confounders is moderate and their relationships with treatment are roughly linear on the logit scale.
+
+However, model misspecification is a risk. Important interactions or non-linearities may be missed unless explicitly included. Therefore, flexible modeling and diagnostic checks are essential.
+
+### Machine Learning Approaches
+
+As an alternative to parametric models, *machine learning algorithms* can be used to estimate the propensity score in a more flexible, data-adaptive way. These include:
+
+- Classification trees and random forests
+- Gradient boosting machines (e.g., XGBoost)
+- Neural networks
+- Generalized additive models
+- Ensemble learners (e.g., Super Learner)
+
+Machine learning methods can capture complex, non-linear relationships and interactions among covariates without the need to specify them manually. This can improve covariate balance and reduce bias. However, these methods may overfit or produce propensity scores near 0 or 1, which can lead to unstable weights in IPTW.
+
+For this reason, ensemble methods like *Super Learner*---which combine multiple candidate models via cross-validation---are increasingly used in modern causal inference to improve robustness and predictive performance.
+
+### Model Checking and Covariate Balance
+
+Regardless of the estimation method, it is essential to evaluate whether the resulting propensity score model achieves *covariate balance* between the treated and control groups. The ultimate goal is not predictive accuracy of treatment assignment but rather balance of covariates conditional on the propensity score.
+
+Diagnostics include:
+
+- Standardized mean differences for each covariate before and after adjustment
+- Histograms or density plots of propensity scores by treatment group
+- Plots of balance vs. propensity score strata or quantiles
+
+A good model may not perfectly predict treatment but should result in *well-balanced covariates* across treatment groups in the adjusted (pseudo-)population. If balance is poor, the model may need to be refit, potentially adding interaction terms, non-linear terms (e.g., splines), or trying a more flexible estimation method.
+
+In summary, the estimation of the propensity score is not a purely predictive task---it is a causal modeling task aimed at achieving balance to support unbiased estimation of treatment effects.
+
+## Methods Using the Propensity Score {#sec-ps-methods}
+
+### Matching on the Propensity Score {#sec-ps-matching}
+
+Matching is one of the most commonly used propensity score methods. The idea is to pair treated and control individuals with similar values of the estimated propensity score, so that comparisons are made between units with similar covariate distributions. Matching aims to recreate a pseudo-randomized experiment by ensuring that treatment and control groups are balanced on observed covariates.
+
+#### Nearest Neighbor Matching
+In nearest neighbor matching, each treated individual is matched to one or more control individuals whose estimated propensity score is closest in absolute value. The most basic form is 1:1 matching without replacement, although other ratios (e.g., 1:2, 1:k) are possible.
+
+This method is intuitive and easy to implement but may result in poor matches if the propensity score distributions between groups do not overlap well.
+
+**R Example:**
+```r
+library(MatchIt)
+
+# Simulate data
+data <- data.frame(
+  A = rbinom(1000, 1, 0.5),
+  W1 = rnorm(1000),
+  W2 = rbinom(1000, 1, 0.4)
+)
+data$ps <- glm(A ~ W1 + W2, data = data, family = binomial)$fitted.values
+
+# Perform nearest neighbor matching
+match_nn <- matchit(A ~ W1 + W2, data = data, method = "nearest")
+summary(match_nn)
+matched_data <- match.data(match_nn)
+```
+
+#### Caliper and Radius Matching
+Caliper matching imposes a maximum allowable distance (caliper) between the propensity scores of matched pairs. This reduces the risk of poor matches by ensuring that treated units are only matched to controls with sufficiently similar scores.
+
+Radius matching generalizes this idea by allowing each treated individual to be matched with all controls within the caliper range.
+
+**R Example (Caliper Matching):**
+```r
+match_caliper <- matchit(A ~ W1 + W2, data = data,
+                             method = "nearest", caliper = 0.2)
+summary(match_caliper)
+```
+
+#### Matching with or without Replacement
+
+In matching *with replacement*, a control unit can be used as a match for more than one treated unit. This is especially useful when the number of treated and control units is highly imbalanced or when the overlap in propensity scores is limited.
+
+Matching *without replacement* restricts each control to be used only once. This may yield less optimal matches but preserves a more diverse control group.
+
+**R Example (With Replacement):**
+```r
+match_wr <- matchit(A ~ W1 + W2, data = data, method = "nearest", replace = TRUE)
+summary(match_wr)
+```
+
+#### Covariate Balance Diagnostics
+After matching, it is essential to assess whether covariates are balanced between treatment groups. Standardized mean differences (SMDs) are commonly used for this purpose. A typical threshold for acceptable balance is an absolute SMD less than 0.1.
+
+**R Example (Covariate Balance):**
+```r
+plot(summary(match_nn), type = "qq")  # Balance plot
+```
+
+Other diagnostics include:
+- Histograms or density plots of propensity scores
+- Love plots of standardized differences
+- Covariate-specific p-values (with caution)
+
+#### Estimating Treatment Effects after Matching
+Once matching is complete and balance is assessed, the treatment effect can be estimated by comparing outcomes between matched treated and control units. For 1:1 matching, a paired difference in means is often used:
+
+$$
+\widehat{ATT} = \frac{1}{n_t} \sum_{i \in \text{treated}} \left(Y_i - Y_{j(i)}\right),
+$$
+
+where $Y_i$ is the outcome for treated unit $i$ and $Y_{j(i)}$ is the outcome of the matched control.
+
+**R Example (Estimating ATT):**
+```r
+matched_data <- match.data(match_nn)
+mean(matched_data$Y[matched_data$A == 1]) -
+  mean(matched_data$Y[matched_data$A == 0])
+```
+
+Bootstrapping is often used to estimate confidence intervals post-matching since standard variance formulas may not be valid in the matched sample.
+
+**Summary:** Matching on the propensity score is a flexible, intuitive approach to reduce confounding. Success depends on overlap in propensity scores and careful attention to post-matching diagnostics.
+
+### Stratification (or Subclassification) {#sec-ps-stratification}
+
+Stratification, also known as subclassification, is a propensity score method that involves dividing the study population into strata (or subclasses) based on quantiles of the estimated propensity score. Within each stratum, the treated and control groups are compared directly. This method reduces confounding by ensuring that comparisons are made between subjects with similar covariate distributions.
+
+#### Forming Strata by Propensity Score Quantiles
+The most common approach is to divide the range of the estimated propensity score into quintiles (i.e., five equally sized groups). This aims to create approximately homogeneous groups within which treatment assignment is as-if random.
+
+```r
+data$pscore <- glm(A ~ W1 + W2, data = data, family = binomial)$fitted.values
+
+# Create strata (quintiles)
+data$stratum <- cut(data$pscore,
+                       breaks = quantile(data$pscore, probs = seq(0, 1, 0.2)),
+                       include.lowest = TRUE, labels = FALSE)
+table(data$stratum, data$A)
+```
+
+More or fewer strata can be used depending on the sample size. Rosenbaum and Rubin (1984) showed that stratification into five strata typically removes about 90% of the bias due to confounding.
+
+#### Effect Estimation within Strata
+Once strata are formed, treatment effects are estimated within each stratum separately. For example, within each stratum $s$, the average treatment effect can be computed as:
+$$
+\widehat{ATE}_s = \bar{Y}^1_s - \bar{Y}^0_s,
+$$
+where $\bar{Y}^1_s$ and $\bar{Y}^0_s$ are the average outcomes among treated and control units within stratum $s$, respectively.
+
+```r
+by(data, data$stratum, function(df) {
+  mean(df$Y[df$A == 1]) - mean(df$Y[df$A == 0])
+})
+```
+
+If the outcome is binary, logistic regression can also be used within each stratum to estimate risk differences, risk ratios, or odds ratios.
+
+#### Aggregating Across Strata
+The overall average treatment effect is computed by aggregating the stratum-specific effects, weighting by the proportion of the population in each stratum:
+$$
+\widehat{ATE} = \sum_{s=1}^S \widehat{ATE}_s \times \frac{n_s}{n},
+$$
+where $n_s$ is the number of individuals in stratum $s$ and $n$ is the total sample size.
+
+```r
+library(dplyr)
+agg_ate <- data %>%
+  group_by(stratum) %>%
+  summarise(
+    n = n(),
+    ate = mean(Y[A == 1]) - mean(Y[A == 0])
+  ) %>%
+  summarise(weighted_ate = sum(ate * n / sum(n)))
+agg_ate
+```
+
+This estimator approximates the marginal ATE, provided that each stratum contains both treated and control individuals.
+
+#### Assessing Balance within Strata
+To evaluate whether stratification has successfully balanced covariates, one should assess covariate balance within each stratum. This can be done by calculating standardized mean differences (SMDs) between treated and control groups within each stratum.
+
+```r
+library(tableone)
+CreateTableOne(vars = c("W1", "W2"), strata = "stratum", data = data, factorVars = "A")
+```
+
+Visual tools such as Love plots can also be used to summarize covariate balance across all strata.
+
+**Summary:** Stratification is an intuitive and accessible method to adjust for confounding using the propensity score. Its simplicity and transparency make it particularly useful in moderate sample sizes, although bias can remain if strata are not sufficiently homogeneous.
+
+### Covariate Adjustment Using the Propensity Score {#sec-ps-regression}
+
+An alternative to matching, stratification, or weighting is to include the propensity score directly as a covariate in a regression model for the outcome. This method is sometimes referred to as "covariate adjustment using the propensity score." It involves modeling the outcome as a function of both the treatment and the estimated propensity score.
+
+#### Propensity Score as a Covariate in Regression
+
+In this approach, the outcome $Y$ is modeled as:
+$$
+E[Y \mid A, e(W)] = f(A, e(W)),
+$$
+where $e(W)$ is the estimated propensity score. A typical implementation for a continuous outcome is a linear regression model:
+$$
+Y_i = \beta_0 + \beta_1 A_i + \beta_2 \hat{e}(W_i) + \varepsilon_i,
+$$
+and for a binary outcome, a logistic regression model:
+$$
+\text{logit}(P(Y_i = 1)) = \beta_0 + \beta_1 A_i + \beta_2 \hat{e}(W_i).
+$$
+The coefficient $\beta_1$ captures the association between treatment and outcome, adjusted for the propensity score.
+
+This method reduces the dimensionality of adjustment: instead of adjusting for all covariates in $W$, one adjusts for a scalar summary, $\hat{e}(W)$. However, it is not guaranteed to produce unbiased estimates of the average treatment effect (ATE), especially when the outcome model is misspecified.
+
+**R Example:**
+```r
+# Estimate propensity scores
+ps_model <- glm(A ~ W1 + W2, data = data, family = binomial)
+data$pscore <- ps_model$fitted.values
+
+# Outcome model using propensity score as a covariate
+outcome_model <- lm(Y ~ A + pscore, data = data)
+summary(outcome_model)
+```
+
+For binary outcomes:
+```r
+# Logistic regression
+logit_model <- glm(Y ~ A + pscore, data = data, family = binomial)
+summary(logit_model)
+```
+
+This method can be sensitive to misspecification of the outcome model. For example, if $e(W)$ has a non-linear relationship with $Y$, then modeling it linearly may yield biased estimates.
+
+#### Comparison with Outcome Modeling
+
+Covariate adjustment using the propensity score differs from traditional outcome modeling (also known as regression adjustment) in that it replaces the vector of covariates $W$ with a scalar summary, $e(W)$. In standard outcome regression, the model is:
+$$
+Y_i = \beta_0 + \beta_1 A_i + \boldsymbol{\beta}_2^T W_i + \varepsilon_i.
+$$
+
+This method directly adjusts for all confounders, assuming the model for $E[Y \mid A, W]$ is correctly specified. While it allows more flexibility in modeling covariates, it also suffers more severely from curse of dimensionality and collinearity.
+
+In contrast, adjusting for $e(W)$ reduces the covariate adjustment to a single dimension. However, it does not offer the same level of protection against confounding, especially in the presence of effect modification, non-linear relationships, or heterogeneous treatment effects.
+
+**Key differences:**
+- **Dimensionality:** Propensity score adjustment uses a scalar summary, reducing complexity.
+- **Model dependency:** Traditional regression depends heavily on correct specification of the full outcome model; PS adjustment relies more on correct treatment model.
+- **Interpretation:** Coefficients from PS-adjusted models estimate conditional treatment effects, not marginal ATEs.
+
+Although less commonly used in modern practice due to its sensitivity to model misspecification and weaker performance in finite samples, covariate adjustment using the propensity score remains a useful tool in situations with limited overlap or when other methods are infeasible.
+
+For improved performance, this method is often used in conjunction with doubly robust estimators, as discussed in later sections.
+
+### Inverse Probability of Treatment Weighting (IPTW) {#sec-ps-iptw}
+
+Inverse Probability of Treatment Weighting (IPTW) is a propensity score-based method that reweights the sample to create a pseudo-population in which treatment assignment is independent of baseline covariates. This allows for the estimation of causal effects by comparing outcomes between weighted treatment groups.
+
+In observational studies, some individuals will be more likely than others to be treated (A=1) due to their characteristics. Suppose some individuals who were treated were unlikely to be treated based on a specific set of features encapsulated in a particular vector of confounders (**W**). To balance the differences in characteristics between treatment groups, we re-weight the outcome variable of these individuals by the inverse of their probability of the treatment (A) actually received (i.e., propensity score). Originally, the weights were motivated from the classical Horvitz and Thompson survey estimator used to re-weight the outcome variable by the inverse probability that it is observed, thus accounting for the sampling process.[@Horvitz1952] The result of this weighting procedure is that, among the treated we up-weight those who had a low probability of being treated, and among the untreated we up-weight those who were unlikely to be untreated; that is, the individuals underrepresented in their treatment group. As a consequence, the weighted set of data is unchanged apart from A and **W** are now conditionally independent. Therefore, a comparison of $Y_{w}(1)$ to $Y_{w}(0)$ gives a marginal causal effect under the three identification assumptions (Appendix 1) whilst also assuming the propensity score model is correctly specified. The inverse probability of treatment weighting (IPTW), and the g-formula when targeting the same estimand (i,e., the ATE), are equivalent in the nonparametric setting.[@Robins1986; @Rosenbaum1983] We provide a proof of the equivalence between IPTW and G-computation procedures using the law of total expectation.
+
+$$
+\begin{aligned}
+& \underbrace{E\left(\frac{{I}(a = 1)}{P(A=1 \mid \boldsymbol{W})}\,Y\right)}_{IPTW} \,=\, \\
+        & \text{By definition of expectations...} \\
+    &=\, \sum_{w,a,y} \frac{I(a=1)}{P(A=1|W=w)} \, y \, P(Y=y,A=a,W=w) \\
+        & \\
+        & \text{By the law of total probability...} \\
+    &=\, \sum_{w,a,y} \frac{I(a=1)}{P(A=1\,|\,W=w)} \, y \, P(Y=y\, | \,A=a,W=w) \, P(A=a\,|\,W=w) \, P(W=w) \\
+        & \\
+        & \text{Cancellation by evaluating at A=1...} \\
+    &=\, \sum_{w,y} \,y\, P(Y=y\,|\,A=1,W=w)\,P(W=w) \\
+        & \\
+        & \text{By definition of expectations...} \\
+    &=\, \sum_{w} E(Y\,|\,A=1,W=w)\,P(W=w) \\
+        & \\
+        & \text{Finally, again by definition of expectations...} \\
+    &=\, \underbrace{E[E(Y\,|\,A=1,W)]}_{G-computation}
+\end{aligned}
+$$
+
+Departing from the identification assumptions of the ATE for the regression adjustment G-computation estimand (ATE = $E_{w}(E(Y|A=1,\textbf{W}) - E_{w}(Y|A=0,\textbf{W})$), we can rewrite the same estimand as a function of the distribution of A given W (i.e., $P(A = 1|\textbf{W})$, a.k.a propensity score or treatment mechanism).
+
+Therefore, the estimator is given by
+
+$$
+\text{ATE}\,=\,\frac{1}{n}\sum^{n}_{i=1}\left(\frac{A_{i}}{P(A_{i}=1\mid\boldsymbol{W}_{i})}\,-\,\frac{1\,-\,A_{i}}{(1\,-\,P(A_{i}=1\mid\boldsymbol{W}_{i}))}\right)Y_{i}.
+$$ {#eq-iptw}
+
+#### Defining Weights for ATE, ATT, and ATU
+
+The basic idea of IPTW is to weight each individual by the inverse of the probability of receiving the treatment they actually received. These weights depend on the estimand of interest:
+
+- **Average Treatment Effect (ATE):**
+  $$
+  w_i^{ATE} = \begin{cases}
+  \frac{1}{\hat{e}(W_i)} & \text{if } A_i = 1, \\
+  \frac{1}{1 - \hat{e}(W_i)} & \text{if } A_i = 0.
+  \end{cases}
+  $$
+
+- **Average Treatment Effect on the Treated (ATT):**
+  $$
+  w_i^{ATT} = \begin{cases}
+  1 & \text{if } A_i = 1, \\
+  \frac{\hat{e}(W_i)}{1 - \hat{e}(W_i)} & \text{if } A_i = 0.
+  \end{cases}
+  $$
+
+- **Average Treatment Effect on the Untreated (ATU):**
+  $$
+  w_i^{ATU} = \begin{cases}
+  \frac{1 - \hat{e}(W_i)}{\hat{e}(W_i)} & \text{if } A_i = 1, \\
+  1 & \text{if } A_i = 0.
+  \end{cases}
+  $$
+
+**R Example (ATE Weights):**
+```r
+ps_model <- glm(A ~ W1 + W2, data = data, family = binomial)
+data$pscore <- ps_model$fitted.values
+
+data$weight_ate <- ifelse(data$A == 1,
+                          1 / data$pscore,
+                          1 / (1 - data$pscore))
+```
+
+#### Stabilized vs. Unstabilized Weights
+
+There is a modified version of the IPTW estimator (@eq-iptw) consisting of stabilised weights proposed by [@Hajek1971CommentEds.], which is more commonly used in practice when treatment and exposure vary over time (i.e., time dependent confounding). Stabilised weights should have a mean of 1, but some values could be higher (i.e., large weights). Unstabilized weights can sometimes have large variability, particularly when propensity scores are close to 0 or 1. Stabilized weights help mitigate this by multiplying the numerator of the weight by the marginal probability of treatment:
+
+$$
+w_i^{stab} = \begin{cases}
+\frac{P(A = 1)}{\hat{e}(W_i)} & \text{if } A_i = 1, \\
+\frac{P(A = 0)}{1 - \hat{e}(W_i)} & \text{if } A_i = 0.
+\end{cases}
+$$
+
+The stabilised version of the IPTW estimator is given by
+
+$$
+\text{ATE} \,=\,\frac{\sum\left(\frac{AY}{P(A=1\mid\boldsymbol{W})}\right)}{\sum\left(\frac{A}{P(A=1\mid\boldsymbol{W})}\right)}\,-\,\frac{\sum\left(\frac{(1\,-\,A)Y}{1\,-\,P(A=1\mid\boldsymbol{W})}\right)}{\sum\left(\frac{(1\,-\,A)}{1\,-\,P(A=1\mid\boldsymbol{W})}\right)}.
+$$
+
+**R Example (Stabilized ATE Weights):**
+```r
+p_A <- mean(data$A == 1)
+data$stab_weight <- ifelse(data$A == 1,
+                          p_A / data$pscore,
+                          (1 - p_A) / (1 - data$pscore))
+```
+
+#### Dealing with Extreme Weights
+
+Extreme weights occur when estimated propensity scores are close to 0 or 1, leading to instability and large variances. Strategies to manage this include:
+- **Truncation:** Cap weights at a specified percentile (e.g., 1st and 99th percentiles).
+- **Weight trimming:** Exclude individuals with weights above a certain threshold.
+- **Use of stabilized weights:** As previously shown.
+- **Improved PS estimation:** Use flexible models (e.g., machine learning) to improve PS estimates.
+
+**R Example (Weight Truncation):**
+```r
+# Truncate at 1st and 99th percentiles
+lower <- quantile(data$weight_ate, 0.01)
+upper <- quantile(data$weight_ate, 0.99)
+data$trunc_weight <- pmin(pmax(data$weight_ate, lower), upper)
+```
+
+#### Variance Estimation for IPTW
+
+Variance estimation for IPTW estimators can be challenging due to the complex structure of the weights. Common approaches include:
+
+- **Robust (sandwich) standard errors:** Often used when fitting weighted regression models.
+- **Bootstrap:** Resample individuals and re-estimate the treatment effect in each sample.
+
+**R Example (Weighted Regression with Robust SEs):**
+```r
+library(sandwich)
+library(lmtest)
+
+# Weighted regression
+fit <- lm(Y ~ A, data = data, weights = data$stab_weight)
+coeftest(fit, vcov = vcovHC(fit, type = "HC0"))
+```
+
+**R Example (Bootstrap):**
+```r
+library(boot)
+
+boot_iptw <- function(data, indices) {
+  d <- data[indices, ]
+  fit <- lm(Y ~ A, data = d, weights = d$stab_weight)
+  coef(fit)["A"]
+}
+
+boot(data, boot_iptw, R = 1000)
+```
+
+#### Diagnostics and Weight Distributions
+
+Before interpreting IPTW results, it is critical to check whether the weights have created a balanced pseudo-population. Diagnostic steps include:
+
+- **Plotting the distribution of weights:** Helps identify extreme weights.
+- **Checking covariate balance after weighting:** Using standardized mean differences.
+- **Plotting Love plots or density plots of covariates:** To assess balance visually.
+
+**R Example (Check Weights and Balance):**
+```r
+hist(data$stab_weight, breaks = 30, main = "Stabilized Weights")
+
+library(cobalt)
+bal.tab(A ~ W1 + W2, data = data, weights = data$stab_weight)
+love.plot(bal.tab(A ~ W1 + W2, data = data, weights = data$stab_weight))
+```
+
+**Summary:** IPTW is a powerful method for estimating causal effects using the propensity score. Careful diagnostics and attention to weight distribution are necessary to avoid instability and ensure valid inferences.
+
+## Practical Considerations {#sec-ps-practical}
+
+### Assessing Overlap and Positivity
+
+A fundamental assumption in propensity score analysis is the assumption of positivity, also known as common support or overlap. This requires that for all combinations of covariates $W$, the probability of receiving each treatment level is strictly between zero and one:
+$$
+0 < P(A = 1 \mid W) < 1.
+$$
+
+Violations of positivity occur when some individuals have near-deterministic treatment assignment based on their covariates. These individuals contribute little to causal identification and may introduce instability in estimates, particularly in weighting methods like IPTW. The overlap of the distribution of propensity scores between treatment groups gives a visual identification regarding the strength of confounding and whether it is acceptable.
+
+```r
+library(ggplot2)
+ggplot(data, aes(x = pscore, fill = factor(A))) +
+  geom_density(alpha = 0.4) +
+  labs(title = "Propensity Score Overlap", fill = "Treatment")
+```
+
+When overlap is poor, trimming or restriction to regions of common support is sometimes used to improve robustness, albeit at the cost of generalizability.
+
+### Checking Covariate Balance
+
+The primary role of the propensity score is to balance observed covariates between treatment groups. Balance diagnostics should be conducted after implementing any propensity score method---whether matching, weighting, or stratification. One commonly used measure is the standardized mean difference (SMD), defined as the difference in means between treated and control groups, divided by the pooled standard deviation.
+
+SMDs close to zero suggest good balance. A common rule of thumb is that absolute SMDs below 0.1 indicate acceptable balance. Visual tools, such as Love plots, provide a convenient way to display covariate balance before and after adjustment.
+
+```r
+library(cobalt)
+ps_model <- glm(A ~ W1 + W2, data = data, family = binomial)
+data$pscore <- ps_model$fitted.values
+bal.tab(A ~ W1 + W2, data = data, weights = data$stab_weight)
+love.plot(bal.tab(A ~ W1 + W2, data = data, weights = data$stab_weight))
+```
+
+If covariate balance is unsatisfactory, the propensity score model may need to be refined by adding interaction terms or nonlinear effects.
+
+When there are near violations of the positivity assumption, the unstabilised weights can have large values, forcing the variance to increase and exacerbate the uncertainty of the ATE estimation. Therefore, it is advisable to explore the distribution of the weights to evaluate the extent to which they balance the distribution of confounders across the levels of the treatment (i.e., equally distributed). As shown by [@Austin2009BalanceSamples], it is common to provide a table with the unweighted and weighted differences of the standardised means of the confounders by the levels of the treatment.
+
+As an example, suppose we have information on a set of covariates given in @tbl-table:2. Prior to weighting, there was some imbalance (absolute values of the standardised differences close to, or beyond, 0.10) on sex, education level and presence/extent of cancer between treatment groups. A variance ratio (i.e., the ratio of the standardised distribution of the confounders by the levels of the treatment) equal to 1 before and after weighting informs us that the distribution of the confounders across the levels of the treatments is the same (i.e., perfectly balanced). Note, the weighted variance ratio for the continuous variable age is 0.79, which is slightly further from 1 than the variance ratio for the original (unweighted) sample (i.e., 0.82); this slight change is possibly because the weighted mean for age might have greater sampling variance than the unweighted mean.
+
+: Distribution of the treatment before and after applying weights {#tbl-table:2}
+
+| Confounder | Raw | Weighted | | Raw | Weighted |
+|---|---|---|---|---|---|
+| Sex | 0.093 | 0.000 | | 0.977 | 1.000 |
+| Age | -0.061 | -0.004 | | 0.817 | 0.791 |
+| Education | 0.091 | -0.002 | | 1.015 | 1.027 |
+| Race - Black | -0.031 | 0.002 | | 0.944 | 1.003 |
+| Race - Other | 0.020 | 0.001 | | 1.078 | 1.004 |
+| Cancer - Metastatic | -0.069 | -0.000 | | 0.780 | 1.000 |
+| Cancer - Localised | -0.072 | 0.000 | | 0.879 | 0.999 |
+
+Reference groups: race - white, cancer - none
+
+There is no definitive value at which the treatment is considered unbalanced; however, as a guideline, a variance ratio less than 0.5 indicates that the data is not balanced and the potential for the positivity violation must be explored (i.e., when $P(A=a\mid C=c)$ is near to zero or one). An additional strategy is to check the distribution of the weights: if there are very large weights this indicates the violation of the positivity assumption but, also, it can be due to parametric modelling misspecification. Again there is no clear consensus but, when there are very large weights, researchers often set the weights to a less extreme value. [@Sturmer2010TreatmentStudy] does this by trimming or removing the data at the extremes of the distribution of the weights (e.g., the $5^{th}$ and $95^{th}$ percentiles). Trimming the weights reduces variance (i.e., omitting the largest weights and making the positivity assumption more plausible), but at the expense of introducing bias [@Cole2008]. However, another alternative without dropping observations is truncation, whereby all the values of the weights, larger than a user-specified maximum value or percentile (e.g., $1^{st}$ and $99^{th}$ or $5{th}$ and $95^{th}$), are replaced by that threshold value [@Cole2008; @Xiao2013ComparisonModels]. In extreme cases, when the weights are extremely large, changing the estimand could be another solution (e.g., estimating the ATE in a subset of the sample, among only those treated for example, representing the average treatment effect among the treated -ATT-).
+
+### Sensitivity to Propensity Score Model Choice
+
+Since propensity scores are typically estimated from a model, their validity depends on correct model specification. For binary exposures, logistic regression is the most common choice, but its parametric nature can lead to bias if important nonlinearities or interactions are omitted. One way to assess sensitivity is to compare covariate balance and treatment effect estimates under alternative model specifications.
+
+Flexible, data-adaptive methods such as generalized additive models, random forests, or ensemble learners like Super Learner may improve propensity score estimation by reducing model misspecification. However, they also require careful diagnostics to ensure that the resulting weights or matches still achieve balance.
+
+```r
+library(SuperLearner)
+X <- data[, c("W1", "W2")]
+Y <- data$A
+sl_model <- SuperLearner(Y = Y, X = X, family = binomial(),
+                         SL.library = c("SL.glm", "SL.randomForest"))
+data$pscore_sl <- sl_model$SL.predict
+```
+
+Ultimately, sensitivity analyses should be performed to evaluate the robustness of conclusions to different modeling choices.
+
+### Choosing Among Propensity Score Methods
+
+Several methods are available for using the propensity score, including matching, stratification, IPTW, and covariate adjustment. The choice among them should be guided by the research question, sample size, distribution of covariates, and practical considerations such as overlap and computational resources.
+
+Matching is often favored for its transparency and intuitive appeal and is particularly effective when the sample size is moderate and sufficient overlap exists. Stratification is easy to implement and understand, though it may not remove all residual confounding. IPTW is powerful for estimating marginal effects but requires careful management of extreme weights. Covariate adjustment is less commonly used on its own due to concerns about model misspecification but may serve as a useful component in doubly robust methods.
+
+Each method has advantages and limitations. It is often useful to implement multiple approaches and compare results as part of a sensitivity analysis. No method is universally superior, and the credibility of the analysis ultimately depends on careful diagnostics and a deep understanding of the data and context.
+
+## Summary and Comparison {#sec-ps-summary}
+
+This chapter has outlined a suite of methods built upon the propensity score, including matching, stratification, inverse probability of treatment weighting (IPTW), covariate adjustment, and doubly robust estimators. These methods all aim to reduce bias due to measured confounding by balancing covariates between treatment groups. In this final section, we reflect on how these approaches compare with outcome-based methods such as the g-formula, identify situations in which propensity score methods are most appropriate, and summarize their relative strengths and weaknesses.
+
+### Comparison with the G-formula
+
+The g-formula, or outcome regression, relies on modeling the outcome as a function of treatment and confounders. This approach directly estimates the expected potential outcomes under each treatment and averages them over the population. In contrast, propensity score methods focus on balancing the distribution of confounders by modeling treatment assignment and use this to indirectly adjust outcome comparisons.
+
+In terms of assumptions, both the g-formula and propensity score methods require unconfoundedness (i.e., no unmeasured confounding) and positivity. However, the g-formula relies more heavily on correctly specifying the outcome model, while propensity score methods transfer this modeling burden to the treatment assignment mechanism. In theory, if both models are correctly specified, the g-formula may be more efficient, especially when effect modification is limited. In practice, the choice often depends on which model is easier to specify accurately given the data and subject-matter knowledge.
+
+Propensity score methods are especially useful when the outcome is rare or difficult to model directly. They are also appealing when investigators prefer to separate design from analysis, as matching and stratification can be implemented without using outcome data. This pre-analysis design step can help reduce bias due to model overfitting or selective model specification.
+
+### When to Use Propensity Score Methods
+
+Propensity score methods are most beneficial in observational studies where treatment is not randomly assigned and confounding is suspected. These methods are especially appropriate when the number of covariates is large, or when the outcome is not well understood. They are also helpful when researchers want to avoid strong parametric assumptions about the outcome.
+
+Matching is particularly appealing when a clear comparison group is desired and transparency is a priority. Stratification works well when the propensity score distribution overlaps substantially between groups. IPTW is a good choice for estimating marginal effects, but it requires close attention to positivity and extreme weights. Doubly robust methods, such as AIPTW, are advantageous when there is uncertainty about which model (outcome or treatment) is correctly specified, as they offer consistent estimates if either is valid.
+
+These methods should not be used mechanically. They require thoughtful implementation, including careful model specification, extensive diagnostics, and often sensitivity analyses. When used appropriately, they can greatly reduce bias due to confounding and enhance the credibility of causal claims.
+
+### Strengths and Limitations
+
+The major strength of propensity score methods is their ability to achieve covariate balance in high-dimensional settings without modeling the outcome. This makes them attractive when outcome data are noisy or limited. Many implementations, particularly matching and weighting, also offer intuitive interpretations and can be made transparent to non-technical audiences.
+
+However, these methods have limitations. All propensity score methods depend on the strong assumption that all confounders have been measured. If key confounders are omitted, none of the methods can recover an unbiased causal effect. Moreover, methods like IPTW are sensitive to violations of positivity and can become unstable in the presence of extreme weights. Matching discards data and can reduce precision, while stratification may not fully eliminate residual confounding.
+
+Finally, while propensity score methods reduce reliance on modeling the outcome, they do not eliminate the need for modeling altogether. The estimated propensity score is a model-based quantity, and poor specification can lead to imbalance and bias. The emergence of machine learning methods offers opportunities to improve propensity score estimation, but it also introduces challenges related to interpretability and diagnostics.
+
+In summary, propensity score methods offer a flexible and powerful approach to estimating causal effects in observational studies. When implemented carefully and in the right context, they serve as valuable tools in the causal inference toolkit and provide a strong complement to outcome-based methods such as the g-formula.
+
+## Glossary
+
+**TMLE**
+:   Targeted Maximum Likelihood Estimation
