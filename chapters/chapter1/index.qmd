@@ -44,7 +44,9 @@ If the observed data is sufficient to answer the causal question, we must first 
 
 If the identifiability assumptions are deemed plausible, we can move on to defining the statistical estimand. The statistical estimand is an algebraic definition of the causal question but in terms of the observed data. For example, the average treatment effect (ATE) measured by the risk difference is given by
 
-$$ ATE \quad = \quad E_{w} (P[Y=1 \mid A=1, \textbf{W}] - P[Y=1 \mid A=0, \textbf{W}]) $$
+$$
+
+ATE \quad = \quad E_{w} (P[Y=1 \mid A=1, \textbf{W}] - P[Y=1 \mid A=0, \textbf{W}])$$
 
 and is the expected difference (causal risk difference) in the outcome (Y) between two exposure groups (A) conditioned on the set of variables that confound the exposure-outcome relationship (**W**). More details on estimands and measures of association are given in @sec-estimands.
 
@@ -105,25 +107,25 @@ This causal diagram makes several assumptions: all variables that confound the e
 \end{figure}
 ```
 
-1. **Path**: A path is any series of nodes from $W_{k}$ to $W_{l}$ connected by an edge in any direction (i.e., the edge can be "$\rightarrow$" or "$\leftarrow$"). For example, $W_{3} \rightarrow W_{4} \leftarrow W_{2} \rightarrow A \leftarrow W_{5}$ is one of the paths from $W_{3}$ to $W_{5}$.
-2. **Direct path**: A direct path is a path between nodes that involves only forward edges. For example, $W_{3} \rightarrow W_{4} \rightarrow W_{1} \rightarrow A \rightarrow Y$, is a direct path between $W_{3}$ and $Y$ since it contains only forwards edges (i.e., "$\rightarrow$").
-3. **Parent** and **child**: $W_{k}$ is a *parent* of $W_{l}$, and $W_{l}$ is a *child* of $W_{k}$, if $W_{k} \rightarrow W_{l}$. In @fig-DAG1, $W_{3}$ is a parent of $W_{4}$, and $W_{4}$ is a child of $W_{3}$.
-4. **Ancestor** and **Descendant**: $W_{k}$ is an *ancestor* of $W_{l}$, and $W_{l}$ is a *descendant* of $W_{k}$, if there is a direct path from $W_{k}$ to $W_{l}$. In @fig-DAG1, $W_{3}$ is an ancestor of $W_{1}$, thus $W_{1}$ is a descendant of $W_{3}$.
-5. **Collider**: A node $W_{k}$ is a collider between $W_{k-1}$ and $W_{l}$ if it receives both edges (i.e., $W_{k-1} \rightarrow W_{k} \leftarrow W_{l}$). For example, $W_{4}$ is a collider along the path $W_{3} \rightarrow W_{4} \leftarrow W_{2}$.
+1. **Path**: A path is any series of nodes from $W_{k}$to$W_{l}$ connected by an edge in any direction (i.e., the edge can be "$\rightarrow$" or "$\leftarrow$"). For example, $W_{3} \rightarrow W_{4} \leftarrow W_{2} \rightarrow A \leftarrow W_{5}$is one of the paths from$W_{3}$to$W_{5}$.
+2. **Direct path**: A direct path is a path between nodes that involves only forward edges. For example, $W_{3} \rightarrow W_{4} \rightarrow W_{1} \rightarrow A \rightarrow Y$, is a direct path between $W_{3}$and$Y$ since it contains only forwards edges (i.e., "$\rightarrow$").
+3. **Parent** and **child**: $W_{k}$is a *parent* of$W_{l}$, and $W_{l}$is a *child* of$W_{k}$, if $W_{k} \rightarrow W_{l}$. In @fig-DAG1, $W_{3}$is a parent of$W_{4}$, and $W_{4}$is a child of$W_{3}$.
+4. **Ancestor** and **Descendant**: $W_{k}$is an *ancestor* of$W_{l}$, and $W_{l}$is a *descendant* of$W_{k}$, if there is a direct path from $W_{k}$to$W_{l}$. In @fig-DAG1, $W_{3}$is an ancestor of$W_{1}$, thus $W_{1}$is a descendant of$W_{3}$.
+5. **Collider**: A node $W_{k}$is a collider between$W_{k-1}$and$W_{l}$if it receives both edges (i.e.,$W_{k-1} \rightarrow W_{k} \leftarrow W_{l}$). For example, $W_{4}$is a collider along the path$W_{3} \rightarrow W_{4} \leftarrow W_{2}$.
 6. **Instrumental variable**: A node is an instrumental variable if it satisfies these assumptions:
     1. The node is correlated with $A$,
     2. the node is not correlated with $Y$, and
     3. the node is not correlated with a confounder that affects $Y$.
     In @fig-DAG1, $W_{5}$ is an instrumental variable since it satisfies all three assumptions.
-7. **Conditional instrumental variable**: A node is a conditional instrumental variable if it satisfies 6(a) and 6(b), conditioning on nodes that are confounders of $A \rightarrow Y$. In @fig-DAG1, $W_{4}$ is an instrumental variable conditional on $W_{1}$, $W_{2}$ and $W_{3}$.
+7. **Conditional instrumental variable**: A node is a conditional instrumental variable if it satisfies 6(a) and 6(b), conditioning on nodes that are confounders of $A \rightarrow Y$. In @fig-DAG1, $W_{4}$is an instrumental variable conditional on$W_{1}$, $W_{2}$and$W_{3}$.
 
-In @fig-DAG1, one would need to condition on $W_{1}$, $W_{2}$, and $W_{3}$ to sufficiently control for confounding. Without conditioning on these variables, the crude association between $A \rightarrow Y$ is biased (i.e., different from the true causal effect).
+In @fig-DAG1, one would need to condition on $W_{1}$, $W_{2}$, and $W_{3}$to sufficiently control for confounding. Without conditioning on these variables, the crude association between$A \rightarrow Y$ is biased (i.e., different from the true causal effect).
 
 A collider for a certain pair of variables (e.g., outcome and exposure) is a third variable that is caused by both of them. In DAG terminology, a collider is the variable in the middle of an inverted fork (i.e. variable C in A → C ← Y).[@pearl95seq; @pearl09causality] Using regression to control for a collider, or stratifying the analysis concerning a collider, can introduce a spurious association between its causes, which can potentially introduce non-causal associations between the exposure and the outcome. This has been used to explain why the medical literature contains many paradoxical findings, where established risk factors appear protective for the outcome.[@LuqueParadox2016; @Hernandez-Diaz_2006; @Banack2013; @Witccomb2009] For instance, numerous studies have reported a paradoxical protective effect of maternal cigarette smoking during pregnancy on pre-eclampsia, which has been named the pre-eclampsia smoking paradox. This paradox is due to gestational age at delivery, which is a collider between smoking (exposure) and pre-eclampsia (outcome).[@LuqueParadox2016] However, the magnitude of the resulting bias will depend on the associations between the collider and the two parent variables.
 
 **A note on backdoor paths**
 
-To ensure conditional exchangeability holds, variables along the *path* from $A$ to $Y$ must be conditioned on. This is known as Pearl's backdoor criterion.[@Pearl94probab] In @fig-DAG1, conditioning on only $W_{1}$, $W_{2}$, and $W_{3}$ was sufficient to control for confounding. There are no other *paths* through $W_{4}$ (or $W_{5}$) that does not already control for $W_{1}$, $W_{2}$, or $W_{3}$. In other words, if one wanted to navigate from $W_{4}$ to $Y$, one would have to go through either $W_{1}$, $W_{2}$, or $W_{3}$, which are already controlled for.
+To ensure conditional exchangeability holds, variables along the *path* from $A$to$Y$must be conditioned on. This is known as Pearl's backdoor criterion.[@Pearl94probab] In @fig-DAG1, conditioning on only$W_{1}$, $W_{2}$, and $W_{3}$was sufficient to control for confounding. There are no other *paths* through$W_{4}$(or$W_{5}$) that does not already control for $W_{1}$, $W_{2}$, or $W_{3}$. In other words, if one wanted to navigate from $W_{4}$to$Y$, one would have to go through either $W_{1}$, $W_{2}$, or $W_{3}$, which are already controlled for.
 
 ### Impact of colliders
 
@@ -181,11 +183,15 @@ A marginal association between A and B has an odds ratio of 1.00 @tbl-ColliderAB
 
 Table @tbl-ColliderABC shows the tabulation of the association between A and B within levels of C. The association between A and B, conditional on C = 1, has an odds ratio (OR) of:
 
-$$ \text{OR}_{C=1} = \frac{(21/9)}{(54/6)} = 0.26 $$
+$$
+
+\text{OR}_{C=1} = \frac{(21/9)}{(54/6)} = 0.26$$
 
 The association between A and B, conditional on C = 0, has an odds ratio of:
 
-$$ \text{OR}_{C=0} = \frac{(59/11)}{(26/14)} = 2.89 $$
+$$
+
+\text{OR}_{C=0} = \frac{(59/11)}{(26/14)} = 2.89$$
 
 : {#tbl-ColliderABC}
 
@@ -201,11 +207,11 @@ Thus, since each of the odds ratios for the association between A and B within l
 
 We first introduce the language of the *Potential Outcomes Framework* also known as (a.k.a) Neyman-Rubin Potential Outcomes framework.[@Rubin2007] To illustrate the framework we use an empirical example based on intensive care medicine.[@Connors1996] The study, set in intensive care units of five United States teaching hospitals between 1989 and 1994, evaluated the effectiveness of right heart catheterisation (RHC) on short-term mortality (30 days) of 5,735 critically ill adult patients (2,184 received a RHC and 3,551 did not received it) receiving care for 1 of 9 prespecified disease categories. In this illustration, let Y, the outcome, denote the vital status of the patient in an intensive care unit (ICU) at 30 days after admission. Let A denote the exposure variable for whether or not the patient received RHC during their stay at the ICU. Let (***W***) include the set of confounders, with C denoting a binary confounder.
 
-In this RHC study, each patient has two potentially observed outcomes (i.e., $Y^{a}$), where the first is $Y(1)$ if they received RHC, and the second is $Y(0)$ if they did not receive RHC [@Rubin1974]. We say "potentially observed" because only one of these two outcomes can ever be observed since each patient only receives one of the treatments. As an example from @tbl-POtable, Patient 1 has two potential outcomes: firstly, $Y(0) = 1$ says that if this patient did not receive RHC then they would have died within 30 days, and secondly, $Y(1) = 0$ says that if they had received RHC then they would not have died within 30 days. l,
+In this RHC study, each patient has two potentially observed outcomes (i.e., $Y^{a}$), where the first is $Y(1)$if they received RHC, and the second is$Y(0)$if they did not receive RHC [@Rubin1974]. We say "potentially observed" because only one of these two outcomes can ever be observed since each patient only receives one of the treatments. As an example from @tbl-POtable, Patient 1 has two potential outcomes: firstly,$Y(0) = 1$says that if this patient did not receive RHC then they would have died within 30 days, and secondly,$Y(1) = 0$ says that if they had received RHC then they would not have died within 30 days. l,
 
 : Potential outcomes framework: C = Binary confounder, A = Binary treatment, Y = Binary outcome, Y(0) = Potential outcome for A=0, Y(1) = Potential outcome for A=1 {#tbl-POtable}
 
-| Patient | Y | A | C | $Y(0)$ | $Y(1)$ |
+| Patient | Y | A | C | $Y(0)$|$Y(1)$ |
 |---------|---|---|---|--------|--------|
 | 1       | 1 | 0 | 0 | 1      | 0      |
 | 2       | 1 | 1 | 1 | 1      | 1      |
@@ -217,7 +223,7 @@ In this RHC study, each patient has two potentially observed outcomes (i.e., $Y^
 | 8       | 0 | 1 | 1 | 0      | 0      |
 | 9       | 1 | 1 | 0 | 1      | 1      |
 
-A common estimand in causal inference is the average treatment effect (ATE). The ATE is a function of the underlying distribution of the counterfactual outcomes, which can be estimated non-parametrically or parametrically.[@Robins1986] The ATE is defined by an average of the difference of two random variables (i.e., the potential outcomes $Y^{1}$ and $Y^{0}$). [@Rubin2007; @Gutman2015] The ATE in the example above can be estimated as the contrast between the *potential outcomes* under different treatment levels (i.e., the difference between $E[Y^{1}] - E[Y^{0}]$).[@Rubin2011]
+A common estimand in causal inference is the average treatment effect (ATE). The ATE is a function of the underlying distribution of the counterfactual outcomes, which can be estimated non-parametrically or parametrically.[@Robins1986] The ATE is defined by an average of the difference of two random variables (i.e., the potential outcomes $Y^{1}$and$Y^{0}$). [@Rubin2007; @Gutman2015] The ATE in the example above can be estimated as the contrast between the *potential outcomes* under different treatment levels (i.e., the difference between $E[Y^{1}] - E[Y^{0}]$).[@Rubin2011]
 
 Potential outcomes are so named because they are outcomes that could potentially be observed had the patient been assigned $A=a$. However, in observational studies, only one outcome is observed for each individual. To estimate causal effects, we must make certain assumptions to identify potential outcomes from the observed data, then estimate the estimand.[@Robins1986] The necessary assumptions are outlined in the next section.
 
@@ -231,7 +237,7 @@ $$
 Y^{a} \amalg A\mid \textbf{W} \; \forall \; a \in \{0, 1\},
 $$
 
-This states that, conditional on the set of observed confounders **W**, the actual exposure level $A$ is independent of each of the potential outcomes. Thus, the conditional mean independence is given $E[Y^{a} \mid A=1, \textbf{W}=w] = E[Y^{a} \mid A=0, \textbf{W}=w] = E[Y^{a} \mid \textbf{W}=w] \; \forall \, a \in{0,1}.$
+This states that, conditional on the set of observed confounders **W**, the actual exposure level $A$is independent of each of the potential outcomes. Thus, the conditional mean independence is given$E[Y^{a} \mid A=1, \textbf{W}=w] = E[Y^{a} \mid A=0, \textbf{W}=w] = E[Y^{a} \mid \textbf{W}=w] \; \forall \, a \in{0,1}.$
 
 **Positivity**
 
@@ -267,19 +273,25 @@ $$
 \text{ATE} \, = \, E[Y = 1 \mid A=1] - E[Y = 1 \mid A=0].
 $$
 
-This is currently in terms of unobserved potential outcomes. For example, we can only observe what happens when an individual is treated or untreated, but not both. To estimate the ATE from our data, we can apply the identifiability assumptions (@sec-identifiabilityassumptions) and derive the ATE in terms of observable data. Note that $Y^{a}$ is the potential outcome of an individual, with measured confounders $\textbf{W}$, had they received treatment $A=a$
+This is currently in terms of unobserved potential outcomes. For example, we can only observe what happens when an individual is treated or untreated, but not both. To estimate the ATE from our data, we can apply the identifiability assumptions (@sec-identifiabilityassumptions) and derive the ATE in terms of observable data. Note that $Y^{a}$is the potential outcome of an individual, with measured confounders$\textbf{W}$, had they received treatment $A=a$
 
 First, by the law of total probability
 
-$$P[Y^{a}=1] \, = \, \sum_{w} P[Y^{a}=1 \,|\, \textbf{W}=w]\,P(\textbf{W}=w)$$
+$$
+
+P[Y^{a}=1] \, = \, \sum_{w} P[Y^{a}=1 \,|\, \textbf{W}=w]\,P(\textbf{W}=w)$$
 
 By conditional exchangeability
 
-$$P[Y^{a}=1] \, = \, \sum_{w} P[Y^{a}=1 \,|\,A=a,\textbf{W}=w]\,P(\textbf{W}=w)$$
+$$
+
+P[Y^{a}=1] \, = \, \sum_{w} P[Y^{a}=1 \,|\,A=a,\textbf{W}=w]\,P(\textbf{W}=w)$$
 
 This is possible since we are assuming that within levels of $\textbf{W}$, the predictors of the outcome are equally distributed between the treated and non-treated groups. That is, we have achieved what would happen if patients were randomised to each treatment group. If we also assume consistency
 
-$$P[Y^{a}=1] \, = \, \sum_{w} P[Y=1 \,|\,A=a,\textbf{W}=w]\,P(W=w)$$
+$$
+
+P[Y^{a}=1] \, = \, \sum_{w} P[Y=1 \,|\,A=a,\textbf{W}=w]\,P(W=w)$$
 
 Thus, under these assumptions, the statistical estimand for the ATE is defined as
 

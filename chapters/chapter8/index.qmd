@@ -1,19 +1,27 @@
 # Sensitivity analysis {#sec-sensitivity}
 
-In the process of causal inference, we frequently try to estimate the population effect of a binary treatment on an outcome variable by comparing the means of potential outcomes $Y(1)$ and $Y(0)$, where $Y(t)$ is the (bounded) outcome of a random individual under treatment $A$, [@neyman23app; @rubin74potential]." This contrast, known as the *Average Treatment Effect (ATE)*, must be identified from observational data (i.e., non-experimental investigations) based on untestable hypotheses, i.e., consistency, conditional ignorability, exchangeability or independence, and positivity.
+In the process of causal inference, we frequently try to estimate the population effect of a binary treatment on an outcome variable by comparing the means of potential outcomes $Y(1)$and$Y(0)$, where $Y(t)$is the (bounded) outcome of a random individual under treatment$A$, [@neyman23app; @rubin74potential]." This contrast, known as the *Average Treatment Effect (ATE)*, must be identified from observational data (i.e., non-experimental investigations) based on untestable hypotheses, i.e., consistency, conditional ignorability, exchangeability or independence, and positivity.
 Under these assumptions, the ATE is identified from the observed data distribution via the *g formula*:
 
-$$\begin{aligned}
+$$
+
+\begin{aligned}
 \textit{ATE} &= \int_w \Big\{E[Y \mid A=1, \textbf{W=w}] - E[Y \mid A=0, \textbf{W=w}] \Big\} dF(w),
-\end{aligned}$$ {#eq-ace}
+\end{aligned}$$
 
-where $F(\cdot)$ denotes the cumulative distribution function of $w$.
+ {#eq-ace}
 
-Using $n$ independent and identically distributed copies of $O=(W, A, Y)$, many methods have been developed to draw inference about the ATE functional, e.g., propensity score matching [@rosenbaum83propensity], g-computation [@robins86new], (stabilized) inverse probability weighting [@hernan2006estimating], augmented inverse probability weighting [@robins94estimation], and targeted maximum likelihood [@van2006targeted] as seen in the previous chapters.
+where $F(\cdot)$denotes the cumulative distribution function of$w$.
+
+Using $n$independent and identically distributed copies of$O=(W, A, Y)$, many methods have been developed to draw inference about the ATE functional, e.g., propensity score matching [@rosenbaum83propensity], g-computation [@robins86new], (stabilized) inverse probability weighting [@hernan2006estimating], augmented inverse probability weighting [@robins94estimation], and targeted maximum likelihood [@van2006targeted] as seen in the previous chapters.
 
 The conditional *conditional independence assumption* states that there exists a set of measured pre-treatment covariates (**W**) such that treatment is conditionally independent of the potential outcomes given **W**, i.e.,
 
-$$Y(a) \perp A \mid \textbf{W} \quad \text{ for } a=0,1;$$ {#eq-ci}
+$$
+
+Y(a) \perp A \mid \textbf{W} \quad \text{ for } a=0,1;$$
+
+ {#eq-ci}
 
 implies that there are no unmeasured confounders (**U**) between treatment and outcome.
 
@@ -66,7 +74,7 @@ bias_plot(10.73, xmax = 40)
 
 ![E-value upper bound](figures/Evalue.png){#fig-e-value-upper-bound fig-align="center"}
 
-This tells us, for example, that if the exposure-confounder parameter $RR_{EU}$ were 15, meaning that the confounder(s) is 15 times more likely among smokers, the $RR_{UD}$ for the confounder outcome relationship parameter would have to be about 40 for it to even be possible that confounding explains the entire observed association.
+This tells us, for example, that if the exposure-confounder parameter $RR_{EU}$were 15, meaning that the confounder(s) is 15 times more likely among smokers, the$RR_{UD}$ for the confounder outcome relationship parameter would have to be about 40 for it to even be possible that confounding explains the entire observed association.
 
 It is also possible to plot the lower bound of the confidence interval
 
@@ -108,22 +116,26 @@ In their work, [@Masten18] present theoretical findings aimed at addressing this
 
 To define conditional c-dependence, we first define the following random variables:
 
-- $Y^{a}$ : the potential outcome for a given treatment $a \in\{0,1\}$
+- $Y^{a}$: the potential outcome for a given treatment$a \in\{0,1\}$
 - $A$ : the treatment
 - $W$ : a vector of covariates
 - $Y$ : the observed outcome
 
 The observed outcome satisfies by consistency
 
-$$Y = (1-A) Y^{0} + A Y^{1}.$$
+$$
+
+Y = (1-A) Y^{0} + A Y^{1}.$$
 
 Rather than observing the full data generating process, $(Y^{0}, Y^{1}, A, Y)$, we only observe: O=(Y, A, W).
 
-We say that $A$ is conditionally c-dependent with $Y^{a}$ given $W$ if:
+We say that $A$is conditionally c-dependent with$Y^{a}$given$W$ if:
 
-$$\textbf{supp} \underset{y_{a} \in \operatorname{supp}(Y^{a}\mid W=w)}{\left|\mathbb{P}\left(A=1 \mid Y^{a}=a, W=w\right)-\mathbb{P}(A=1 \mid W=w)\right|} \leq c,$$
+$$
 
-for all $w$ in $\operatorname{supp}(\mathbf{W})$.
+\textbf{supp} \underset{y_{a} \in \operatorname{supp}(Y^{a}\mid W=w)}{\left|\mathbb{P}\left(A=1 \mid Y^{a}=a, W=w\right)-\mathbb{P}(A=1 \mid W=w)\right|} \leq c,$$
+
+for all $w$in$\operatorname{supp}(\mathbf{W})$.
 
 Under this assumption, the identified set for a treatment effect statistic will be a closed interval, which depends on c and the distribution of O=(Y, A, W).
 

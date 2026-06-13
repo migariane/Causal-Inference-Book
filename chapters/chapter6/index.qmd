@@ -12,7 +12,7 @@ This chapter is split into two parts. Part I explores methods for multiple time 
 
 One of the most significant challenges in causal inference for longitudinal data is the presence of time-varying confounding. In a longitudinal setting, confounders are measured repeatedly over time and may both influence and be influenced by prior treatment. This feedback loop creates a fundamental difficulty for standard statistical methods.
 
-To understand the problem, consider covariates $L_t$ that affect treatment decisions $A_t$ at each time $t$, but are themselves affected by earlier treatment $A_{t-1}$. In this case, $L_t$ serves as both a confounder (affecting treatment and outcome) and a mediator (affected by prior treatment). Adjusting for $L_t$ using standard regression methods may induce bias by conditioning on a variable on the causal pathway or introducing collider bias.
+To understand the problem, consider covariates $L_t$that affect treatment decisions$A_t$at each time$t$, but are themselves affected by earlier treatment $A_{t-1}$. In this case, $L_t$serves as both a confounder (affecting treatment and outcome) and a mediator (affected by prior treatment). Adjusting for$L_t$ using standard regression methods may induce bias by conditioning on a variable on the causal pathway or introducing collider bias.
 
 This situation violates one of the key assumptions required for unbiased estimation in standard regression: that adjustment covariates are not affected by the exposure. In longitudinal settings, naive adjustment for time-varying confounders using outcome regression can therefore produce biased effect estimates.
 
@@ -39,22 +39,22 @@ These settings share common features: time-varying exposures, time-varying confo
 
 To formalize the discussion of causal inference with longitudinal data, we introduce notation to represent the sequence of treatments, covariates, and outcomes over time.
 
-Let $t = 0, 1, \dots, T$ denote discrete time points. For an individual $i$, define:
+Let $t = 0, 1, \dots, T$denote discrete time points. For an individual$i$, define:
 - $A_t$: treatment or exposure at time $t$
 - $L_t$: time-varying covariates measured at time $t$
 - $\bar{A}_t = (A_0, A_1, \dots, A_t)$: treatment history up to and including time $t$
 - $\bar{L}_t = (L_0, L_1, \dots, L_t)$: covariate history up to and including time $t$
 - $Y$: outcome of interest, measured at time $T+1$ or at the end of follow-up
-- $C_t$: indicator of censoring at time $t$, where $C_t = 1$ if censored at time $t$
+- $C_t$: indicator of censoring at time $t$, where $C_t = 1$if censored at time$t$
 
-We use capital letters to denote random variables and lowercase letters for their realizations. For example, $a_t$ is a specific value of $A_t$. The notation $Y^{\bar{a}}$ refers to the potential outcome that would be observed under the treatment regime $\bar{a} = (a_0, a_1, \dots, a_T)$.
+We use capital letters to denote random variables and lowercase letters for their realizations. For example, $a_t$is a specific value of$A_t$. The notation $Y^{\bar{a}}$refers to the potential outcome that would be observed under the treatment regime$\bar{a} = (a_0, a_1, \dots, a_T)$.
 
 In addition, we define the data structure for each individual as:
 $$
 O = (L_0, A_0, L_1, A_1, \dots, L_T, A_T, Y).
 $$
 
-This longitudinal data structure allows for dynamic treatment strategies that may assign treatment at time $t$ based on past covariate and treatment history. The goal of causal inference in this setting is to estimate the average causal effect of a treatment regime $\bar{a}$ on the outcome $Y$, denoted:
+This longitudinal data structure allows for dynamic treatment strategies that may assign treatment at time $t$based on past covariate and treatment history. The goal of causal inference in this setting is to estimate the average causal effect of a treatment regime$\bar{a}$on the outcome$Y$, denoted:
 $$
 E[Y^{\bar{a}}].
 $$
@@ -89,7 +89,7 @@ graph LR
   A0 -.-> A1
 ```
 
-In this DAG, $L_1$ is influenced by $A_0$, and $A_1$ is influenced by $L_1$, which in turn affects the outcome $Y$. Adjusting for $L_1$ blocks part of the effect of $A_0$, resulting in bias.
+In this DAG, $L_1$is influenced by$A_0$, and $A_1$is influenced by$L_1$, which in turn affects the outcome $Y$. Adjusting for $L_1$blocks part of the effect of$A_0$, resulting in bias.
 
 **R Example (Illustrating Bias with Standard Regression):**
 ```r
@@ -119,9 +119,9 @@ The g-formula, introduced by Robins (1986), provides a way to estimate causal ef
 
 #### Motivating Setting
 
-Suppose data are collected over $K$ time points. At each time $t$ $(t = 0, \dots, K)$, we observe time-varying covariates $L_t$, treatment variables $A_t$, and eventually an outcome $Y$. The goal is to estimate the causal effect of a treatment strategy $\bar{a} = (a_0, a_1, \ldots, a_K)$ on the outcome $Y$.
+Suppose data are collected over $K$time points. At each time$t$ $(t = 0, \dots, K)$, we observe time-varying covariates $L_t$, treatment variables $A_t$, and eventually an outcome $Y$. The goal is to estimate the causal effect of a treatment strategy $\bar{a} = (a_0, a_1, \ldots, a_K)$on the outcome$Y$.
 
-Let $\bar{A}_t = (A_0, A_1, \dots, A_t)$ and $\bar{L}_t = (L_0, L_1, \dots, L_t)$ denote the treatment and covariate history, respectively. The counterfactual outcome under a specific treatment strategy $\bar{a}$ is denoted $Y^{\bar{a}}$. We aim to estimate $E[Y^{\bar{a}}]$, the expected outcome if all individuals had received treatment strategy $\bar{a}$.
+Let $\bar{A}_t = (A_0, A_1, \dots, A_t)$and$\bar{L}_t = (L_0, L_1, \dots, L_t)$denote the treatment and covariate history, respectively. The counterfactual outcome under a specific treatment strategy$\bar{a}$is denoted$Y^{\bar{a}}$. We aim to estimate $E[Y^{\bar{a}}]$, the expected outcome if all individuals had received treatment strategy $\bar{a}$.
 
 #### The Longitudinal G-formula
 
@@ -134,9 +134,9 @@ In practice, this formula is approximated using parametric regression models and
 
 #### Step-by-Step Estimation Procedure
 
-1. **Model the data-generating process.** Specify models for each time-varying covariate $L_t$ and the final outcome $Y$, conditioning on previous covariates and treatments.
+1. **Model the data-generating process.** Specify models for each time-varying covariate $L_t$and the final outcome$Y$, conditioning on previous covariates and treatments.
 
-2. **Simulate counterfactuals.** For each individual, simulate covariates and outcomes under a specific intervention strategy $\bar{a}$. This requires sequentially predicting covariates $L_t$ using the fitted models, and using these to predict the outcome $Y$.
+2. **Simulate counterfactuals.** For each individual, simulate covariates and outcomes under a specific intervention strategy $\bar{a}$. This requires sequentially predicting covariates $L_t$using the fitted models, and using these to predict the outcome$Y$.
 
 3. **Average the counterfactual outcomes.** Estimate $E[Y^{\bar{a}}]$ by averaging the predicted counterfactual outcomes across the simulated pseudo-population.
 
@@ -204,7 +204,7 @@ Marginal Structural Models (MSMs) are a class of causal models designed to estim
 
 In longitudinal settings, the central challenge arises when confounders are affected by prior treatment. Adjusting for these confounders in a standard regression model can introduce bias, because it blocks part of the causal pathway from treatment to outcome. MSMs overcome this problem by modeling the counterfactual mean outcomes under different treatment regimes, while using inverse probability weighting (IPW) to account for confounding.
 
-Let $\bar{A}_t = (A_0, A_1, \ldots, A_t)$ be the history of treatments up to time $t$, and let $Y$ be the outcome measured at a final time point $T$. The goal of an MSM is to estimate:
+Let $\bar{A}_t = (A_0, A_1, \ldots, A_t)$be the history of treatments up to time$t$, and let $Y$be the outcome measured at a final time point$T$. The goal of an MSM is to estimate:
 
 $$
 \mathbb{E}[Y^{\bar{a}}]
@@ -222,11 +222,11 @@ This model expresses the expected counterfactual outcome as a function of the tr
 
 Because the true counterfactuals are not observed, MSMs are estimated using the observed outcomes weighted by the inverse probability of treatment. Inverse Probability Weighting (IPW) is a method used to address time-varying confounding in longitudinal observational studies. It reweights the sample to create a pseudo-population in which treatment assignment at each time point is independent of past confounders. This approach enables unbiased estimation of marginal causal effects when traditional regression adjustment would fail due to feedback between treatment and covariates.
 
-In longitudinal studies, confounders measured at time $t$, denoted $L_t$, often affect subsequent treatment $A_t$ and are themselves influenced by prior treatment $A_{t-1}$. This dual role of $L_t$ as both a confounder and an intermediate variable invalidates standard regression techniques, which cannot properly adjust for such variables without introducing bias.
+In longitudinal studies, confounders measured at time $t$, denoted $L_t$, often affect subsequent treatment $A_t$and are themselves influenced by prior treatment$A_{t-1}$. This dual role of $L_t$ as both a confounder and an intermediate variable invalidates standard regression techniques, which cannot properly adjust for such variables without introducing bias.
 
 To estimate the effect of a treatment regime $\bar{a} = (a_0, \dots, a_T)$, we use IPW to account for the time-varying nature of both treatment and confounding. This involves modeling the treatment mechanism over time and assigning weights to each individual based on the inverse of their probability of receiving their observed treatment history, conditional on their covariate history.
 
-Let $\hat{e}_t(W_t) = P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)$ denote the estimated probability of treatment at time $t$, given past treatment and covariate history. The unstabilized IP weight is:
+Let $\hat{e}_t(W_t) = P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)$denote the estimated probability of treatment at time$t$, given past treatment and covariate history. The unstabilized IP weight is:
 $$
 W_i = \prod_{t=0}^T \frac{1}{P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)}.
 $$
@@ -248,7 +248,7 @@ These stabilized weights create a pseudo-population in which treatment is indepe
 2. Compute stabilized IP weights for each individual across all time points.
 3. Fit the MSM using a weighted regression model, regressing the outcome on treatment history, using the IP weights.
 
-The parameters in an MSM can be interpreted as the causal effect of treatment on the outcome, averaged over the population. For example, $\beta_1$ in the above model reflects the marginal causal effect of treatment at time $t=0$, assuming correct model specification and no unmeasured confounding.
+The parameters in an MSM can be interpreted as the causal effect of treatment on the outcome, averaged over the population. For example, $\beta_1$in the above model reflects the marginal causal effect of treatment at time$t=0$, assuming correct model specification and no unmeasured confounding.
 
 MSMs can be extended to:
 
@@ -315,23 +315,23 @@ Inverse probability weighting is foundational for marginal structural models and
 
 Longitudinal Targeted Maximum Likelihood Estimation (LTMLE) extends the TMLE framework to settings with time-varying exposures and confounders. It provides doubly robust and asymptotically efficient estimates of causal effects, including the average treatment effect under dynamic intervention rules. In the longitudinal context, the method applies an iterative targeting step moving backward in time, updating the predicted outcome at each step to align with the causal parameter of interest [@vanderLaan2011; @Schomaker_2019].
 
-Let $\bar{A}_t = (A_0, \dots, A_t)$, $\bar{L}_t = (L_0, \dots, L_t)$, and $Y_T$ be the outcome at the final time point $T$. Let $\bar{d}_t$ denote a dynamic treatment rule. The target parameter is:
+Let $\bar{A}_t = (A_0, \dots, A_t)$, $\bar{L}_t = (L_0, \dots, L_t)$, and $Y_T$be the outcome at the final time point$T$. Let $\bar{d}_t$ denote a dynamic treatment rule. The target parameter is:
 $$
 \psi_T = \mathbb{E}\left[ Y_T^{\bar{d}} \right],
 $$
-where $Y_T^{\bar{d}}$ is the counterfactual outcome under the treatment regime $\bar{d}$.
+where $Y_T^{\bar{d}}$is the counterfactual outcome under the treatment regime$\bar{d}$.
 
 LTMLE involves the following steps:
 
 1. **Initial outcome model (Q-model)**:
-   Regress $Y_T$ on $\bar{A}_T$ and $\bar{L}_T$ to estimate $Q_T^0 = \mathbb{E}(Y_T \mid \bar{A}_T, \bar{L}_T)$. Then recursively, for each $t = T-1, \dots, 0$, estimate:
+   Regress $Y_T$on$\bar{A}_T$and$\bar{L}_T$to estimate$Q_T^0 = \mathbb{E}(Y_T \mid \bar{A}_T, \bar{L}_T)$. Then recursively, for each $t = T-1, \dots, 0$, estimate:
    $$
    Q_t^0 = \mathbb{E}(Q_{t+1}^1 \mid \bar{A}_t, \bar{L}_t),
    $$
    where $Q_{t+1}^1$ is the updated outcome from the targeting step.
 
 2. **Treatment and censoring models (g-models)**:
-   Estimate the treatment mechanism $g_t(A_t \mid \bar{A}_{t-1}, \bar{L}_t)$ and the censoring mechanism $c_t(C_t \mid \bar{A}_t, \bar{L}_t)$.
+   Estimate the treatment mechanism $g_t(A_t \mid \bar{A}_{t-1}, \bar{L}_t)$and the censoring mechanism$c_t(C_t \mid \bar{A}_t, \bar{L}_t)$.
 
 3. **Clever covariates**:
    Define the clever covariate:
@@ -344,7 +344,7 @@ LTMLE involves the following steps:
    $$
    \text{logit}(Q_t^1) = \text{logit}(Q_t^0) + \epsilon H_t,
    $$
-   where $\epsilon$ is estimated by fitting a logistic regression with $Q_t^0$ as the offset and $H_t$ as the covariate.
+   where $\epsilon$is estimated by fitting a logistic regression with$Q_t^0$as the offset and$H_t$ as the covariate.
 
 5. **Estimation of $\psi_T$**:
    The final estimate is obtained as:
@@ -357,7 +357,7 @@ LTMLE involves the following steps:
 
 **Manual Example (by hand)**
 
-Consider a setting with two time points ($t=0,1$) and a binary outcome $Y$. Let $A_0, A_1$ denote treatment at each time, and $L_0, L_1$ covariates. Suppose we fit logistic regression models for the Q-model and g-models, and calculate clever covariates as above. We update $Q_1^0$ using:
+Consider a setting with two time points ($t=0,1$) and a binary outcome $Y$. Let $A_0, A_1$denote treatment at each time, and$L_0, L_1$covariates. Suppose we fit logistic regression models for the Q-model and g-models, and calculate clever covariates as above. We update$Q_1^0$ using:
 $$
 \begin{aligned}
 \text{logit}(Q_1^1) &= \text{logit}(Q_1^0) + \epsilon_1 H_1, \\
@@ -365,7 +365,7 @@ $$
 \end{aligned}
 $$
 
-We then plug in the values $A_0 = d_0, A_1 = d_1$ and average the final predictions to obtain $\hat{\psi}_T$.
+We then plug in the values $A_0 = d_0, A_1 = d_1$and average the final predictions to obtain$\hat{\psi}_T$.
 
 ```r
 # Simulate simple data
@@ -444,7 +444,7 @@ In longitudinal studies, participants are followed over time to assess the effec
 
 Censoring is problematic because it introduces missing data in the outcome and may bias effect estimates if the reason for censoring is related to treatment or covariates. The standard assumption for valid inference in the presence of censoring is *independent censoring*--that is, the probability of being censored at any time depends only on observed covariates and treatment history, not on unmeasured factors or the potential outcomes themselves.
 
-Let $C_t$ be the indicator that a subject is censored at time $t$, and define the observed data structure as:
+Let $C_t$be the indicator that a subject is censored at time$t$, and define the observed data structure as:
 $$
 O = (L_0, A_0, C_0, L_1, A_1, C_1, \dots, L_T, A_T, C_T, Y).
 $$
@@ -500,7 +500,7 @@ Censoring and competing risks are both forms of missing data or information loss
 
 In time-to-event settings, the g-formula can be used to estimate counterfactual survival curves under static or dynamic treatment interventions. The goal is to evaluate the probability of survival over time under a hypothetical treatment strategy, adjusting for time-varying confounding and censoring.
 
-Let $T$ denote the event time and $C$ the censoring time. Define the observed time as $U = \min(T, C)$ and the event indicator $\Delta = I(T \leq C)$. Let $Y_t = I(U > t)$ be the survival status at time $t$, and let $A_t$ and $L_t$ denote time-varying treatment and confounders. The counterfactual outcome $Y_t^{\bar{a}}$ indicates survival at time $t$ under treatment regime $\bar{a} = (a_0, a_1, \dots, a_t)$.
+Let $T$denote the event time and$C$the censoring time. Define the observed time as$U = \min(T, C)$and the event indicator$\Delta = I(T \leq C)$. Let $Y_t = I(U > t)$be the survival status at time$t$, and let $A_t$and$L_t$denote time-varying treatment and confounders. The counterfactual outcome$Y_t^{\bar{a}}$indicates survival at time$t$under treatment regime$\bar{a} = (a_0, a_1, \dots, a_t)$.
 
 #### The Nonparametric g-formula for Survival
 
@@ -515,12 +515,12 @@ This is typically implemented via simulation: for each individual, generate a ps
 
 #### The Parametric g-formula for Survival
 
-The parametric g-formula expresses the counterfactual survival probability at time $t$ under treatment regime $\bar{a}$ as:
+The parametric g-formula expresses the counterfactual survival probability at time $t$under treatment regime$\bar{a}$ as:
 $$
 P(Y_t^{\bar{a}} = 1) = \int_{\bar{l}_t} \prod_{s=0}^{t} P(Y_s = 1 \mid Y_{s-1} = 1, A_{s} = a_{s}, L_s = l_s) f(L_s \mid \bar{L}_{s-1}, \bar{A}_{s}) d\bar{l}_t
 $$
 
-This formula recursively computes the survival probability at each time point, conditioning on not having failed previously. The term $P(Y_s = 1 \mid Y_{s-1} = 1, A_s, L_s)$ is the conditional survival probability given being at risk at time $s$, and $f(L_s \mid \cdot)$ represents the evolution of time-varying covariates.
+This formula recursively computes the survival probability at each time point, conditioning on not having failed previously. The term $P(Y_s = 1 \mid Y_{s-1} = 1, A_s, L_s)$is the conditional survival probability given being at risk at time$s$, and $f(L_s \mid \cdot)$ represents the evolution of time-varying covariates.
 
 In practice, this approach involves specifying parametric regression models for:
 - $P(Y_s = 1 \mid Y_{s-1} = 1, A_s, L_s)$: the outcome model (e.g., pooled logistic regression)
@@ -566,7 +566,7 @@ long_data <- data.frame(id = rep(1:n, each = K),
 model <- glm(Y ~ time + A + L, family = binomial(), data = long_data)
 ```
 
-To estimate the survival curve under a hypothetical intervention $A_t = 1$ for all $t$:
+To estimate the survival curve under a hypothetical intervention $A_t = 1$for all$t$:
 
 ```r
 pred_data <- long_data
@@ -623,7 +623,7 @@ The parameter of interest is often a marginal survival probability under a stati
 $$
 \Psi(P_0) = \mathbb{E}_{P_0}[S^a(t)] = P(T^a > t),
 $$
-where $T^a$ is the potential failure time under intervention $A = a$, and $S^a(t)$ is the corresponding survival curve. TMLE targets this quantity while accounting for censoring and confounding.
+where $T^a$is the potential failure time under intervention$A = a$, and $S^a(t)$ is the corresponding survival curve. TMLE targets this quantity while accounting for censoring and confounding.
 
 **Efficient Influence Curve**
 
@@ -638,12 +638,12 @@ where $H(t, A, W)$ is a clever covariate constructed using inverse probability w
 We now describe the procedure following Petersen et al. (2014) for static interventions:
 
 1. **Estimate the initial outcome model.** Fit a pooled logistic regression model for the event indicator at each time point $t$, conditional on $A$, $W$, and $t$.
-2. **Estimate the treatment and censoring mechanisms.** Estimate $g(A \mid W)$ and $P(C \geq t \mid A, W)$.
+2. **Estimate the treatment and censoring mechanisms.** Estimate $g(A \mid W)$and$P(C \geq t \mid A, W)$.
 3. **Construct clever covariates.** Define:
    $$
    H_i(t) = \frac{I(A_i = a) I(T_i \geq t)}{\hat{g}(A_i \mid W_i) \hat{P}(C_i \geq t \mid A_i, W_i)}
    $$
-4. **Target the outcome model.** Update the initial model by performing logistic regression with offset equal to the logit of the initial prediction and covariate $H_i(t)$ to estimate a fluctuation parameter $\epsilon$.
+4. **Target the outcome model.** Update the initial model by performing logistic regression with offset equal to the logit of the initial prediction and covariate $H_i(t)$to estimate a fluctuation parameter$\epsilon$.
 5. **Update survival estimates.** Use the updated predicted hazards to compute the targeted survival probability:
    $$
    \hat{S}^a(t) = \prod_{s=1}^t \left(1 - \hat{P}(T = s \mid A = a, W) \right)

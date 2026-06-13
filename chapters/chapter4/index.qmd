@@ -8,11 +8,11 @@ The *propensity score*, introduced by [@Rosenbaum1983], is defined as the probab
 $$
 e(W) = P(A = 1 \mid W),
 $$
-where $A$ is the binary treatment indicator and $W$ is a vector of observed covariates. The key insight is that, under certain assumptions, conditioning on the propensity score is sufficient to control for confounding. Specifically, if treatment assignment is strongly ignorable given the covariates $W$, then it is also ignorable given the scalar quantity $e(W)$. That is:
+where $A$is the binary treatment indicator and$W$is a vector of observed covariates. The key insight is that, under certain assumptions, conditioning on the propensity score is sufficient to control for confounding. Specifically, if treatment assignment is strongly ignorable given the covariates$W$, then it is also ignorable given the scalar quantity $e(W)$. That is:
 $$
 Y^0, Y^1 \perp A \mid e(W),
 $$
-where $Y^0$ and $Y^1$ are the potential outcomes under control and treatment, respectively.
+where $Y^0$and$Y^1$ are the potential outcomes under control and treatment, respectively.
 
 This property makes the propensity score a powerful tool: it allows us to reduce a potentially high-dimensional confounding problem into a one-dimensional balancing problem. By adjusting for the propensity score---rather than all covariates directly---we can remove confounding bias due to observed covariates, provided certain conditions are met.
 
@@ -37,7 +37,7 @@ The usefulness of the propensity score in causal inference stems from a set of k
 
 ### The Balancing Property
 
-The fundamental property of the propensity score is its ability to balance covariates between treated and untreated individuals. Formally, for individuals with the same value of the propensity score, the distribution of observed covariates $W$ is independent of treatment assignment $A$. That is,
+The fundamental property of the propensity score is its ability to balance covariates between treated and untreated individuals. Formally, for individuals with the same value of the propensity score, the distribution of observed covariates $W$is independent of treatment assignment$A$. That is,
 
 $$
 A \perp W \mid e(W),
@@ -91,7 +91,7 @@ In practice, this conditional probability is not known and must be estimated fro
 
 ### Logistic Regression
 
-The most common method for estimating the propensity score is *logistic regression*. In this approach, the treatment assignment $A \in \{0,1\}$ is modeled as a function of the covariates $W$:
+The most common method for estimating the propensity score is *logistic regression*. In this approach, the treatment assignment $A \in \{0,1\}$is modeled as a function of the covariates$W$:
 
 $$
 \text{logit}(P(A = 1 \mid W)) = \alpha_0 + \alpha_1 W_1 + \alpha_2 W_2 + \cdots + \alpha_k W_k.
@@ -202,7 +202,7 @@ $$
 \widehat{ATT} = \frac{1}{n_t} \sum_{i \in \text{treated}} \left(Y_i - Y_{j(i)}\right),
 $$
 
-where $Y_i$ is the outcome for treated unit $i$ and $Y_{j(i)}$ is the outcome of the matched control.
+where $Y_i$is the outcome for treated unit$i$and$Y_{j(i)}$ is the outcome of the matched control.
 
 **R Example (Estimating ATT):**
 ```r
@@ -239,7 +239,7 @@ Once strata are formed, treatment effects are estimated within each stratum sepa
 $$
 \widehat{ATE}_s = \bar{Y}^1_s - \bar{Y}^0_s,
 $$
-where $\bar{Y}^1_s$ and $\bar{Y}^0_s$ are the average outcomes among treated and control units within stratum $s$, respectively.
+where $\bar{Y}^1_s$and$\bar{Y}^0_s$are the average outcomes among treated and control units within stratum$s$, respectively.
 
 ```r
 by(data, data$stratum, function(df) {
@@ -254,7 +254,7 @@ The overall average treatment effect is computed by aggregating the stratum-spec
 $$
 \widehat{ATE} = \sum_{s=1}^S \widehat{ATE}_s \times \frac{n_s}{n},
 $$
-where $n_s$ is the number of individuals in stratum $s$ and $n$ is the total sample size.
+where $n_s$is the number of individuals in stratum$s$and$n$ is the total sample size.
 
 ```r
 library(dplyr)
@@ -322,11 +322,11 @@ logit_model <- glm(Y ~ A + pscore, data = data, family = binomial)
 summary(logit_model)
 ```
 
-This method can be sensitive to misspecification of the outcome model. For example, if $e(W)$ has a non-linear relationship with $Y$, then modeling it linearly may yield biased estimates.
+This method can be sensitive to misspecification of the outcome model. For example, if $e(W)$has a non-linear relationship with$Y$, then modeling it linearly may yield biased estimates.
 
 #### Comparison with Outcome Modeling
 
-Covariate adjustment using the propensity score differs from traditional outcome modeling (also known as regression adjustment) in that it replaces the vector of covariates $W$ with a scalar summary, $e(W)$. In standard outcome regression, the model is:
+Covariate adjustment using the propensity score differs from traditional outcome modeling (also known as regression adjustment) in that it replaces the vector of covariates $W$with a scalar summary,$e(W)$. In standard outcome regression, the model is:
 $$
 Y_i = \beta_0 + \beta_1 A_i + \boldsymbol{\beta}_2^T W_i + \varepsilon_i.
 $$
@@ -348,7 +348,7 @@ For improved performance, this method is often used in conjunction with doubly r
 
 Inverse Probability of Treatment Weighting (IPTW) is a propensity score-based method that reweights the sample to create a pseudo-population in which treatment assignment is independent of baseline covariates. This allows for the estimation of causal effects by comparing outcomes between weighted treatment groups.
 
-In observational studies, some individuals will be more likely than others to be treated (A=1) due to their characteristics. Suppose some individuals who were treated were unlikely to be treated based on a specific set of features encapsulated in a particular vector of confounders (**W**). To balance the differences in characteristics between treatment groups, we re-weight the outcome variable of these individuals by the inverse of their probability of the treatment (A) actually received (i.e., propensity score). Originally, the weights were motivated from the classical Horvitz and Thompson survey estimator used to re-weight the outcome variable by the inverse probability that it is observed, thus accounting for the sampling process.[@Horvitz1952] The result of this weighting procedure is that, among the treated we up-weight those who had a low probability of being treated, and among the untreated we up-weight those who were unlikely to be untreated; that is, the individuals underrepresented in their treatment group. As a consequence, the weighted set of data is unchanged apart from A and **W** are now conditionally independent. Therefore, a comparison of $Y_{w}(1)$ to $Y_{w}(0)$ gives a marginal causal effect under the three identification assumptions (Appendix 1) whilst also assuming the propensity score model is correctly specified. The inverse probability of treatment weighting (IPTW), and the g-formula when targeting the same estimand (i,e., the ATE), are equivalent in the nonparametric setting.[@Robins1986; @Rosenbaum1983] We provide a proof of the equivalence between IPTW and G-computation procedures using the law of total expectation.
+In observational studies, some individuals will be more likely than others to be treated (A=1) due to their characteristics. Suppose some individuals who were treated were unlikely to be treated based on a specific set of features encapsulated in a particular vector of confounders (**W**). To balance the differences in characteristics between treatment groups, we re-weight the outcome variable of these individuals by the inverse of their probability of the treatment (A) actually received (i.e., propensity score). Originally, the weights were motivated from the classical Horvitz and Thompson survey estimator used to re-weight the outcome variable by the inverse probability that it is observed, thus accounting for the sampling process.[@Horvitz1952] The result of this weighting procedure is that, among the treated we up-weight those who had a low probability of being treated, and among the untreated we up-weight those who were unlikely to be untreated; that is, the individuals underrepresented in their treatment group. As a consequence, the weighted set of data is unchanged apart from A and **W** are now conditionally independent. Therefore, a comparison of $Y_{w}(1)$to$Y_{w}(0)$ gives a marginal causal effect under the three identification assumptions (Appendix 1) whilst also assuming the propensity score model is correctly specified. The inverse probability of treatment weighting (IPTW), and the g-formula when targeting the same estimand (i,e., the ATE), are equivalent in the nonparametric setting.[@Robins1986; @Rosenbaum1983] We provide a proof of the equivalence between IPTW and G-computation procedures using the law of total expectation.
 
 $$
 \begin{aligned}
@@ -376,7 +376,9 @@ Therefore, the estimator is given by
 
 $$
 \text{ATE}\,=\,\frac{1}{n}\sum^{n}_{i=1}\left(\frac{A_{i}}{P(A_{i}=1\mid\boldsymbol{W}_{i})}\,-\,\frac{1\,-\,A_{i}}{(1\,-\,P(A_{i}=1\mid\boldsymbol{W}_{i}))}\right)Y_{i}.
-$$ {#eq-iptw}
+$$
+
+ {#eq-iptw}
 
 #### Defining Weights for ATE, ATT, and ATU
 
@@ -560,7 +562,7 @@ As an example, suppose we have information on a set of covariates given in @tbl-
 
 Reference groups: race - white, cancer - none
 
-There is no definitive value at which the treatment is considered unbalanced; however, as a guideline, a variance ratio less than 0.5 indicates that the data is not balanced and the potential for the positivity violation must be explored (i.e., when $P(A=a\mid C=c)$ is near to zero or one). An additional strategy is to check the distribution of the weights: if there are very large weights this indicates the violation of the positivity assumption but, also, it can be due to parametric modelling misspecification. Again there is no clear consensus but, when there are very large weights, researchers often set the weights to a less extreme value. [@Sturmer2010TreatmentStudy] does this by trimming or removing the data at the extremes of the distribution of the weights (e.g., the $5^{th}$ and $95^{th}$ percentiles). Trimming the weights reduces variance (i.e., omitting the largest weights and making the positivity assumption more plausible), but at the expense of introducing bias [@Cole2008]. However, another alternative without dropping observations is truncation, whereby all the values of the weights, larger than a user-specified maximum value or percentile (e.g., $1^{st}$ and $99^{th}$ or $5{th}$ and $95^{th}$), are replaced by that threshold value [@Cole2008; @Xiao2013ComparisonModels]. In extreme cases, when the weights are extremely large, changing the estimand could be another solution (e.g., estimating the ATE in a subset of the sample, among only those treated for example, representing the average treatment effect among the treated -ATT-).
+There is no definitive value at which the treatment is considered unbalanced; however, as a guideline, a variance ratio less than 0.5 indicates that the data is not balanced and the potential for the positivity violation must be explored (i.e., when $P(A=a\mid C=c)$is near to zero or one). An additional strategy is to check the distribution of the weights: if there are very large weights this indicates the violation of the positivity assumption but, also, it can be due to parametric modelling misspecification. Again there is no clear consensus but, when there are very large weights, researchers often set the weights to a less extreme value. [@Sturmer2010TreatmentStudy] does this by trimming or removing the data at the extremes of the distribution of the weights (e.g., the$5^{th}$and$95^{th}$percentiles). Trimming the weights reduces variance (i.e., omitting the largest weights and making the positivity assumption more plausible), but at the expense of introducing bias [@Cole2008]. However, another alternative without dropping observations is truncation, whereby all the values of the weights, larger than a user-specified maximum value or percentile (e.g.,$1^{st}$and$99^{th}$or$5{th}$and$95^{th}$), are replaced by that threshold value [@Cole2008; @Xiao2013ComparisonModels]. In extreme cases, when the weights are extremely large, changing the estimand could be another solution (e.g., estimating the ATE in a subset of the sample, among only those treated for example, representing the average treatment effect among the treated -ATT-).
 
 ### Sensitivity to Propensity Score Model Choice
 

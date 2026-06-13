@@ -10,9 +10,11 @@ The g-formula gained attention in the 1990s as researchers applied it to public 
 
 Mathematically, the g-formula estimates the counterfactual mean outcome under a given intervention by standardizing observed data. It is expressed as:
 
-$$ E[Y^a] = \sum_{w} E[Y \mid A = a, W = w] P(W = w) $$
+$$
 
-In this formula, $Y^{a}$ represents the potential outcome under the intervention $A = a$, $\textbf{W}$ denotes confounders (which may be time-dependent), and $A$ refers to the treatment or exposure of interest. By iteratively predicting the outcome based on observed covariates, the g-formula helps to adjust for confounding and provides an unbiased estimate of the causal effect under the assumption of no unmeasured confounding, positivity, and consistency.
+E[Y^a] = \sum_{w} E[Y \mid A = a, W = w] P(W = w)$$
+
+In this formula, $Y^{a}$represents the potential outcome under the intervention$A = a$, $\textbf{W}$denotes confounders (which may be time-dependent), and$A$ refers to the treatment or exposure of interest. By iteratively predicting the outcome based on observed covariates, the g-formula helps to adjust for confounding and provides an unbiased estimate of the causal effect under the assumption of no unmeasured confounding, positivity, and consistency.
 
 The g-formula has found applications across multiple disciplines, including epidemiology, public health, and health policy. Researchers have used it to evaluate the long-term effects of healthcare interventions, assess drug effectiveness, and inform clinical decision-making. Despite its wide applicability, the g-formula has some limitations. It requires correct model specification for all variables involved in the causal pathway, making it sensitive to model misspecification. Additionally, the method can be computationally intensive, particularly in large datasets, and relies on the assumption of no unmeasured confounding, which may not always hold in observational studies.
 
@@ -42,11 +44,15 @@ The assumptions from above can be encoded in a directed acyclic graph (DAG) (Fig
 
 A clinician may be interested in the following question: how different would the risk of death have been had everyone received dual therapy compared to if everyone had experienced monotherapy? The causal marginal odds ratio (MOR) answers this question. Statisticians call this a "target quantity". Each individual has a pair of potential outcomes: the outcome they would have received had they been exposed to dual treatment (A=1), denoted Y(1), and the outcome had they been unexposed, Y(0). The MOR is defined as:
 
-$$ MOR = \frac{ \frac{P(Y(1)=1)}{(1-P(Y(1)=1))} } { \frac{P(Y(0)=1)}{(1-P(Y(0)=1))} } $$
+$$
+
+MOR = \frac{ \frac{P(Y(1)=1)}{(1-P(Y(1)=1))} } { \frac{P(Y(0)=1)}{(1-P(Y(0)=1))} }$$
 
 A common approach would be to use logistic regression to model the odds of mortality given the intervention, and adjust for the confounders (W) which are age (W1), socioeconomic status (W2), clinical stage (W3), and comorbidities (W4). Note that using a logistic regression, it estimates the conditional odds ratio (COR), which is:
 
-$$ COR = \frac{ \frac{P(Y=1|A=1,W)}{(1-P(Y=1|A=1,W))} } { \frac{P(Y=1|A=0,W)}{(1-P(Y=1|A=0,W))} } $$
+$$
+
+COR = \frac{ \frac{P(Y=1|A=1,W)}{(1-P(Y=1|A=1,W))} } { \frac{P(Y=1|A=0,W)}{(1-P(Y=1|A=0,W))} }$$
 
 MOR and COR are typically not identical. First, if there is effect modification, e.g. if the effect of dual therapy is different for patients with no comorbidities compared to those having hypertension, then logistic regression (possibly including an interaction of treatment with one of the confounders) will not provide a marginal effect estimate, but only the conditional effect of the respective comorbidity (hypertension). To be more precise: we obtain an odds ratio that is valid for a given group of people, say those with hypertension, but it will not give us a marginal estimate. However, we are interested in a marginal estimate because we want to know if the dual therapy works in general. Of course, one may be specifically interested in patients with hypertension, but then the OR for this group is again conditional on the other variables, for example for elderly people, from a low socioeconomic level, and advanced stage.
 
@@ -60,7 +66,9 @@ Thus, in summary, as pointed out by Spiegelman et al [1] it can a be an option t
 
 An alternative to using multivariable regression adjustment is the G-Formula [5] (a generalization of standardization with respect to the confounder distribution). In 1986, a seminal paper [5] demonstrated that under assumptions (conditional exchangeability, positivity, consistency, and non-interference, see Appendix below), a consistent estimate of the MOR can be obtained using the G-formula. G-computation,[6] based on the estimation of the components in the G-formula, allows for a treatment effect that may vary across the levels of the confounders. Furthermore, under the assumption that the DAG above (Figure 1) is correct and the other assumptions, we can estimate the MOR using the G-formula as follows:
 
-$$ MOR (G-formula) = \frac{ \frac{\Sigma_{w} P(Y=1|A=1,W=w)P(W=w)}{(1-\Sigma_{w} P(Y=1|A=1,W=w)P(W=w))}
+$$
+
+ MOR (G-formula) = \frac{ \frac{\Sigma_{w} P(Y=1|A=1,W=w)P(W=w)}{(1-\Sigma_{w} P(Y=1|A=1,W=w)P(W=w))}
 }{ \frac{\Sigma_{w} P(Y=1|A=0,W=w)P(W=w)}{(1 - \Sigma_{w} P(Y=1|A=0,W=w)P(W=w))}
 } $$
 
@@ -90,28 +98,40 @@ The non-parametric g-formula, also known as g-computation, is a method for estim
 
 ### Non-parametric g-formula for one confounder
 
-For a binary treatment $A$ and a binary outcome $Y$, given a confounder $W$, the non-parametric g-formula for the average treatment effect (ATE) is expressed as:
+For a binary treatment $A$and a binary outcome$Y$, given a confounder $W$, the non-parametric g-formula for the average treatment effect (ATE) is expressed as:
 
-$$ ATE = \sum_{w} \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(W = w). $$
+$$
+
+ATE = \sum_{w} \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(W = w).$$
 
 where
 
-$$ E(Y = 1 \mid A = a, \textbf{W} = w) = \frac{P(\textbf{W} = w, A = a, Y = 1)}{\sum_{y} P(\textbf{W} = w, A = a, Y = y)} $$
+$$
+
+E(Y = 1 \mid A = a, \textbf{W} = w) = \frac{P(\textbf{W} = w, A = a, Y = 1)}{\sum_{y} P(\textbf{W} = w, A = a, Y = y)}$$
 
 is the conditional probability of the outcome $Y = 1$, given the treatment $A = a$, and the set of confounders \textbf{W} = w.
 
 More generally, for a vector of confounders $W$, this can be written as:
 
-$$ E[Y^a] = \sum_{w} E[Y \mid A = a, W = w] P(W = w), $$
+$$
+
+E[Y^a] = \sum_{w} E[Y \mid A = a, W = w] P(W = w),$$
 
 and the ATE is defined as:
 
-$$ ATE = E[Y^1] - E[Y^0]. $$
+$$
+
+ATE = E[Y^1] - E[Y^0].$$
 
 The g-formula can also be used to estimate the average treatment effect among the treated (ATT) and among the untreated (ATU) by standardizing over different distributions of $W$:
 
-$$ ATT = \sum_{w} \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(W = w \mid A = 1), $$
-$$ ATU = \sum_{w} \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(W = w \mid A = 0). $$
+$$
+
+ATT = \sum_{w} \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(W = w \mid A = 1),$$
+$$
+
+ATU = \sum_{w} \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(W = w \mid A = 0).$$
 
 These quantities correspond to different policy questions. While the ATE estimates the effect of treatment if everyone were treated versus if no one were treated, the ATT and ATU estimate effects in subgroups based on actual treatment assignment.
 
@@ -198,19 +218,25 @@ This approach provides a practical method for estimating uncertainty when using 
 
 In practice, the conditional expectations required by the non-parametric g-formula can be estimated using regression models. When the number of confounder strata is small and all confounders are categorical, a fully saturated regression model can be used to obtain a non-parametric estimate of the conditional mean of the outcome given treatment and confounders.
 
-A fully saturated model includes all main effects and interactions between the treatment variable and the confounders. For example, when both the treatment variable $A$ and the confounder $W$ are binary, a saturated logistic regression model is given by:
+A fully saturated model includes all main effects and interactions between the treatment variable and the confounders. For example, when both the treatment variable $A$and the confounder$W$ are binary, a saturated logistic regression model is given by:
 
-$$ \text{logit}(P(Y = 1 \mid A, W)) = \beta_0 + \beta_1 A + \beta_2 W + \beta_3 A \cdot W. $$
+$$
+
+\text{logit}(P(Y = 1 \mid A, W)) = \beta_0 + \beta_1 A + \beta_2 W + \beta_3 A \cdot W.$$
 
 This model allows for effect modification by $W$ and does not impose restrictions on the homogeneity of treatment effects across strata.
 
-After fitting the saturated model, the predicted probabilities $\widehat{P}(Y = 1 \mid A = a, W = w)$ for each level of $W$ can be used to estimate $E[Y^a]$ through standardization. The non-parametric g-formula using the fitted regression model is:
+After fitting the saturated model, the predicted probabilities $\widehat{P}(Y = 1 \mid A = a, W = w)$for each level of$W$can be used to estimate$E[Y^a]$ through standardization. The non-parametric g-formula using the fitted regression model is:
 
-$$ \widehat{E}[Y^a] = \sum_w \widehat{P}(Y = 1 \mid A = a, W = w) \cdot \widehat{P}(W = w), $$
+$$
+
+\widehat{E}[Y^a] = \sum_w \widehat{P}(Y = 1 \mid A = a, W = w) \cdot \widehat{P}(W = w),$$
 
 and the average treatment effect (ATE) is then:
 
-$$ \widehat{ATE} = \widehat{E}[Y^1] - \widehat{E}[Y^0]. $$
+$$
+
+\widehat{ATE} = \widehat{E}[Y^1] - \widehat{E}[Y^0].$$
 
 This approach is fully non-parametric in the sense that it does not rely on parametric assumptions beyond estimating a separate mean for each treatment-confounder stratum. The non-parametric g-formula can also incorporate complex parameters, such as interactions. When there is only one confounder, including an interaction term between the confounder and the exposure creates a fully-saturated model.
 
@@ -300,37 +326,47 @@ The Delta method is a statistical approach to derive the SE of an asymptotically
 
 While the bootstrap is a popular and flexible approach for estimating uncertainty in causal inference, it can be computationally intensive, especially when the estimator is complex or sample sizes are large. As an alternative, the *functional delta method* provides an analytic approximation to the standard error and confidence interval of an estimator. It is particularly useful when the quantity of interest can be expressed as a smooth function of sample statistics, such as sample means or proportions. The delta method avoids resampling by using a Taylor series approximation to quantify how uncertainty in the inputs propagates to the final estimate.
 
-The functional delta method is an extension of the classical delta method, which provides a way to approximate the variance of a function of an estimator. Suppose we have an estimator $\hat{\theta}$ that converges in distribution to a normal distribution, and we are interested in a function $g(\hat{\theta})$. If $g(\cdot)$ is differentiable at $\theta$, then the delta method states:
+The functional delta method is an extension of the classical delta method, which provides a way to approximate the variance of a function of an estimator. Suppose we have an estimator $\hat{\theta}$that converges in distribution to a normal distribution, and we are interested in a function$g(\hat{\theta})$. If $g(\cdot)$is differentiable at$\theta$, then the delta method states:
 
-$$ \sqrt{n} \left( g(\hat{\theta}) - g(\theta) \right) \overset{d}{\longrightarrow} \mathcal{N}\left(0, \left[ g'(\theta) \right]^2 \cdot \sigma^2 \right), $$
+$$
 
-where $g'(\theta)$ is the derivative of $g$ at $\theta$, and $\sigma^2$ is the asymptotic variance of $\hat{\theta}$.
+\sqrt{n} \left( g(\hat{\theta}) - g(\theta) \right) \overset{d}{\longrightarrow} \mathcal{N}\left(0, \left[ g'(\theta) \right]^2 \cdot \sigma^2 \right),$$
+
+where $g'(\theta)$is the derivative of$g$at$\theta$, and $\sigma^2$is the asymptotic variance of$\hat{\theta}$.
 
 In the case of the g-formula, we are typically interested in the *average treatment effect* (ATE), defined as:
 
-$$ ATE = \sum_w \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(W = w). $$
+$$
+
+ATE = \sum_w \left[ E(Y \mid A = 1, W = w) - E(Y \mid A = 0, W = w) \right] P(W = w).$$
 
 This is a linear combination of conditional expectations $E(Y \mid A = a, W = w)$, each of which can be estimated using sample means and weighted by the marginal distribution of $W$. Since the ATE is a linear function of these sample means, we can apply the delta method to approximate the variance of the estimated ATE.
 
 Let us denote:
-- $\hat{\mu}_{a,w} = \hat{E}(Y \mid A = a, W = w)$: the estimated mean outcome for treatment group $a$ and stratum $w$
+- $\hat{\mu}_{a,w} = \hat{E}(Y \mid A = a, W = w)$: the estimated mean outcome for treatment group $a$and stratum$w$
 - $\hat{p}_w = \hat{P}(W = w)$: the proportion of the sample in stratum $w$
 
 The estimated ATE is:
 
-$$ \widehat{ATE} = \sum_w \left( \hat{\mu}_{1,w} - \hat{\mu}_{0,w} \right) \hat{p}_w. $$
+$$
+
+\widehat{ATE} = \sum_w \left( \hat{\mu}_{1,w} - \hat{\mu}_{0,w} \right) \hat{p}_w.$$
 
 Since this is a sum of estimated means times weights, its variance can be approximated using the delta method:
 
-$$ \text{Var}(\widehat{ATE}) \approx \sum_w \hat{p}_w^2 \left[ \text{Var}(\hat{\mu}_{1,w}) + \text{Var}(\hat{\mu}_{0,w}) \right]. $$
+$$
+
+\text{Var}(\widehat{ATE}) \approx \sum_w \hat{p}_w^2 \left[ \text{Var}(\hat{\mu}_{1,w}) + \text{Var}(\hat{\mu}_{0,w}) \right].$$
 
 Each $\hat{\mu}_{a,w}$ is a sample mean, and its variance can be estimated as:
 
-$$ \text{Var}(\hat{\mu}_{a,w}) \approx \frac{\hat{\sigma}^2_{a,w}}{n_{a,w}}, $$
+$$
 
-where $\hat{\sigma}^2_{a,w}$ is the sample variance of $Y$ among individuals with $A = a$ and $W = w$, and $n_{a,w}$ is the number of such individuals in the sample.
+\text{Var}(\hat{\mu}_{a,w}) \approx \frac{\hat{\sigma}^2_{a,w}}{n_{a,w}},$$
 
-This approximation assumes that the sample means $\hat{\mu}_{1,w}$ and $\hat{\mu}_{0,w}$ are approximately independent across $w$, and that the weights $\hat{p}_w$ are treated as fixed (i.e., not contributing to the variance).
+where $\hat{\sigma}^2_{a,w}$is the sample variance of$Y$among individuals with$A = a$and$W = w$, and $n_{a,w}$ is the number of such individuals in the sample.
+
+This approximation assumes that the sample means $\hat{\mu}_{1,w}$and$\hat{\mu}_{0,w}$are approximately independent across$w$, and that the weights $\hat{p}_w$ are treated as fixed (i.e., not contributing to the variance).
 
 #### R Implementation
 
@@ -385,13 +421,19 @@ By imposing a functional form, the parametric g-formula can borrow strength acro
 Suppose we are interested in estimating the average treatment effect (ATE) of a binary treatment \(A\) on a binary outcome \(Y\), adjusting for a single binary confounder \(W\). Using the parametric g-formula, we proceed in two steps:
 
 1. **Model the outcome**: Fit a regression model, such as logistic regression,
-    $$ \text{logit}(P(Y = 1 \mid A, W)) = \beta_0 + \beta_1 A + \beta_2 W + \beta_3 A \cdot W. $$
+    $$
+
+\text{logit}(P(Y = 1 \mid A, W)) = \beta_0 + \beta_1 A + \beta_2 W + \beta_3 A \cdot W.$$
     This model allows for an interaction between treatment and confounder to capture potential effect modification.
 
-2. **Standardize over the population**: Predict potential outcomes under $A = 1$ and $A = 0$ for each individual in the dataset, keeping $W$ fixed at its observed value. Then, compute:
-    $$ \widehat{E}[Y^1] = \frac{1}{n} \sum_{i=1}^n \hat{E}[Y_i \mid A = 1, W_i], \quad \widehat{E}[Y^0] = \frac{1}{n} \sum_{i=1}^n \hat{E}[Y_i \mid A = 0, W_i]. $$
+2. **Standardize over the population**: Predict potential outcomes under $A = 1$and$A = 0$for each individual in the dataset, keeping$W$ fixed at its observed value. Then, compute:
+    $$
+
+\widehat{E}[Y^1] = \frac{1}{n} \sum_{i=1}^n \hat{E}[Y_i \mid A = 1, W_i], \quad \widehat{E}[Y^0] = \frac{1}{n} \sum_{i=1}^n \hat{E}[Y_i \mid A = 0, W_i].$$
     The average treatment effect (ATE) is given by:
-    $$ \widehat{ATE} = \widehat{E}[Y^1] - \widehat{E}[Y^0]. $$
+    $$
+
+\widehat{ATE} = \widehat{E}[Y^1] - \widehat{E}[Y^0].$$
 
 This procedure estimates what would happen if, counter to fact, everyone in the sample had received treatment (\(A = 1\)), and separately, what would have happened if everyone had received control (\(A = 0\)). The difference in these averages provides an estimate of the causal effect.
 
@@ -456,22 +498,26 @@ Bootstrap confidence intervals allow for inference that reflects the entire esti
 
 When more than one confounder is present, the parametric g-formula remains applicable by fitting a model that includes the treatment, all confounders, and optionally interaction terms. This generalization is essential in real-world applications, where multiple covariates are needed to control for confounding.
 
-The process involves fitting a model for the outcome as a function of treatment and confounders, then using this model to predict potential outcomes under both treatment and control for each individual in the sample. These predictions are then averaged to estimate $E[Y^1]$ and $E[Y^0]$, and the difference yields the average treatment effect (ATE).
+The process involves fitting a model for the outcome as a function of treatment and confounders, then using this model to predict potential outcomes under both treatment and control for each individual in the sample. These predictions are then averaged to estimate $E[Y^1]$and$E[Y^0]$, and the difference yields the average treatment effect (ATE).
 
-Let $W = (W_1, W_2, \ldots, W_k)$ be a set of $k$ confounders. A typical logistic regression model for a binary outcome might be written as:
+Let $W = (W_1, W_2, \ldots, W_k)$be a set of$k$ confounders. A typical logistic regression model for a binary outcome might be written as:
 
-$$ \text{logit}(P(Y = 1 \mid A, W)) = \beta_0 + \beta_1 A + \sum_{j=1}^k \beta_{j+1} W_j + \sum_{j=1}^k \gamma_j A \cdot W_j. $$
+$$
+
+\text{logit}(P(Y = 1 \mid A, W)) = \beta_0 + \beta_1 A + \sum_{j=1}^k \beta_{j+1} W_j + \sum_{j=1}^k \gamma_j A \cdot W_j.$$
 
 In this model:
 - $\beta_0$ is the intercept, representing the baseline log-odds of the outcome when all predictors are zero.
-- $\beta_1$ is the main effect of treatment $A$, adjusted for confounders.
-- $\beta_{j+1}$ represents the main effect of each confounder $W_j$.
-- $\gamma_j$ captures the interaction between treatment and confounder $W_j$, allowing the treatment effect to vary across levels of the confounder (i.e., effect modification).
+- $\beta_1$is the main effect of treatment$A$, adjusted for confounders.
+- $\beta_{j+1}$represents the main effect of each confounder$W_j$.
+- $\gamma_j$captures the interaction between treatment and confounder$W_j$, allowing the treatment effect to vary across levels of the confounder (i.e., effect modification).
 
 By including both main effects and interaction terms, the model can flexibly account for how treatment effects may differ across confounder strata.
 
 As before, the potential outcomes are predicted under both treatment levels and averaged across the population:
-$$ \widehat{E}[Y^a] = \frac{1}{n} \sum_{i=1}^n \hat{E}[Y_i \mid A = a, W_i], \quad \widehat{ATE} = \widehat{E}[Y^1] - \widehat{E}[Y^0]. $$
+$$
+
+\widehat{E}[Y^a] = \frac{1}{n} \sum_{i=1}^n \hat{E}[Y_i \mid A = a, W_i], \quad \widehat{ATE} = \widehat{E}[Y^1] - \widehat{E}[Y^0].$$
 
 #### R Implementation (Multiple Confounders)
 
@@ -547,11 +593,11 @@ The bootstrap allows inference that reflects the full complexity of the g-comput
 
 Because the validity of the parametric g-formula relies on the correct specification of the outcome model $E[Y \mid A, W]$, it is essential to assess the adequacy of the model. Several strategies can be used to evaluate model fit and robustness:
 
-1. **Assess model fit:** Use standard regression diagnostics such as the Hosmer-Lemeshow test, plots of observed vs predicted values, and residual analyses. Check calibration across strata of $A$ and $W$.
+1. **Assess model fit:** Use standard regression diagnostics such as the Hosmer-Lemeshow test, plots of observed vs predicted values, and residual analyses. Check calibration across strata of $A$and$W$.
 
 2. **Check for non-linearity and interactions:** For continuous covariates, consider using splines or polynomial terms. For categorical covariates, assess whether interactions with $A$ are needed.
 
-3. **Evaluate effect modification:** Test whether the effect of $A$ varies across levels of $W$. Failing to include necessary interaction terms can bias the ATE.
+3. **Evaluate effect modification:** Test whether the effect of $A$varies across levels of$W$. Failing to include necessary interaction terms can bias the ATE.
 
 4. **Compare with non-parametric estimates:** If feasible, compare the parametric g-formula estimate with the non-parametric version. Discrepancies may indicate model misspecification.
 
