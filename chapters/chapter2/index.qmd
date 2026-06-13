@@ -66,6 +66,8 @@ Data consistent with the directed acyclic graph (DAG) depicted in @fig-DAG2 was 
 
 **Box @lst-datasimple**: Generate data consistent with @fig-DAG2 (panel A)
 
+**Box 2.1 (R):** Generate data consistent with @fig-DAG2 (panel A)
+
 ```r
 library(visreg) # load package to visualize regression output
 library(ggplot2)# load package to visualize regression output
@@ -91,6 +93,41 @@ patchwork + plot_annotation(
     subtitle = 'A: lm (Y ~ A); B: lm (Y ~ A + W)',
     caption = 'Disclaimer: In-house'
 )
+```
+
+**Box 2.1 (Stata):** Stata code for data generation and confounding adjustment
+
+```stata
+* Stata code: Generate data consistent with DAG panel A
+clear all
+set seed 777
+set obs 1000
+
+* Generate confounder, exposure, and outcome
+generate W = rnormal()
+generate A = 0.5 * W + rnormal()
+generate Y = 0.3 * A + 0.4 * W + rnormal()
+
+* Crude model (unadjusted for confounder)
+regress Y A
+
+* Adjusted model (controlling for confounder W)
+regress Y A W
+
+* Visualize using marginal predictions
+quietly regress Y A
+margins, at(A = (-3(0.5)3))
+marginsplot, name(crude, replace) title("Crude: Y ~ A") ///
+    ytitle("Linear prediction") xtitle("A")
+
+quietly regress Y A W
+margins, at(A = (-3(0.5)3))
+marginsplot, name(adjusted, replace) title("Adjusted: Y ~ A + W") ///
+    ytitle("Linear prediction") xtitle("A")
+
+* Combine graphs
+graph combine crude adjusted, name(combined, replace) ///
+    title("Regression adjustment: Confounding bias")
 ```
 
 The first regression analysis, without conditioning on W, illustrates this bias. The estimated coefficient for $A$(0.472) exhibits an upward bias compared to the true causal effect (0.3) specified in the simulation. In contrast, the second regression adds$W$ as a covariate, effectively closing the open back-door path. This approach yields a more accurate estimate of the causal effect (0.289), closer to the true value. The remaining residual difference of 0.011 can be attributed to sampling variability.
@@ -119,6 +156,8 @@ Building upon the simulated scenario depicted in @fig-DAG2 (panel B), we replica
 
 Box @lst-datacomplex: To generate data consistent with @fig-DAG2 (panel B)
 
+**Box 2.2 (R):** Generate data consistent with @fig-DAG2 (panel B)
+
 ```r
 N <- 1000 # sample size
 set.seed (777)
@@ -142,6 +181,41 @@ patchwork + plot_annotation(
     title = 'Regression adjustment: Collider bias',
     subtitle = 'A: lm (Y ~ A + W); B: lm (Y ~ A + C)',
     caption = 'Disclaimer: In-house')
+```
+
+**Box 2.2 (Stata):** Stata code for data generation and collider bias illustration
+
+```stata
+* Stata code: Generate data consistent with DAG panel B (collider)
+clear all
+set seed 777
+set obs 1000
+
+generate W = rnormal()
+generate A = 0.5 * W + rnormal()
+generate Y = 0.3 * A + 0.4 * W + rnormal()
+generate C = 1 * A + 1 * Y + rnormal()   /* C is a collider */
+
+* Model adjusted for confounder W (correct estimate)
+regress Y A W
+
+* Model adjusted for collider C (biased estimate)
+regress Y A C
+
+* Visualize adjusted predictions
+quietly regress Y A W
+margins, at(A = (-3(0.5)3))
+marginsplot, name(g1, replace) title("Adjusted for W: Y ~ A + W") ///
+    ytitle("Linear prediction") xtitle("A") ylabel(-4(2)4)
+
+quietly regress Y A C
+margins, at(A = (-3(0.5)3))
+marginsplot, name(g2, replace) title("Adjusted for C (collider): Y ~ A + C") ///
+    ytitle("Linear prediction") xtitle("A") ylabel(-4(2)4)
+
+* Combine graphs
+graph combine g1 g2, name(combined, replace) ///
+    title("Regression adjustment: Collider bias")
 ```
 
 In contrast to the previous section, ignoring the collider variable $C$in the regression model resulted in an estimate of the true coefficient for$A$(0.3) that was remarkably close, at 0.298. However, adjusting for$C$introduced a substantial bias, leading to an estimate of -0.3 as depicted in @fig-2.3. While the model incorporating the collider (fit4) performs competitively from a predictive standpoint, as evidenced by its lower Akaike Information Criterion (AIC), it paradoxically alters the direction of the association between$A$and$Y$. This phenomenon, where conditioning on the collider introduces bias while ignoring it does not, arises when both $A$and$Y$ are positively correlated with the collider. Thus, in this specific case, including the collider in the regression model introduces a bias while excluding it does not.
@@ -173,6 +247,8 @@ Box @lst-data provides a function to simulate data for this example. The true ca
 
 Box @lst-data: Data generation consistent with @fig-DAG3
 
+**Box 2.3 (R):** Data generation consistent with @fig-DAG3
+
 ```r
 generateData <- function(n, seed){
     set.seed(seed)
@@ -185,6 +261,29 @@ generateData <- function(n, seed){
 }
 
 ObsData <- generateData(n = 1000, seed = 777)
+```
+
+**Box 2.3 (Stata):** Stata code for data generation of the sodium/SBP example
+
+```stata
+* Stata code: Data generation consistent with DAG for sodium/SBP example
+clear all
+set seed 777
+set obs 1000
+
+* Generate variables based on the DAG structure
+generate Age_years = rnormal(65, 5)
+generate Sodium_gr = Age_years / 18 + rnormal()
+generate sbp_in_mmHg = 1.05 * Sodium_gr + 2.00 * Age_years + rnormal()
+generate hypertension = (sbp_in_mmHg > 140)
+generate Proteinuria_in_mg = 2.00 * sbp_in_mmHg + 2.80 * Sodium_gr + rnormal()
+
+* Label variables for clarity
+label variable Age_years "Age in years"
+label variable Sodium_gr "Sodium intake (grams)"
+label variable sbp_in_mmHg "Systolic blood pressure (mmHg)"
+label variable hypertension "Hypertension indicator (SBP>140)"
+label variable Proteinuria_in_mg "Proteinuria (mg)"
 ```
 
 Three linear regression models were employed (Box @lst-linear) to explore the association between sodium intake and systolic blood pressure (SBP):
@@ -209,6 +308,8 @@ $$
 $$
 Box @lst-linear: Linear regression models in R
 
+**Box 2.4 (R):** Linear regression models in R
+
 ```r
 library(broom) # load packages to visualize regression model's output
 library(visreg)
@@ -230,26 +331,104 @@ visreg(fit3, ylab = 'SBP in mmHg', line = list(col = 'red'),
     points = list(cex = 1.5, pch = 1), jitter = 10, bty = 'n')
 ```
 
+**Box 2.4 (Stata):** Stata code for linear regression models
+
+```stata
+* Stata code: Linear regression models for sodium/SBP example
+
+* Model 1: Unadjusted (crude association)
+regress sbp_in_mmHg Sodium_gr
+
+* Model 2: Adjusted for age (confounder)
+regress sbp_in_mmHg Sodium_gr Age_years
+
+* Model 3: Adjusted for age and proteinuria (collider)
+regress sbp_in_mmHg Sodium_gr Age_years Proteinuria_in_mg
+
+* Visualize using marginal predictions with confidence intervals
+* Model 1
+quietly regress sbp_in_mmHg Sodium_gr
+margins, at(Sodium_gr = (3(1)8))
+marginsplot, name(fit1_stata, replace) title("Model 1: Unadjusted") ///
+    ytitle("SBP in mmHg") xtitle("Sodium (grams)")
+
+* Model 2
+quietly regress sbp_in_mmHg Sodium_gr Age_years
+margins, at(Sodium_gr = (3(1)8))
+marginsplot, name(fit2_stata, replace) title("Model 2: Adjusted for Age") ///
+    ytitle("SBP in mmHg") xtitle("Sodium (grams)")
+
+* Model 3
+quietly regress sbp_in_mmHg Sodium_gr Age_years Proteinuria_in_mg
+margins, at(Sodium_gr = (3(1)8))
+marginsplot, name(fit3_stata, replace) title("Model 3: + Proteinuria") ///
+    ytitle("SBP in mmHg") xtitle("Sodium (grams)")
+
+* Combine plots
+graph combine fit1_stata fit2_stata fit3_stata, rows(1) name(combined, replace) ///
+    title("Linear regression: Sodium and SBP")
+```
+
 To further investigate the association between sodium intake and hypertension, defined as a binary outcome (systolic blood pressure $\geq$140 mmHg = 1,$<$ 140 mmHg = 0), we employed three logistic regression models. The first model served as a baseline, excluding any adjustments. The second model incorporated age as a potential confounder, while the third additionally adjusted for proteinuria, identified as a collider variable due to its potential influence on both sodium intake and hypertension. Notably, these models mirrored the specifications previously described, with the exception of the binary outcome variable (hypertension). Box @lst-forest demonstrates the R code for fitting and visualizing these models as a forest plot.
 
 Box @lst-forest: Multiplicative scale visualization using a forest plot function
 
+**Box 2.5 (R):** Logistic regression models for hypertension outcome
+
 ```r
 ## Models fit on multiplicative scale
-    library(dplyr)
-    library(forestplot)
-    fit3 <- glm(hypertension ~ Sodium_gr, family=binomial(link='logit'), data=ObsData)
-    or <- round(exp(fit3$coef)[2], 3) # conditional odds ratio from logistic model
-    ci95 <- exp(confint(fit3))[-1,] # 95% CI of odds ratio
-    fit4 <- glm(hypertension ~ Sodium_gr + Age_years, family = binomial(link = 'logit'), data = ObsData)
-    or <- round(exp(fit4$coef)[2], 3)
-    ci95 <- exp(confint(fit4))[2,]
-    fit5 <- glm(hypertension ~ Sodium_gr + Age_years + Proteinuria_in_mg, family = binomial(link = 'logit'), data = ObsData)
-    or <- round(exp(fit5$coef)[2], 3)
-    ci95 <- exp(confint(fit5))[2,]
+	library(dplyr)
+	library(forestplot)
+	fit3 <- glm(hypertension ~ Sodium_gr, family=binomial(link='logit'), data=ObsData)
+	or <- round(exp(fit3$coef)[2], 3) # conditional odds ratio from logistic model
+	ci95 <- exp(confint(fit3))[-1,] # 95% CI of odds ratio
+	fit4 <- glm(hypertension ~ Sodium_gr + Age_years, family = binomial(link = 'logit'), data = ObsData)
+	or <- round(exp(fit4$coef)[2], 3)
+	ci95 <- exp(confint(fit4))[2,]
+	fit5 <- glm(hypertension ~ Sodium_gr + Age_years + Proteinuria_in_mg, family = binomial(link = 'logit'), data = ObsData)
+	or <- round(exp(fit5$coef)[2], 3)
+	ci95 <- exp(confint(fit5))[2,]
 
 ## Forest plot (see supplementary material for accessing the complete code)
-    fp <- rbind(result1, result2, result3); fp %>% or_graph()
+	fp <- rbind(result1, result2, result3); fp %>% or_graph()
+```
+
+**Box 2.5 (Stata):** Stata code for logistic regression models
+
+```stata
+* Stata code: Logistic regression models for hypertension (multiplicative scale)
+
+* Model 1: Unadjusted
+logistic hypertension Sodium_gr
+* Display odds ratio with 95% CI
+* Alternatively, use logit for coefficients:
+* logit hypertension Sodium_gr
+
+* Model 2: Adjusted for age (confounder)
+logistic hypertension Sodium_gr Age_years
+
+* Model 3: Adjusted for age and proteinuria (collider)
+logistic hypertension Sodium_gr Age_years Proteinuria_in_mg
+
+* To store odds ratios for a forest plot, use estimates store
+* Model 1
+logistic hypertension Sodium_gr
+estimates store m1
+
+* Model 2
+logistic hypertension Sodium_gr Age_years
+estimates store m2
+
+* Model 3
+logistic hypertension Sodium_gr Age_years Proteinuria_in_mg
+estimates store m3
+
+* Forest plot using coefplot (user-written; install with: ssc install coefplot)
+* coefplot (m1, drop(_cons) label("Unadjusted")) ///
+*         (m2, drop(_cons) label("+ Age")) ///
+*         (m3, drop(_cons) label("+ Proteinuria")), ///
+*         xline(1) eform title("Forest plot: Sodium and Hypertension") ///
+*         xtitle("Odds Ratio (95% CI)")
 ```
 
 **Effect of conditioning on a collider**
@@ -264,54 +443,121 @@ The code employed for conducting Monte-Carlo simulations on the additive scale, 
 
 Box @lst-MCsim: Monte Carlo simulations
 
+**Box 2.6 (R):** Monte Carlo simulations
+
 ```r
 # Monte Carlo Simulations
-    R<-1000
-    true <- rep(NA, R)
-    collider <- rep(NA, R)
-    se <- rep(NA, R)
-    set.seed(050472)
+	R<-1000
+	true <- rep(NA, R)
+	collider <- rep(NA, R)
+	se <- rep(NA, R)
+	set.seed(050472)
 
-    for(r in 1: R) {
-    if (r%%10 == 0) cat(paste('This is simulation run number', r, '\n'))
+	for(r in 1: R) {
+	if (r%%10 == 0) cat(paste('This is simulation run number', r, '\n'))
 
 # Function to generate data
-    generateData <- function(n){
-    Age_years <- rnorm(n, 65, 5)
-    Sodium_gr <- Age_years / 18 + rnorm(n)
-    sbp_in_mmHg <- 1.05 * Sodium_gr + 2.00 * Age_years + rnorm(n)
-    Proteinuria_in_mg <- 2.00 * sbp_in_mmHg + 2.80 * Sodium_gr + rnorm(n)
-    data.frame(sbp_in_mmHg, Sodium_gr, Age_years, Proteinuria_in_mg)
-    }
+	generateData <- function(n){
+	Age_years <- rnorm(n, 65, 5)
+	Sodium_gr <- Age_years / 18 + rnorm(n)
+	sbp_in_mmHg <- 1.05 * Sodium_gr + 2.00 * Age_years + rnorm(n)
+	Proteinuria_in_mg <- 2.00 * sbp_in_mmHg + 2.80 * Sodium_gr + rnorm(n)
+	data.frame(sbp_in_mmHg, Sodium_gr, Age_years, Proteinuria_in_mg)
+	}
 
-    ObsData <- generateData(n=10000)
+	ObsData <- generateData(n=10000)
 
 # True effect
-    true[r] <- summary(lm(sbp_in_mmHg ~ Sodium_gr + Age_years, data = ObsData))$coef[2,1]
+	true[r] <- summary(lm(sbp_in_mmHg ~ Sodium_gr + Age_years, data = ObsData))$coef[2,1]
 
 # Collider effect
-    collider[r] <- summary(lm(sbp_in_mmHg ~ Sodium_gr + Age_years + Proteinuria_in_mg, data = ObsData))$coef[2,1]
-    se[r] <- summary(lm(sbp_in_mmHg ~ Sodium_gr + Age_years + Proteinuria_in_mg, data = ObsData))$coef[2,2]
-    }
+	collider[r] <- summary(lm(sbp_in_mmHg ~ Sodium_gr + Age_years + Proteinuria_in_mg, data = ObsData))$coef[2,1]
+	se[r] <- summary(lm(sbp_in_mmHg ~ Sodium_gr + Age_years + Proteinuria_in_mg, data = ObsData))$coef[2,2]
+	}
 
 # Estimate of sodium true effect
-    mean(true)
+	mean(true)
 
 # Estimate of sodium biased effect in the model including the collider
-    mean(collider)
+	mean(collider)
 
 # simulated standard error/confidence interval of outcome regression
-    lci <- (mean(collider) - 1.96*mean(se)); mean(lci)
-    uci <- (mean(collider) + 1.96*mean(se)); mean(uci)
+	lci <- (mean(collider) - 1.96*mean(se)); mean(lci)
+	uci <- (mean(collider) + 1.96*mean(se)); mean(uci)
 
 # Bias
-    Bias <- (true - abs(collider)); mean(Bias)
+	Bias <- (true - abs(collider)); mean(Bias)
 
 # % Bias
-    relBias <- ((true - abs(collider)) / true); mean(relBias) * 100
+	relBias <- ((true - abs(collider)) / true); mean(relBias) * 100
 
 # Plot bias
-    plot(relBias)
+	plot(relBias)
+```
+
+**Box 2.6 (Stata):** Stata code for Monte Carlo simulations
+
+```stata
+* Stata code: Monte Carlo simulations of collider bias
+clear all
+set seed 050472
+
+* Define a program to generate one simulated dataset and compute estimates
+capture program drop sim_collider_sbp
+program define sim_collider_sbp, rclass
+    syntax [, n(integer 10000)]
+    drop _all
+    set obs `n'
+    
+    * Generate data consistent with DAG
+    generate Age_years = rnormal(65, 5)
+    generate Sodium_gr = Age_years / 18 + rnormal()
+    generate sbp_in_mmHg = 1.05 * Sodium_gr + 2.00 * Age_years + rnormal()
+    generate Proteinuria_in_mg = 2.00 * sbp_in_mmHg + 2.80 * Sodium_gr + rnormal()
+    
+    * True effect (adjusted for confounder, excluding collider)
+    regress sbp_in_mmHg Sodium_gr Age_years
+    return scalar true_eff = _b[Sodium_gr]
+    
+    * Collider effect (adjusted for confounder AND collider)
+    regress sbp_in_mmHg Sodium_gr Age_years Proteinuria_in_mg
+    return scalar collider_eff = _b[Sodium_gr]
+    return scalar se = _se[Sodium_gr]
+end
+
+* Run 1000 simulations using simulate prefix
+simulate true_eff = r(true_eff) collider_eff = r(collider_eff) ///
+         se = r(se), reps(1000) seed(050472) saving(sim_results, replace): sim_collider_sbp
+
+* Load simulation results and compute summaries
+use sim_results, clear
+
+* Mean estimates
+summarize true_eff
+local mean_true = r(mean)
+summarize collider_eff
+local mean_coll = r(mean)
+summarize se
+local mean_se = r(mean)
+
+display "True effect (mean): `mean_true'"
+display "Collider-biased effect (mean): `mean_coll'"
+display "Mean standard error: `mean_se'"
+
+* Confidence interval for collider effect
+local lci = `mean_coll' - 1.96 * `mean_se'
+local uci = `mean_coll' + 1.96 * `mean_se'
+display "95% CI for collider effect: (`lci', `uci')"
+
+* Bias and relative bias
+generate bias = true_eff - abs(collider_eff)
+generate relBias = 100 * (true_eff - abs(collider_eff)) / true_eff
+summarize bias relBias
+
+* Histogram of relative bias
+histogram relBias, name(bias_hist, replace) ///
+    title("Distribution of relative bias (%)") ///
+    xtitle("Relative bias (%)") ytitle("Frequency")
 ```
 
 Within the framework of this data-generating structure, the presence of a collider variable introduces regression dilution bias (also known as regression attenuation), reducing the observed association between sodium intake and SBP compared to the true causal effect. To induce a paradoxically negative association (i.e., sodium intake protective against SBP), the strength of the collider-exposure association ($\alpha_{1}$) and collider-outcome association ($\alpha_{2}$) must increase relative to the magnitude of the true causal effect. While equating $\alpha_{1}$and$\alpha_{2}$ may not be entirely realistic, it serves as a useful simplification for illustrating how bias magnitude changes as these associations vary.
