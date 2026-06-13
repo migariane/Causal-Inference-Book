@@ -2,13 +2,11 @@
 
 In the process of causal inference, we frequently try to estimate the population effect of a binary treatment on an outcome variable by comparing the means of potential outcomes $Y(1)$and$Y(0)$, where $Y(t)$is the (bounded) outcome of a random individual under treatment$A$, [@neyman23app; @rubin74potential]." This contrast, known as the *Average Treatment Effect (ATE)*, must be identified from observational data (i.e., non-experimental investigations) based on untestable hypotheses, i.e., consistency, conditional ignorability, exchangeability or independence, and positivity.
 Under these assumptions, the ATE is identified from the observed data distribution via the *g formula*:
-
 $$
-
 \begin{aligned}
 \textit{ATE} &= \int_w \Big\{E[Y \mid A=1, \textbf{W=w}] - E[Y \mid A=0, \textbf{W=w}] \Big\} dF(w),
-\end{aligned}$$
-
+\end{aligned}
+$$
  {#eq-ace}
 
 where $F(\cdot)$denotes the cumulative distribution function of$w$.
@@ -16,11 +14,9 @@ where $F(\cdot)$denotes the cumulative distribution function of$w$.
 Using $n$independent and identically distributed copies of$O=(W, A, Y)$, many methods have been developed to draw inference about the ATE functional, e.g., propensity score matching [@rosenbaum83propensity], g-computation [@robins86new], (stabilized) inverse probability weighting [@hernan2006estimating], augmented inverse probability weighting [@robins94estimation], and targeted maximum likelihood [@van2006targeted] as seen in the previous chapters.
 
 The conditional *conditional independence assumption* states that there exists a set of measured pre-treatment covariates (**W**) such that treatment is conditionally independent of the potential outcomes given **W**, i.e.,
-
 $$
-
-Y(a) \perp A \mid \textbf{W} \quad \text{ for } a=0,1;$$
-
+Y(a) \perp A \mid \textbf{W} \quad \text{ for } a=0,1;
+$$
  {#eq-ci}
 
 implies that there are no unmeasured confounders (**U**) between treatment and outcome.
@@ -122,19 +118,15 @@ To define conditional c-dependence, we first define the following random variabl
 - $Y$ : the observed outcome
 
 The observed outcome satisfies by consistency
-
 $$
-
-Y = (1-A) Y^{0} + A Y^{1}.$$
-
+Y = (1-A) Y^{0} + A Y^{1}.
+$$
 Rather than observing the full data generating process, $(Y^{0}, Y^{1}, A, Y)$, we only observe: O=(Y, A, W).
 
 We say that $A$is conditionally c-dependent with$Y^{a}$given$W$ if:
-
 $$
-
-\textbf{supp} \underset{y_{a} \in \operatorname{supp}(Y^{a}\mid W=w)}{\left|\mathbb{P}\left(A=1 \mid Y^{a}=a, W=w\right)-\mathbb{P}(A=1 \mid W=w)\right|} \leq c,$$
-
+\textbf{supp} \underset{y_{a} \in \operatorname{supp}(Y^{a}\mid W=w)}{\left|\mathbb{P}\left(A=1 \mid Y^{a}=a, W=w\right)-\mathbb{P}(A=1 \mid W=w)\right|} \leq c,
+$$
 for all $w$in$\operatorname{supp}(\mathbf{W})$.
 
 Under this assumption, the identified set for a treatment effect statistic will be a closed interval, which depends on c and the distribution of O=(Y, A, W).
@@ -269,7 +261,35 @@ tesensitivity cpiplot
 
 ![Conditional c-dependence: breakdown point](figures/Cvalue4.png){#fig-conditional-c-dependence-breakdown-point fig-align="center"}
 
+## Conclusion
+
+Sensitivity analysis is an essential component of any causal inference from observational data. While methods such as the g-formula, IPW, and TMLE address confounding by measured covariates, the assumption of no unmeasured confounding is fundamentally untestable. Sensitivity analysis quantifies how robust study conclusions are to violations of this assumption.
+
+This chapter has introduced three complementary approaches:
+- The **E-value** provides an intuitive, scale-free metric: the minimum strength of association an unmeasured confounder would need to have with both treatment and outcome to explain away the observed effect. Its simplicity makes it accessible to non-specialist audiences.
+- The **conditional c-dependence** approach, implemented in the `tesensitivity` package, offers a more flexible framework that conditions on measured covariates, providing refined bounds.
+- Both methods complement — rather than replace — careful study design, thorough confounder measurement, and rigorous primary analysis.
+
+Key takeaways from this chapter:
+- No observational study can prove that all confounders have been measured.
+- Sensitivity analysis should be a routine part of any causal analysis, not an afterthought.
+- The E-value is easy to compute and report, making it suitable for transparent communication of uncertainty.
+- The conditional c-dependence approach provides tighter bounds by leveraging information on measured confounders.
+- Sensitivity analyses should be interpreted in the context of substantive knowledge about likely unmeasured confounders.
+
 ## Glossary
 
-**Main term**
-:   Description of main term.
+**Breakdown point**
+:   The maximum value of a sensitivity parameter under which the study conclusion (e.g., a significant causal effect) still holds.
+
+**c-dependence**
+:   A measure of the strength of residual confounding, representing the deviation from the assumption of no unmeasured confounding.
+
+**E-value**
+:   The minimum strength of association, on the risk ratio scale, that an unmeasured confounder would need to have with both the treatment and the outcome to fully explain away an observed treatment-outcome association.
+
+**Sensitivity analysis**
+:   A set of methods for assessing how sensitive causal conclusions are to violations of untestable assumptions, particularly the assumption of no unmeasured confounding.
+
+**Unmeasured confounding**
+:   Confounding by variables that were not measured and therefore cannot be adjusted for in the analysis.

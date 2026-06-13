@@ -19,23 +19,19 @@ Let $A$denote a binary treatment (e.g., 1 for treated, 0 for untreated),$M$the m
 - $Y^{a, m}$: the potential outcome if treatment is $a$and mediator is set to$m$
 
 Then, the *total effect* of treatment on the outcome can be decomposed into:
-
 $$
 \text{Total Effect (TE)} = \mathbb{E}[Y^1 - Y^0]
 $$
-
 The total effect can be further partitioned into:
 
 - **Natural Direct Effect (NDE)** : The effect of treatment on the outcome not through the mediator
-  $$
+$$
   \text{NDE} = \mathbb{E}[Y^{1, M^0} - Y^{0, M^0}]
   $$
-
 - **Natural Indirect Effect (NIE)** : The effect of treatment that operates through the mediator
-  $$
+$$
   \text{NIE} = \mathbb{E}[Y^{0, M^1} - Y^{0, M^0}]
   $$
-
 This decomposition assumes no interaction between the direct and indirect pathways. If such interaction exists, the decomposition still holds but interpretation becomes more nuanced.
 
 ### Example: Treatment $\rightarrow$Mediator$\rightarrow$ Outcome
@@ -118,17 +114,11 @@ flowchart TD
 ```
 
 Early proponents of evaluating this model suggested using the "product of coefficients method" (also known as "product method") (Baron and Kenny, 1986). Let M and Y be continuous variables, consider the following regression models:
-
 $$
-
 E(M \mid X=x) = \beta_{0} + \beta_{1}x$$
-
  {#eq-ContMed}
-
 $$
-
 E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m$$
-
  {#eq-ContOut}
 
 @eq-ContMed is the regression model for the mediator. The coefficient $\beta_{1}$ is the expected increase in the value of the mediator for a unit increase in the exposure (for a binary exposure this coefficient would be the difference in means between two treatment groups).
@@ -155,35 +145,25 @@ Before introducing the Counterfactual Approach, it is important to familiarise y
 The CDE corresponds to a situation in which a hypothetical intervention controls the mediator to a given value, whereas the direct effect corresponds to a situation in which the natural relationship between the exposure and the mediator is maintained (i.e., we would intervene on the exposure but not directly on the mediator).
 
 The CDE and the direct effect is equivalent when there is no interaction between the exposure and the mediator (see Richiardi *et al* 2013, for further explanation). To illustrate this concept, consider again the model for the mediator (which is the same as @eq-ContMed)
-
 $$
-
 E(M \mid X=x) = \beta_{0} + \beta_{1}x$$
-
  {#eq-ContMed2}
 
 and now a model for the outcome that includes an interaction between the exposure and the mediator
-
 $$
-
 E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m + \theta_{3}xm$$
-
  {#eq-ContOutEM}
 
 Using @eq-ContMed2 and @eq-ContOutEM, the CDE, DE, and IE can be estimated as follows (where $x$is exposed and$x^{*}$ is not exposed):
-
 $$
 \begin{aligned} \operatorname{CDE}(m) & =\left(\theta_{1}+\theta_{3} m\right)\left(x-x^{*}\right) \\ D E & =\left(\theta_{1}+\theta_{3} \beta_{0}+\theta_{3} \beta_{1} x^{*}  \right)\left(x-x^{*}\right) \\ I E & =\left(\theta_{2} \beta_{1}+\theta_{3} \beta_{1} x\right)\left(x-x^{*}\right)
 \end{aligned}
 $$
-
 Notice that, in @eq-ContOutEM, if the interaction is absent, such that $\theta_{3} = 0$, then the CDE and DE would be equivalent:
-
 $$
 \begin{aligned} \operatorname{CDE}(m) & =\left(\theta_{1} \right)\left(x-x^{*}\right) \\ D E & =\left(\theta_{1}  \right)\left(x-x^{*}\right)
 \end{aligned}
 $$
-
 To explain this concept further, if the direct effect of the exposure is constant for the different levels of the mediator, then setting the mediator to a fixed value (i.e., CDE) would give the same estimate. Similarly, setting the value that the mediator would have taken at the reference level of the exposure (i.e., DE) would also give the same estimate.
 
 There is a difference in the interpretation of the CDE and DE even in the absence of the interaction. As an example, consider a hypothetical study on poor diet (exposure), obesity (mediator), and heart disease (outcome). The CDE (for obesity = 0) is the effect of eliminating poor diet when controlling obesity to be absent. For the DE, obesity would be set at the value that would have been observed in the absence of poor diet.
@@ -205,35 +185,20 @@ Since the mediator is hypothetical (i.e., consists of potential outcomes), the p
 Using this potential outcome notation we can define the natural effects (causal estimands) of interest. The natural effects are the natural direct effect (NDE) and the natural indirect effect (NIE), which together sum up to the total effect (TE). If we were to control the mediator at the level seen in the non-exposed group (i.e., $x=0$and$M^{x=0}$), then:
 
 **Natural direct effect**
-
 $$
-
 E(Y^{1,M^{0}} - Y^{0,M^{0}})$$
-
 $$
-
 \frac{E(Y^{1,M^{0}})}{E(Y^{0,M^{0}})}$$
-
 **Natural indirect effect**
-
 $$
-
 E(Y^{1,M^{1}} - Y^{1,M^{0}})$$
-
 $$
-
 \frac{E(Y^{1,M^{1}})}{E(Y^{1,M^{0}})}$$
-
 **Controlled direct effect**
-
 $$
-
 E(Y^{1,m} - Y^{0,m})$$
-
 $$
-
 \frac{E(Y^{1,m})}{E(Y^{0,m})}$$
-
 Alternatively, if one were interested in using the exposed group as the reference group, then the natural direct effect would be $M^{1}$(instead of$M^{0}$), and the natural indirect effect would be $x=0$(instead of$x=1$).
 
 The **natural direct effect** (NDE) expresses how much the outcome would change, on average, if the exposure were set at level $x=1$versus level$x=0$ but for each individual the mediator were kept at the level it would have taken, for that individual, in the absence of the exposure. The NDE captures what the effect of the exposure on the outcome would remain if we were to disable the pathway from the exposure to the mediator.
@@ -274,11 +239,9 @@ Note that randomisation of the exposure is not sufficient to control for confoun
 ### Controlled Direct Effects vs Natural Direct Effects
 
 While the **natural direct effect** (NDE) conditions on the natural value of the mediator under no treatment ($M^0$), the **controlled direct effect** (CDE) fixes the mediator to a specific value for all individuals:
-
 $$
 \text{CDE}(m) = \mathbb{E}[Y^{1, m} - Y^{0, m}]
 $$
-
 This represents the direct effect of treatment when the mediator is held constant at a specified level $m$. Controlled direct effects are easier to identify since they do not rely on cross-world counterfactuals (like $Y^{1, M^0}$).
 
 - **CDEs** can be interpreted as the effect of treatment if we were able to intervene and fix the mediator.
@@ -297,7 +260,6 @@ Several estimation strategies have been developed to quantify mediation effects,
 The parametric g-computation formula provides a way to estimate causal effects by modeling the outcome and mediator using parametric regression models and then integrating over the empirical distribution of covariates. It is particularly useful when both treatment and mediator are continuous or binary.
 
 Let $A$be the treatment,$M$the mediator, and$Y$the outcome. Suppose we have baseline covariates$X$. Under the identification assumptions discussed previously, the natural indirect effect (NIE) can be expressed as:
-
 $$
 \begin{aligned}
 \text{NIE} =\ & \int \left[ \int \mathbb{E}[Y \mid A=0, M=m, X=x]
@@ -306,7 +268,6 @@ $$
 \, dF_{M \mid A=0, X}(m) \right] dF_X(x)
 \end{aligned}
 $$
-
 This expression can be approximated via Monte Carlo simulation in practice.
 
 #### R Example: Parametric g-computation
@@ -441,17 +402,13 @@ Traditional mediation analysis relies on cross-world counterfactuals such as $Y^
 
 **Definition:**
 The *interventional indirect effect* is defined as the change in the outcome distribution due to intervening on the mediator, such that its distribution matches what it would have been under treatment $A = 1$, but keeping the treatment fixed at $A = 0$:
-
 $$
 \text{IIE} = \mathbb{E}\left[ Y^{0, \tilde{M}^{1}} \right] - \mathbb{E}\left[ Y^{0, \tilde{M}^{0}} \right]
 $$
-
 Similarly, the *interventional direct effect* is:
-
 $$
 \text{IDE} = \mathbb{E}\left[ Y^{1, \tilde{M}^{1}} \right] - \mathbb{E}\left[ Y^{0, \tilde{M}^{1}} \right]
 $$
-
 where $\tilde{M}^a$is a random draw from the distribution of$M$under treatment$A = a$. These estimands can be identified under weaker assumptions than natural effects and are still interpretable as causal pathways.
 
 **Estimation in R:**
@@ -581,11 +538,9 @@ Causal mediation analysis relies on several strong identification assumptions, o
 ### Mediator-Outcome Confounding
 
 Recall that to identify the natural indirect effect (NIE), we require:
-
 $$
 Y^{a, m} \perp\!\!\!\perp M \mid A = a, X
 $$
-
 This means that, conditional on treatment and baseline covariates $X$, the mediator must be as good as randomized with respect to the potential outcomes. In practice, this is often implausible due to omitted variables (e.g., psychological factors, unmeasured behaviors, or genetic traits) that may influence both the mediator and the outcome.
 
 When this assumption fails, estimated mediation effects---particularly the NIE---can be biased. Sensitivity analysis provides a way to quantify how strong such unmeasured confounding would need to be to substantially alter the conclusions of the analysis.
@@ -600,11 +555,9 @@ VanderWeele (2010, 2015) developed analytic bias formulas that quantify how unme
 #### Bias Formula for Continuous Outcomes
 
 Suppose we estimate the NIE using linear models. Then the bias in the estimated NIE due to an unmeasured confounder $U$ is approximately:
-
 $$
 \text{Bias}_{\text{NIE}} \approx \rho_{MY \cdot A,X} \cdot \rho_{MU \cdot A,X} \cdot \sigma_Y \cdot \sigma_M
 $$
-
 where:
 - $\rho_{MY \cdot A,X}$: Partial correlation between $M$and$Y$, given $A$and$X$
 - $\rho_{MU \cdot A,X}$: Partial correlation between an unmeasured confounder $U$and both$M$and$Y$
@@ -650,15 +603,12 @@ To illustrate the potential impact of unmeasured mediator-outcome confounding, w
 #### Data Generating Process
 
 We simulate a binary treatment $A$, a continuous mediator $M$, and a continuous outcome $Y$, along with a baseline covariate $X$and an unmeasured confounder$U$. The mediator and outcome are generated as follows:
-
 $$
 M = 0.5 A + 0.5 U + 0.3 X + \varepsilon_M, \quad \varepsilon_M \sim \mathcal{N}(0,1)
 $$
-
 $$
 Y = 0.3 A + 0.6 M + 0.6 U + 0.2 X + \varepsilon_Y, \quad \varepsilon_Y \sim \mathcal{N}(0,1)
 $$
-
 Here, $U$is unobserved and influences both$M$and$Y$, violating the assumption of no unmeasured mediator-outcome confounding.
 
 #### Simulation Code

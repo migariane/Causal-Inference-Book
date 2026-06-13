@@ -38,37 +38,29 @@ The usefulness of the propensity score in causal inference stems from a set of k
 ### The Balancing Property
 
 The fundamental property of the propensity score is its ability to balance covariates between treated and untreated individuals. Formally, for individuals with the same value of the propensity score, the distribution of observed covariates $W$is independent of treatment assignment$A$. That is,
-
 $$
 A \perp W \mid e(W),
 $$
-
 where $e(W) = P(A = 1 \mid W)$. This means that within strata of the propensity score, the treated and untreated groups are expected to have similar distributions of baseline covariates. This balancing property is essential, as it enables causal comparisons by mimicking the balance achieved through randomization.
 
 ### Unconfoundedness Given the Propensity Score
 
 If the potential outcomes are independent of treatment assignment conditional on covariates---that is,
-
 $$
 Y^0, Y^1 \perp A \mid W,
 $$
-
 then this also holds conditional on the propensity score:
-
 $$
 Y^0, Y^1 \perp A \mid e(W).
 $$
-
 This result, sometimes called the *strong ignorability given the propensity score*, implies that adjusting for the propensity score alone is sufficient to remove confounding bias due to measured covariates, under the assumption that all confounders are included in $W$.
 
 ### Common Support and Positivity
 
 For propensity score methods to be valid, there must be sufficient overlap in the distribution of the propensity score between the treated and untreated groups. This is known as the *common support* or *overlap* condition. Formally, for every value of the covariates $W$, we require:
-
 $$
 0 < P(A = 1 \mid W) < 1.
 $$
-
 This assumption, known as *positivity*, ensures that each individual has a positive probability of receiving both treatment and control, given their covariates. If some individuals are deterministically treated or untreated based on their covariates, causal effects for those individuals are not identifiable.
 
 In practice, violations of positivity are detected when there are extreme propensity scores close to 0 or 1. These lead to practical issues such as poor covariate balance and unstable estimates, particularly in weighting-based methods like IPTW.
@@ -82,21 +74,17 @@ The choice of propensity score method (e.g., matching, stratification, weighting
 ### Estimating the Propensity Score {#sec-ps-estimation}
 
 The first step in applying propensity score methods is to estimate the propensity score---defined as the probability of receiving the treatment, given observed covariates:
-
 $$
 e(W) = P(A = 1 \mid W).
 $$
-
 In practice, this conditional probability is not known and must be estimated from the data. The choice of model for estimating the propensity score is crucial, as all subsequent causal inferences depend on its quality. An incorrectly specified propensity score model may result in poor covariate balance and biased effect estimates, even if the methods used afterward are correctly implemented.
 
 ### Logistic Regression
 
 The most common method for estimating the propensity score is *logistic regression*. In this approach, the treatment assignment $A \in \{0,1\}$is modeled as a function of the covariates$W$:
-
 $$
 \text{logit}(P(A = 1 \mid W)) = \alpha_0 + \alpha_1 W_1 + \alpha_2 W_2 + \cdots + \alpha_k W_k.
 $$
-
 This yields a predicted probability for each individual of receiving the treatment, given their covariate profile. Logistic regression has the advantages of being interpretable, familiar, and easy to implement, and it often performs adequately when the number of confounders is moderate and their relationships with treatment are roughly linear on the logit scale.
 
 However, model misspecification is a risk. Important interactions or non-linearities may be missed unless explicitly included. Therefore, flexible modeling and diagnostic checks are essential.
@@ -197,11 +185,9 @@ Other diagnostics include:
 
 #### Estimating Treatment Effects after Matching
 Once matching is complete and balance is assessed, the treatment effect can be estimated by comparing outcomes between matched treated and control units. For 1:1 matching, a paired difference in means is often used:
-
 $$
 \widehat{ATT} = \frac{1}{n_t} \sum_{i \in \text{treated}} \left(Y_i - Y_{j(i)}\right),
 $$
-
 where $Y_i$is the outcome for treated unit$i$and$Y_{j(i)}$ is the outcome of the matched control.
 
 **R Example (Estimating ATT):**
@@ -330,7 +316,6 @@ Covariate adjustment using the propensity score differs from traditional outcome
 $$
 Y_i = \beta_0 + \beta_1 A_i + \boldsymbol{\beta}_2^T W_i + \varepsilon_i.
 $$
-
 This method directly adjusts for all confounders, assuming the model for $E[Y \mid A, W]$ is correctly specified. While it allows more flexibility in modeling covariates, it also suffers more severely from curse of dimensionality and collinearity.
 
 In contrast, adjusting for $e(W)$ reduces the covariate adjustment to a single dimension. However, it does not offer the same level of protection against confounding, especially in the presence of effect modification, non-linear relationships, or heterogeneous treatment effects.
@@ -349,7 +334,6 @@ For improved performance, this method is often used in conjunction with doubly r
 Inverse Probability of Treatment Weighting (IPTW) is a propensity score-based method that reweights the sample to create a pseudo-population in which treatment assignment is independent of baseline covariates. This allows for the estimation of causal effects by comparing outcomes between weighted treatment groups.
 
 In observational studies, some individuals will be more likely than others to be treated (A=1) due to their characteristics. Suppose some individuals who were treated were unlikely to be treated based on a specific set of features encapsulated in a particular vector of confounders (**W**). To balance the differences in characteristics between treatment groups, we re-weight the outcome variable of these individuals by the inverse of their probability of the treatment (A) actually received (i.e., propensity score). Originally, the weights were motivated from the classical Horvitz and Thompson survey estimator used to re-weight the outcome variable by the inverse probability that it is observed, thus accounting for the sampling process.[@Horvitz1952] The result of this weighting procedure is that, among the treated we up-weight those who had a low probability of being treated, and among the untreated we up-weight those who were unlikely to be untreated; that is, the individuals underrepresented in their treatment group. As a consequence, the weighted set of data is unchanged apart from A and **W** are now conditionally independent. Therefore, a comparison of $Y_{w}(1)$to$Y_{w}(0)$ gives a marginal causal effect under the three identification assumptions (Appendix 1) whilst also assuming the propensity score model is correctly specified. The inverse probability of treatment weighting (IPTW), and the g-formula when targeting the same estimand (i,e., the ATE), are equivalent in the nonparametric setting.[@Robins1986; @Rosenbaum1983] We provide a proof of the equivalence between IPTW and G-computation procedures using the law of total expectation.
-
 $$
 \begin{aligned}
 & \underbrace{E\left(\frac{{I}(a = 1)}{P(A=1 \mid \boldsymbol{W})}\,Y\right)}_{IPTW} \,=\, \\
@@ -369,15 +353,12 @@ $$
     &=\, \underbrace{E[E(Y\,|\,A=1,W)]}_{G-computation}
 \end{aligned}
 $$
-
 Departing from the identification assumptions of the ATE for the regression adjustment G-computation estimand (ATE = $E_{w}(E(Y|A=1,\textbf{W}) - E_{w}(Y|A=0,\textbf{W})$), we can rewrite the same estimand as a function of the distribution of A given W (i.e., $P(A = 1|\textbf{W})$, a.k.a propensity score or treatment mechanism).
 
 Therefore, the estimator is given by
-
 $$
 \text{ATE}\,=\,\frac{1}{n}\sum^{n}_{i=1}\left(\frac{A_{i}}{P(A_{i}=1\mid\boldsymbol{W}_{i})}\,-\,\frac{1\,-\,A_{i}}{(1\,-\,P(A_{i}=1\mid\boldsymbol{W}_{i}))}\right)Y_{i}.
 $$
-
  {#eq-iptw}
 
 #### Defining Weights for ATE, ATT, and ATU
@@ -385,29 +366,26 @@ $$
 The basic idea of IPTW is to weight each individual by the inverse of the probability of receiving the treatment they actually received. These weights depend on the estimand of interest:
 
 - **Average Treatment Effect (ATE):**
-  $$
+$$
   w_i^{ATE} = \begin{cases}
   \frac{1}{\hat{e}(W_i)} & \text{if } A_i = 1, \\
   \frac{1}{1 - \hat{e}(W_i)} & \text{if } A_i = 0.
   \end{cases}
   $$
-
 - **Average Treatment Effect on the Treated (ATT):**
-  $$
+$$
   w_i^{ATT} = \begin{cases}
   1 & \text{if } A_i = 1, \\
   \frac{\hat{e}(W_i)}{1 - \hat{e}(W_i)} & \text{if } A_i = 0.
   \end{cases}
   $$
-
 - **Average Treatment Effect on the Untreated (ATU):**
-  $$
+$$
   w_i^{ATU} = \begin{cases}
   \frac{1 - \hat{e}(W_i)}{\hat{e}(W_i)} & \text{if } A_i = 1, \\
   1 & \text{if } A_i = 0.
   \end{cases}
   $$
-
 **R Example (ATE Weights):**
 ```r
 ps_model <- glm(A ~ W1 + W2, data = data, family = binomial)
@@ -421,20 +399,16 @@ data$weight_ate <- ifelse(data$A == 1,
 #### Stabilized vs. Unstabilized Weights
 
 There is a modified version of the IPTW estimator (@eq-iptw) consisting of stabilised weights proposed by [@Hajek1971CommentEds.], which is more commonly used in practice when treatment and exposure vary over time (i.e., time dependent confounding). Stabilised weights should have a mean of 1, but some values could be higher (i.e., large weights). Unstabilized weights can sometimes have large variability, particularly when propensity scores are close to 0 or 1. Stabilized weights help mitigate this by multiplying the numerator of the weight by the marginal probability of treatment:
-
 $$
 w_i^{stab} = \begin{cases}
 \frac{P(A = 1)}{\hat{e}(W_i)} & \text{if } A_i = 1, \\
 \frac{P(A = 0)}{1 - \hat{e}(W_i)} & \text{if } A_i = 0.
 \end{cases}
 $$
-
 The stabilised version of the IPTW estimator is given by
-
 $$
 \text{ATE} \,=\,\frac{\sum\left(\frac{AY}{P(A=1\mid\boldsymbol{W})}\right)}{\sum\left(\frac{A}{P(A=1\mid\boldsymbol{W})}\right)}\,-\,\frac{\sum\left(\frac{(1\,-\,A)Y}{1\,-\,P(A=1\mid\boldsymbol{W})}\right)}{\sum\left(\frac{(1\,-\,A)}{1\,-\,P(A=1\mid\boldsymbol{W})}\right)}.
 $$
-
 **R Example (Stabilized ATE Weights):**
 ```r
 p_A <- mean(data$A == 1)
@@ -516,7 +490,6 @@ A fundamental assumption in propensity score analysis is the assumption of posit
 $$
 0 < P(A = 1 \mid W) < 1.
 $$
-
 Violations of positivity occur when some individuals have near-deterministic treatment assignment based on their covariates. These individuals contribute little to causal identification and may introduce instability in estimates, particularly in weighting methods like IPTW. The overlap of the distribution of propensity scores between treatment groups gives a visual identification regarding the strength of confounding and whether it is acceptable.
 
 ```r
@@ -619,7 +592,42 @@ Finally, while propensity score methods reduce reliance on modeling the outcome,
 
 In summary, propensity score methods offer a flexible and powerful approach to estimating causal effects in observational studies. When implemented carefully and in the right context, they serve as valuable tools in the causal inference toolkit and provide a strong complement to outcome-based methods such as the g-formula.
 
+## Conclusion
+
+Propensity score methods separate the design stage (modelling treatment assignment) from the analysis stage (estimating treatment effects), offering practical advantages in terms of transparency and diagnostic assessment. Matching excels at creating well-balanced comparison groups but discards data. IPTW uses all observations but is sensitive to extreme weights. Stratification and regression adjustment on the propensity score offer intermediate options. The choice among them depends on sample size, overlap in propensity score distributions, and the analyst's tolerance for bias-variance trade-offs.
+
+Key takeaways from this chapter:
+- Propensity scores reduce the dimensionality of confounding to a single scalar summary.
+- Matching, stratification, IPTW, and regression on the propensity score each have distinct strengths and limitations.
+- Covariate balance diagnostics (standardized differences, love plots) are essential before proceeding to outcome analysis.
+- Positivity violations — when certain covariate patterns are almost always treated or never treated — must be assessed and addressed.
+- Flexible machine learning methods can improve propensity score estimation but require careful validation.
+
 ## Glossary
 
+**ATE**
+:   Average Treatment Effect — the average causal effect of treatment in the population.
+
+**ATT**
+:   Average Treatment Effect on the Treated — the average causal effect among those who received treatment.
+
+**IPTW**
+:   Inverse Probability of Treatment Weighting — a method that reweights observations by the inverse of the propensity score to create a pseudo-population with balanced covariates.
+
+**Matching**
+:   A method that pairs treated and control units with similar propensity scores to estimate causal effects.
+
+**Positivity**
+:   The assumption that every individual has a non-zero probability of receiving each treatment level given their covariates.
+
+**Propensity score**
+:   The probability of receiving treatment given observed covariates, $e(X) = \mathbb{P}(A=1 \mid X)$.
+
+**SMD**
+:   Standardized Mean Difference — a measure of covariate balance between treatment groups.
+
+**Stratification**
+:   Dividing the sample into strata based on the propensity score and estimating treatment effects within each stratum.
+
 **TMLE**
-:   Targeted Maximum Likelihood Estimation
+:   Targeted Maximum Likelihood Estimation — a doubly-robust, semiparametric efficient estimator introduced in Chapter 5.

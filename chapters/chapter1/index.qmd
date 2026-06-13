@@ -43,11 +43,9 @@ If the observed data is sufficient to answer the causal question, we must first 
 **Step 4: Define the statistical estimand**
 
 If the identifiability assumptions are deemed plausible, we can move on to defining the statistical estimand. The statistical estimand is an algebraic definition of the causal question but in terms of the observed data. For example, the average treatment effect (ATE) measured by the risk difference is given by
-
 $$
-
-ATE \quad = \quad E_{w} (P[Y=1 \mid A=1, \textbf{W}] - P[Y=1 \mid A=0, \textbf{W}])$$
-
+ATE \quad = \quad E_{w} (P[Y=1 \mid A=1, \textbf{W}] - P[Y=1 \mid A=0, \textbf{W}])
+$$
 and is the expected difference (causal risk difference) in the outcome (Y) between two exposure groups (A) conditioned on the set of variables that confound the exposure-outcome relationship (**W**). More details on estimands and measures of association are given in @sec-estimands.
 
 **Step 5: Statistical model and estimator**
@@ -182,17 +180,13 @@ A marginal association between A and B has an odds ratio of 1.00 @tbl-ColliderAB
 **Conditional associations**
 
 Table @tbl-ColliderABC shows the tabulation of the association between A and B within levels of C. The association between A and B, conditional on C = 1, has an odds ratio (OR) of:
-
 $$
-
-\text{OR}_{C=1} = \frac{(21/9)}{(54/6)} = 0.26$$
-
+\text{OR}_{C=1} = \frac{(21/9)}{(54/6)} = 0.26
+$$
 The association between A and B, conditional on C = 0, has an odds ratio of:
-
 $$
-
-\text{OR}_{C=0} = \frac{(59/11)}{(26/14)} = 2.89$$
-
+\text{OR}_{C=0} = \frac{(59/11)}{(26/14)} = 2.89
+$$
 : {#tbl-ColliderABC}
 
 |       | C=1: B=1 | C=1: B=0 | C=0: B=1 | C=0: B=0 | Total |
@@ -232,31 +226,25 @@ Potential outcomes are so named because they are outcomes that could potentially
 **Conditional exchangeability and identification**
 
 The first assumption is *conditional exchangeability*. In randomised studies, conditional (and marginal) exchangeability holds because the treated individuals, had they not been treated, would have had the same average potential outcomes as the untreated, and vice versa. This cannot be guaranteed in observational studies, but it can be assumed to hold if the unmeasured risk factors of the outcome are equally distributed between the treated and the untreated groups, conditional on the measured confounders. Thus, using the language of the potential outcomes, the conditional exchangeability assumption (a.k.a conditional independence, unconfoundedness or ignorability) is:
-
 $$
 Y^{a} \amalg A\mid \textbf{W} \; \forall \; a \in \{0, 1\},
 $$
-
 This states that, conditional on the set of observed confounders **W**, the actual exposure level $A$is independent of each of the potential outcomes. Thus, the conditional mean independence is given$E[Y^{a} \mid A=1, \textbf{W}=w] = E[Y^{a} \mid A=0, \textbf{W}=w] = E[Y^{a} \mid \textbf{W}=w] \; \forall \, a \in{0,1}.$
 
 **Positivity**
 
 Positivity holds if the conditional probability of being treated or exposed (and similarly for being untreated) is greater than zero. Therefore, if P(**W**=w) > 0, then
-
 $$
 P(A=a\mid \textbf{W}=w) > 0 \; \forall \; \textbf{W} \in \textbf{w}, a \in \{0, 1\}.
 $$
-
 When this assumption is violated, it is typically because the target population is poorly defined (i.e, attempting to estimate the effect of a treatment on people who would never receive it).
 
 **Counterfactual consistency**
 
 Counterfactual consistency holds if the observed outcome for all treated individuals equals their outcome had they been treated, and likewise for untreated individuals. For example, in @tbl-POtable, Patient 1's observed outcome equals their potential outcome had they not been treated ($Y = Y^{a} = 1$), Patient 2's observed outcome equals their potential outcome had they been treated ($Y = Y^{1} = 1$). The consistency assumption means that the definition of the treatment, and outcome, is consistent for each patient. Analytically, consistency is represented by:
-
 $$
 Y = A Y^{1} + (1-A)Y^{0},
 $$
-
 **Non-interference**
 
 Aside from exchangeability, positivity, and consistency, there are other notable assumptions. It is further assumed that there is *no interference*. This is commonly called *Stable Unit Treatment Value Assumption* (SUTVA). This assumption is closely related to the consistency assumption, in that non-interference (or SUTVA) states that there is only one version of the exposure and that a patient's potential outcome is not influenced by the treatment of another patient.[@Schomaker2020RegressionCausality]
@@ -268,49 +256,32 @@ Commonly, an observational study aims to answer a scientific question that chara
 An estimand is a quantity of interest in a causal analysis that represents the specific causal effect that a researcher aims to estimate. The average treatment effect (ATE) is an example of an estimand. The ATE is defined as the average difference in the outcome variable between a group of individuals who received a treatment and a group of individuals who did not receive the treatment. It represents the average causal effect of the treatment on an outcome of interest in a population.
 
 The ATE is algebraically defined as
-
 $$
 \text{ATE} \, = \, E[Y = 1 \mid A=1] - E[Y = 1 \mid A=0].
 $$
-
 This is currently in terms of unobserved potential outcomes. For example, we can only observe what happens when an individual is treated or untreated, but not both. To estimate the ATE from our data, we can apply the identifiability assumptions (@sec-identifiabilityassumptions) and derive the ATE in terms of observable data. Note that $Y^{a}$is the potential outcome of an individual, with measured confounders$\textbf{W}$, had they received treatment $A=a$
 
 First, by the law of total probability
-
 $$
-
 P[Y^{a}=1] \, = \, \sum_{w} P[Y^{a}=1 \,|\, \textbf{W}=w]\,P(\textbf{W}=w)$$
-
 By conditional exchangeability
-
 $$
-
 P[Y^{a}=1] \, = \, \sum_{w} P[Y^{a}=1 \,|\,A=a,\textbf{W}=w]\,P(\textbf{W}=w)$$
-
 This is possible since we are assuming that within levels of $\textbf{W}$, the predictors of the outcome are equally distributed between the treated and non-treated groups. That is, we have achieved what would happen if patients were randomised to each treatment group. If we also assume consistency
-
 $$
-
 P[Y^{a}=1] \, = \, \sum_{w} P[Y=1 \,|\,A=a,\textbf{W}=w]\,P(W=w)$$
-
 Thus, under these assumptions, the statistical estimand for the ATE is defined as
-
 $$
 \sum_{w} P[Y=1 \,|\,A=1,\textbf{W}=w]\,Pr(W=w) \,-\, \sum_{w} P[Y=1 \,|\,A=0,\textbf{W}=w]\,P(\textbf{W}=w).
 $$
-
 Many estimands could be estimated. One common alternative to the ATE is the average treatment effect among the treated (ATT):
-
 $$
 \text{ATT}\,=\,E[Y^{1} \mid A=1] - E[Y^{0} \mid A=1]
 $$
-
 Applying the assumptions above, the statistical estimand for the ATT is
-
 $$
 \sum_{w} P[Y=1 \,|\,A=1,\textbf{W}=w]\,P(\textbf{W}=w \mid A=1) \,-\, \sum_{w} P[Y=1 \,|\,A=0,\textbf{W}=w]\,P(\textbf{W}=w \mid A=1).
 $$
-
 In the above, for both the ATE and ATT, we have transitioned from a setting where we have unobserved potential outcomes to a setting where we can estimate our causal estimand using the distribution of the observed data [@Robins1999]. Conditional exchangeability requires all confounders to be measured and accounted for in the analysis.
 
 There are many different types of estimands that can be used in causal inference, and the choice of estimand depends on the research question and study design. There are many other estimands used for causal analysis. The conditional average treatment effect (CATE) represents the causal effect of a treatment on the outcome for specific subgroups of individuals, rather than the average effect over the entire population. Average causal effect of the untreated (ACEU) represents the average causal effect of not receiving the treatment on the outcome.
@@ -340,23 +311,17 @@ The causal estimand is written in terms of potential outcome notation. It relies
 There are numerous statistical estimands to choose from; some of the more common statistical estimands are:
 
 **Causal risk difference**
-
 $$
 \operatorname{P}\{Y^{1}=1\}-\operatorname{P}\{Y^{0}=1\}
 $$
-
 **Causal risk ratio**
-
 $$
 \frac{\operatorname{P}\{Y^{1}=1\}}{\operatorname{P}\{Y^{0}=1\}}
 $$
-
 **Causal log-odds ratio**
-
 $$
 \log \left[\frac{\operatorname{P}\{Y^{1}=1\}}{1-\operatorname{P}\{Y^{1}=1\}}\right] - \log \left[\frac{\operatorname{P}\{Y^{0}=1\}}{1-\operatorname{P}\{Y^{0}=1\}}\right]
 $$
-
 The choice for the measure of association depends on the form of the exposure and the outcome, but also on what might be easier to interpret in the context of the study.
 
 #### A note on estimands, estimators, and estimates
@@ -397,4 +362,4 @@ As practical epidemiologists and biostatisticians, we focus on the use of applie
 :   Randomized Controlled Trial
 
 **TMLE**
-:   Targeted Maximum Likelihood Estimation
+:   Targeted Maximum Likelihood Estimation $

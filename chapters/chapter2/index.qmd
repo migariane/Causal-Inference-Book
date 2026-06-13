@@ -11,11 +11,9 @@ Confounding bias in epidemiological studies occurs when there are shared causes 
 However, despite being highly effective, stratification's application becomes limited when faced with numerous confounding variables, as it results in overly small groupings that hinder practical comparisons due to insufficient data for precise estimation (i.e., sparsity due to increasing dimensionality on the data).
 
 Regression methods for adjusting confounding variables incorporate details about interventions and prognostic factors into a regression formula within a modeling context:
-
 $$
-
-y_{ij} = \beta_{0j} + \beta_{1j}x_{i1} + \beta_{2j}x_{i2} + \cdots + \beta_{pj}x_{ip} + \epsilon_{ij},$$
-
+y_{ij} = \beta_{0j} + \beta_{1j}x_{i1} + \beta_{2j}x_{i2} + \cdots + \beta_{pj}x_{ip} + \epsilon_{ij},
+$$
 where:
 
 - $y_{ij}$: represents the i-the observation of the j-th dependent variable.
@@ -198,23 +196,17 @@ Three linear regression models were employed (Box @lst-linear) to explore the as
 The algebraic specifications of these models are presented below. Additionally, Box @lst-linear provides R code for model fitting and visualization.
 
 Model 1:
-
 $$
-
-\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \epsilon$$
-
+\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \epsilon
+$$
 Model 2:
-
 $$
-
-\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \beta2 \cdot Age + \epsilon$$
-
+\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \beta2 \cdot Age + \epsilon
+$$
 Model 3:
-
 $$
-
-\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \beta2 \cdot Age + \beta3 \cdot Proteinuria + \epsilon$$
-
+\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \beta2 \cdot Age + \beta3 \cdot Proteinuria + \epsilon
+$$
 Box @lst-linear: Linear regression models in R
 
 ```r
@@ -341,22 +333,32 @@ These investigations explored situations where adding a collider variable to a l
 
 Given that most epidemiological research aims to explain causal relationships, awareness of collider variables is crucial to avoid paradoxical associations. By carefully considering collider effects and potential biases, epidemiologists can ensure the robustness and interpretability of their causal estimates.
 
+## Conclusion
+
+Regression adjustment is the most widely used method for controlling confounding in observational studies. Its simplicity and familiarity make it an essential tool, but its validity depends critically on correct model specification. When the outcome model is correctly specified and there is no effect modification by confounders, regression provides unbiased estimates of the average treatment effect. However, when effect modification is present, the regression coefficient does not, in general, equal the marginal ATE — a subtle but important point that motivates the g-formula and other standardization-based methods presented in subsequent chapters.
+
+Key takeaways from this chapter:
+- Confounding can be addressed by conditioning on measured confounders in a regression model.
+- The regression coefficient for treatment equals the ATE only under effect homogeneity (no interaction between treatment and confounders).
+- Model diagnostics — including residual analysis, influence measures, and specification tests — are essential for credible inference.
+- When the goal is marginal causal effects in the presence of effect modification, more flexible methods such as the g-formula are needed.
+
 ## Glossary
 
 **AIC**
-:   Akaike Information Criterion
+:   Akaike Information Criterion — a measure of model fit penalized by the number of parameters.
 
 **DAG**
-:   Directed Acyclic Graph
+:   Directed Acyclic Graph — a graphical representation of causal relationships among variables.
 
 **GLM**
-:   Generalized Linear Model
+:   Generalized Linear Model — a flexible generalization of ordinary linear regression.
 
 **OR**
-:   Odds Ratio
+:   Odds Ratio — the ratio of the odds of an outcome in the treated group to the odds in the control group.
 
 **RD**
-:   Risk Difference
+:   Risk Difference — the absolute difference in risk between treated and control groups.
 
 **RR**
-:   Risk Ratio
+:   Risk Ratio — the ratio of the risk in the treated group to the risk in the control group.

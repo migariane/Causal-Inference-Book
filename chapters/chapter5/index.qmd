@@ -133,7 +133,6 @@ The AIPTW estimator for the average treatment effect (ATE) is:
 $$
 \widehat{ATE}_{\text{AIPTW}} = \frac{1}{n} \sum_{i=1}^n \left[ \frac{A_i Y_i}{\hat{e}(W_i)} - \frac{(A_i - \hat{e}(W_i)) \hat{\mu}_1(W_i)}{\hat{e}(W_i)} - \left( \frac{(1 - A_i) Y_i}{1 - \hat{e}(W_i)} - \frac{(A_i - \hat{e}(W_i)) \hat{\mu}_0(W_i)}{1 - \hat{e}(W_i)} \right) \right].
 $$
-
 This estimator consists of two broad components that correspond to the treated and untreated groups, respectively. The term $\frac{A_i Y_i}{\hat{e}(W_i)}$ represents a weighted average of outcomes among the treated individuals, where each individual is weighted by the inverse of their estimated propensity score. This is a standard component of the IPTW estimator, capturing the expected potential outcome under treatment. The term $\frac{(A_i - \hat{e}(W_i)) \hat{\mu}_1(W_i)}{\hat{e}(W_i)}$ acts as a correction, adjusting the treatment group's contribution based on the discrepancy between the actual treatment received and the estimated probability of treatment, scaled by the predicted outcome from the outcome regression model under treatment.
 
 The second part of the expression inside the summation pertains to the control group. The term $\frac{(1 - A_i) Y_i}{1 - \hat{e}(W_i)}$ is the IPTW contribution for control individuals, with weights equal to the inverse of one minus the estimated propensity score. This is then adjusted using $\frac{(A_i - \hat{e}(W_i)) \hat{\mu}_0(W_i)}{1 - \hat{e}(W_i)}$, which again serves as a correction based on the difference between actual and predicted treatment assignment, scaled by the predicted outcome under control.
@@ -154,44 +153,36 @@ The IPTW estimator can be viewed as solving the estimating equation:
 $$
 \frac{1}{n}\sum_{i=1}^{n}\left(\frac{{I}(A_{i}=a)Y_{i}}{g(A_{i}\mid \boldsymbol{W}_{i})} - \mu_{a}\right) = 0.
 $$
-
 To improve this estimator, we can introduce a mean-zero augmentation term that adjusts for residual differences in the outcome model:
 $$
 \frac{I(A=a) - g(A=a\mid \boldsymbol{W})}{g(A=a\mid \boldsymbol{W})} E(Y \mid A=a, \boldsymbol{W}).
 $$
-
 Incorporating this into the estimating equation gives the AIPTW formulation:
 $$
 \begin{aligned}
    \mathbb{E}\left(\frac{I(A=a)Y}{g(A=a\mid \boldsymbol{W})} - \left(\frac{I(A=a) - g(A=a\mid \boldsymbol{W})}{g(A=a\mid \boldsymbol{W})} \right) E(Y \mid A=a, \boldsymbol{W}) \right) - \mu_a = 0.
 \end{aligned}
 $$
-
 By rearranging, it becomes evident that AIPTW combines both an outcome regression and a weighting adjustment:
 $$
-
 \begin{aligned}
     & \frac{1}{n} \underbrace{\sum_{i=1}^{n} \left( E(Y_i \mid A_i=1, \boldsymbol{W}_i) - E(Y_i \mid A_i=0, \boldsymbol{W}_i) \right)}_{\text{Outcome regression component}} + \\
     & \frac{1}{n} \sum_{i=1}^{n} \underbrace{\left( \frac{A_i [Y_i - E(Y_i \mid A_i=1, \boldsymbol{W}_i)]}{g(A_i=1 \mid \boldsymbol{W}_i)} - \frac{(1 - A_i) [Y_i - E(Y_i \mid A_i=0, \boldsymbol{W}_i)]}{g(A_i=0 \mid \boldsymbol{W}_i)} \right)}_{\text{Augmentation term with mean zero}}.
 \end{aligned}
 $$
-
 {#eq-aiptw}
 
 The estimated ATE using AIPTW is:
 $$
 \text{AIPTW-ATE} = \mu_1 - \mu_0,
 $$
-
 where each potential outcome mean is given by:
 $$
-
 \begin{aligned}
 \mu_1 &= \frac{1}{n} \sum_{i=1}^{n} \left( E(Y_i \mid A_i=1, \boldsymbol{W}_i) + \frac{A_i [Y_i - E(Y_i \mid A_i=1, \boldsymbol{W}_i)]}{g(A_i=1 \mid \boldsymbol{W}_i)} \right), \\
 \mu_0 &= \frac{1}{n} \sum_{i=1}^{n} \left( E(Y_i \mid A_i=0, \boldsymbol{W}_i) + \frac{(1 - A_i) [Y_i - E(Y_i \mid A_i=0, \boldsymbol{W}_i)]}{g(A_i=0 \mid \boldsymbol{W}_i)} \right).
 \end{aligned}
 $$
-
 The second component in @eq-aiptw reflects the residuals of the outcome regression model, scaled by the inverse probability weights. These residual terms have expectation zero under correct specification, making them ideal for correcting potential bias from misspecification in one of the models [@Kennedy2016]. When the outcome model is correct, the AIPTW simplifies to the g-formula estimator. Conversely, if the treatment model is correct, the estimator collapses to the standard IPTW form [@Bang2005; @Daniel2018DoubleRobustness].
 
 **R Example (AIPTW with linear models):**
@@ -254,7 +245,7 @@ TMLE has six main steps:
 5. Compute the estimand of interest
 6. Calculate the standard errors for confidence intervals and p-values
 
-As an example, suppose we are interested in estimating the effect of $A$(a binary treatment variable) on$Y$(a binary outcome variable) while adjusting for some confounders$W$ (a vector of binary and continuous variables). Below is the simulated data. The steps for TMLE are given after.
+As an example, suppose we are interested in estimating the effect of $A$ (a binary treatment variable) on $Y$ (a binary outcome variable) while adjusting for some confounders $W$ (a vector of binary and continuous variables). Below is the simulated data. The steps for TMLE are given after.
 
 ```r
 library(readr)
@@ -286,32 +277,21 @@ data2$w1 <- w1; data2$w2 <- w2; data2$w3 <- w3; data2$w4 <- w4
 #### Step 1: Predict the initial outcome
 
 The first step is to estimate the expected value of the outcome using information on the treatment and confounders. This is defined using a function Q of A and $\mathbf{W}$ to obtain the conditional expectation of Y:
-
 $$
-
  Q^{0}(A,\mathbf{W}) = E[Y|A,\mathbf{W}]$$
-
 We can use logistic regression to model the conditional expectation of Y:
-
 $$
-
  E[Y|A,\mathbf{W}] = \beta_{0} + \beta_{1}A + \beta^{T}_{w}\mathbf{W}$$
-
 ```r
 # Step 1
 Gcomp <- glm(Y ~ A + C + w1 + w2 + as.factor(w3) + as.factor(w4), family="binomial", data=data2)
 ```
 
-To predict the potential outcomes, we first need to specify two variables, one where everyone receives the treatment ($A=1$) and another where everyone does not receive the treatment ($A=0$). Taking predictions of the outcome for each observation using these two variables provides us with the potential outcomes ($Y(1)$and$Y(0)$).
-
+To predict the potential outcomes, we first need to specify two variables, one where everyone receives the treatment ($A=1$) and another where everyone does not receive the treatment ($A=0$). Taking predictions of the outcome for each observation using these two variables provides us with the potential outcomes $Y(1)$ and $Y(0)$.
 $$
-
 Q^{0}(A=1,\mathbf{W}) \quad = \quad E[Y|A=1,\mathbf{W}] \quad = \quad expit( \widehat{\beta}_{0} + \widehat{\beta}_{1}(A=1) + \widehat{\beta}^{T}_{w}\mathbf{W})$$
-
 $$
-
 Q^{0}(A=0,\mathbf{W}) \quad = \quad E[Y|A=0,\mathbf{W}] \quad = \quad expit( \widehat{\beta}_{0} + \widehat{\beta}_{1}(A=0) + \widehat{\beta}^{T}_{w}\mathbf{W})$$
-
 ```r
 # Predict Q for A, A=1, and A=0
 QAW <- predict(Gcomp)
@@ -321,24 +301,18 @@ Q0W = predict(Gcomp, newdata=data.frame(A = 0, data2[,c("C","w1","w2","w3","w4")
 
 Notice that the potential outcome for $A=1$ will be equivalent to the observed outcome ($E(Y|A=1,\mathbf{W}$). This is part of the consistency assumption.
 
-If we were to take the difference between $\widehat{E}(Y|A=1,\mathbf{W})$and$\widehat{E}(Y|A=0,\mathbf{W})$, then we would obtain an estimate of the average treatment effect (ATE). You may have noticed that this is the same as standardisation, g-formula estimation, or G-computation.
+If we were to take the difference between $\widehat{E}(Y|A=1,\mathbf{W})$ and $\widehat{E}(Y|A=0,\mathbf{W})$, then we would obtain an estimate of the average treatment effect (ATE). You may have noticed that this is the same as standardisation, g-formula estimation, or G-computation.
 
 However, we can do better than this. TMLE includes a targeting step that adjusts the initial prediction of the outcome to align it with the estimand of interest (e.g., the ATE). The initial prediction of the outcome ($Q^{0}$) may be a good overall estimate but may not be tailored to the causal quantity. The targeting step refines this prediction to better capture the relevant features of the data for estimating the parameter of interest. The targeting step involves defining "clever covariates" (constructed using the propensity score) adjusting the initial prediction to correct for any bias in the estimation of the parameter of interest. This is especially important when the initial model is misspecified. Through the targeting step, TMLE achieves double robustness, meaning it produces consistent estimates if either the initial outcome model ($Q^{0}$) or the propensity score model is correctly specified. The targeting step ensures that the estimator uses both models effectively, leveraging their complementary strengths. The targeting step encompasses Steps 2, 3, and 4 of the six main steps. Together, these steps create a fluctuation parameter that is used to update the initial prediction of the outcome.
 
 An important note here is that even if we used machine learning algorithms to define the outcome model, we will still need the targeting step. This is because in Step 1 we are **predicting** potential outcomes, we are not yet **estimating** causal effects. The objective of machine learning (i.e., logistic regression in a simple case) is to minimise prediction error on the outcome variable, not to balance confounders or align with the causal estimand. Machine learning models predict the outcome conditional on covariates, but they do not naturally adjust for treatment assignment mechanisms or ensure consistency with the target parameter. The targeting step adjusts the outcome predictions to account for the propensity score and other aspects of the treatment mechanism, ensuring the final estimate is aligned with the causal parameter. The machine learning models may still leave residual confounding or fail to focus on the specific population and treatment comparisons relevant to the causal parameter.
 
 The question is now "how do we refine our initial prediction of the outcome (and the estimate of the target parameter)"? In semiparametric estimation theory, there is a fundamental concept called the efficient influence curve (EIC). It represents the residual variation in the target parameter that remains after accounting for all available information in the model. The EIC is a function that characterises the amount of information a particular observation provides about the target parameter while accounting for the statistical model's constraints. The EIC is the "blueprint" for achieving efficient, unbiased estimation of a causal parameter. TMLE updates the initial outcome model so that the final estimate solves the EIC equation, ensuring the estimator is efficient and unbiased. The EIC is:
-
 $$
-
 EIC = \left( \frac{A}{P(A=1 | \mathbf{W})} - \frac{1-A}{P(A=0 | \mathbf{W})} \right) [ Y - E(Y | A, \mathbf{W}) ] + E(Y | A=1, \mathbf{W}) + E(Y | A=0, \mathbf{W}) - \psi   $$
-
 where $\psi$ is our estimate of the ATE. The EIC can be evaluated from the observed data as
-
 $$
-
 \widehat{EIC} = \left( \frac{A}{\widehat{g}(1,\mathbf{W})} - \frac{1-A}{\widehat{g}(0,\mathbf{W})} \right) [ Y - Q^{1}(A,\mathbf{W}) ] + Q^{1}(1,\mathbf{W}) + Q^{1}(0,\mathbf{W}) - \widehat{ATE}$$
-
 Note that $Q^{1}(.)$is the update of the initial prediction of$Q^{0}(.)$, and $\widehat{g}(.)$ is the propensity score.
 
 Using the EIC to achieve an unbiased estimation of the causal parameter (e.g., ATE), we need to obtain the propensity score and update the initial prediction of the outcome. We cover this over the next few steps.
@@ -346,17 +320,11 @@ Using the EIC to achieve an unbiased estimation of the causal parameter (e.g., A
 #### Step 2: Predict the probability of treatment
 
 Steps 2, 3, and 4 encompass the targeting step used to update the initial prediction of the outcome. The first part of the targeting step is to estimate the probability of treatment, given the confounders:
-
 $$
-
 g(A,W) = Pr(A=1 | \mathbf{W})$$
-
 Again, we could use logistic regression to define the propensity score model:
-
 $$
-
 \widehat{g}(A=1,\mathbf{W}) \quad = \quad  \widehat{E}[A=1 | \mathbf{W}] \quad = \quad expit( \widehat{\alpha}_{0} + \widehat{\alpha}^{T}_{1}\mathbf{W} )$$
-
 ```r
 # Step 2 estimation of the propensity score (ps)
 psm <- glm(A ~ C + w1 + w2 + as.factor(w3) + as.factor(w4), family = binomial, data=data2)
@@ -370,11 +338,8 @@ g0W = (-1 / (1-gW))
 The next step of the targeting step is to calculate clever covariates and the fluctuation parameter. These covariates guide the targeting step by indicating how much weight each observation contributes to correcting the initial prediction.
 
 The clever covariates are calculated as:
-
 $$
-
 H(A=a, \mathbf{W}) \quad = \quad \frac{A}{\widehat{g}(A=1,\mathbf{W})} \, - \, \frac{1-A}{\widehat{g}(A=0,\mathbf{W})}$$
-
 When $A=1$, the right hand side will be $\frac{1}{\widehat{g}(A=1,\mathbf{W})}$. When $A=0$, the right hand side will be $\frac{-1}{\widehat{g}(A=0,\mathbf{W})}$. You may notice that the clever covariates are of the same form as inverse probability of treatment weights.
 
 ```r
@@ -385,35 +350,23 @@ H0W = (-1 / (1 - gW))
 ```
 
 The **fluctuation parameter** ($\epsilon$) is a small adjustment applied to the initial outcome model ($Q^{0}(A,\mathbf{W})$) to correct residual bias and ensure that the updated model ($Q^{1}$) aligns with the EIC. It does this by incorporating information from the clever covariate ($H(A,\mathbf{W})$) and the observed outcomes ($Y$). The fluctuation parameter is estimated by solving an estimating equation, specifically a score equation derived from the EIC. The estimating equation ensures that the updated outcome model satisfies the EIC's property:
-
 $$
-
 E[D(Y,A,W;Q,g)] = 0$$
-
 where $D(.)$is the EIC, which includes the clever covariate$H(A,W)$.
 
 In practice, the score equation used to estimate $\epsilon$ is:
-
 $$
-
 \sum_{i} H(A_{i}, W_{i}) \times (Y_{i} - Q^{1}(A_{i},W_{i})) = 0$$
-
 where $Q^{1}(A_{i},W_{i}) = Q^{0}(A_{i},W_{i}) + \left( \epsilon \cdot H(A_{i},W_{i}) \right) $
 
 You may be asking "why do we need to solve an estimating equation?". By solving the score equation, TMLE ensures that the estimator $\widehat{\psi}$satisfies$E[D]=0$, meaning the bias has been corrected.
 
 For a binary outcome, the fluctuation model is often logistic:
-
 $$
-
 logit(Q^{1}(A,W)) = logit(Q^{0}(A,W)) + \epsilon \cdot H(A,W)$$
-
 Thus the estimating equation becomes:
-
 $$
-
 \sum_{i} H(A_{i}, W_{i}) \times \left( Y_{i} - expit \left( \, logit(Q^{0}(A_{i},W_{i})) + \epsilon \cdot H(A_{i},W_{i}) \right) \right) = 0$$
-
 While this equation might seem complicated to compute, this equation is simply solved iteratively using maximum likelihood estimation.
 
 If we take the fluctuation model above, you will see that its form is very similar to the form of a logistic regression model, such as $logit(E[Y|X]) = \beta_{0} + \beta_{1}X $. The difference is that in the right hand side of our fluctuation model the "intercept" ($logit(Q^{0}(A,W))$) is not a constant value like $\beta_{0}$; it is a vector of values of the initial prediction of the outcome. Thus, instead of a constant-value intercept, we use $logit(Q^{0}(A,W))$as an offset (a fixed intercept) in a logistic regression model. We can now solve our estimating equation for the EIC by using a logistic regression model with the observed outcome$Y$as the outcome,$logit(\widehat{Q}^{0}(A,W))$as an offset, and one covariate,$H(A,W)$. The coefficient for the one covariate provides us with an estimate of the fluctuation parameter ($\epsilon$).
@@ -425,11 +378,8 @@ epsilon <- coef(glm(data2$Y ~ -1 + HAW + offset(QAW), family = "binomial"))
 #### Step 4: Update the initial outcome
 
 We now have everything we need to update the initial outcome. Referring back to the fluctuation model, we used the logit scale to solve the estimating equation for the EIC. Ideally, we would like the updated prediction of the outcome to be on the true outcome scale, We can use the inverse logit transformation (i.e., use *expit*):
-
 $$
-
 Q^{1}(A,\mathbf{W}) = expit( logit(Q^{0}(A,\mathbf{W})) + \epsilon \cdot H(A,\mathbf{W} ))$$
-
 From this model, we can obtain three variables:
 
 1. $Q^{1}(A,\mathbf{W})$: update of the expected outcome of all observations, **given the treatment they actually received** and their baseline confounders.
@@ -445,11 +395,8 @@ Q0W_1 <- plogis(Q0W + epsilon * H0W)
 #### Step 5: Compute the estimand of interest
 
 Now that we have updated predictions of the outcome, we can compute the ATE. The ATE (the causal estimand) in this case is evaluated using the risk difference (the statistical estimand). The risk difference is the average of the difference in the updated outcome estimates:
-
 $$
-
 \widehat{ATE} = \widehat{\psi} = \frac{1}{N} \sum^{N}_{i=1} \left( \widehat{Q}^{1}_{i}(A=1,\mathbf{W}) - \widehat{Q}^{1}_{i}(A=0,\mathbf{W}) \right)$$
-
 ```r
 # Step 5 targeted estimate of the ATE
 ATE <- mean(Q1W_1 - Q0W_1); ATE
@@ -458,19 +405,13 @@ ATE <- mean(Q1W_1 - Q0W_1); ATE
 #### Step 6: Calculate the standard errors for confidence intervals and p-values
 
 To calculate confidence intervals, we can refer back to the EIC:
-
 $$
-
 \widehat{EIC} = \left( \frac{A}{\widehat{g}(1,\mathbf{W})} - \frac{1-A}{\widehat{g}(0,\mathbf{W})} \right) [ Y - Q^{1}(A,\mathbf{W}) ] + Q^{1}(1,\mathbf{W}) + Q^{1}(0,\mathbf{W}) - \widehat{ATE}$$
-
 Notice that we use the three variables that we evaluated in step 4: $Q^{1}(A,\mathbf{W})$, $Q^{1}(1,\mathbf{W})$, and $Q^{1}(0,\mathbf{W})$.
 
 The EIC informs us how much each observation influences the estimate of the target parameter. It is evaluated for each observation, and using the resulting vector, we can estimate the standard error for the target parameter:
-
 $$
-
 \widehat{\sigma}_{EIC} = \widehat{SE}_{EIC} = \sqrt{ \frac{\widehat{Var}(\widehat{EIC})}{n} }$$
-
 where $\widehat{Var}(\widehat{EIC})$ represents the sample variance of the EIC.
 
 ```r
@@ -483,11 +424,8 @@ varEIC <- var(EIC)/n
 ```
 
 95% confidence intervals are calculated in the conventional way:
-
 $$
-
 95\% CI: \quad  \widehat{ATE} \pm 1.96 (\widehat{SE}_{EIC})$$
-
 ```r
 LCI <- ATE - 1.96*sqrt(varEIC)
 UCI <- ATE + 1.96*sqrt(varEIC)
@@ -524,21 +462,17 @@ The TMLE procedure is grounded in semiparametric efficiency theory. This section
 #### The Statistical Model and Target Parameter
 
 Let the observed data be $O = (W, A, Y) \sim P_0$, where $W$ is a vector of confounders, $A \in \{0,1\}$ is a binary treatment, and $Y$ is the outcome. The statistical model $\mathcal{M}$ is nonparametric (i.e., no restrictions beyond positivity). The target parameter is the average treatment effect:
-
 $$
 \Psi(P_0) = \mathbb{E}_{0}[ \mathbb{E}_{0}[Y \mid A=1, W] - \mathbb{E}_{0}[Y \mid A=0, W] ] = \mathbb{E}_{0}[ \bar{Q}_0(1, W) - \bar{Q}_0(0, W) ]
 $$
-
 where $\bar{Q}_0(A, W) = \mathbb{E}_0[Y \mid A, W]$ is the true outcome regression.
 
 #### The Efficient Influence Curve
 
 A central object in semiparametric theory is the **efficient influence curve** (EIC), also called the canonical gradient. For the ATE parameter under the nonparametric model, the EIC is:
-
 $$
 D^{*}(P_0)(O) = \left( \frac{A}{g_0(1 \mid W)} - \frac{1-A}{g_0(0 \mid W)} \right) \left( Y - \bar{Q}_0(A, W) \right) + \bar{Q}_0(1, W) - \bar{Q}_0(0, W) - \Psi(P_0)
 $$
-
 where $g_0(a \mid W) = \mathbb{P}_0(A = a \mid W)$ is the true propensity score.
 
 The EIC has three fundamental properties:
@@ -549,51 +483,39 @@ The EIC has three fundamental properties:
 #### von Mises Expansion and the Bias-Variance Decomposition
 
 For any estimator $\hat{P}$ of $P_0$, the error in the plug-in estimate can be decomposed via the **von Mises expansion** (functional Delta method):
-
 $$
 \Psi(\hat{P}) - \Psi(P_0) = -\mathbb{E}_{P_0}[D^{*}(\hat{P})(O)] + R(\hat{P}, P_0)
 $$
-
 where $R(\hat{P}, P_0)$ is a second-order remainder term. For the ATE, this remainder takes the form:
-
 $$
 R(\hat{P}, P_0) = \mathbb{E}_{0}\left[ \left( \frac{g_0(A \mid W) - \hat{g}(A \mid W)}{\hat{g}(A \mid W)} \right) \left( \bar{Q}_0(A, W) - \hat{\bar{Q}}(A, W) \right) \right]
 $$
-
 The key insight is that $R$ is a **product of differences** between the estimated and true nuisance functions. This means the bias vanishes if *either* $\hat{g} \approx g_0$ *or* $\hat{\bar{Q}} \approx \bar{Q}_0$ — this is the mathematical basis for **double robustness**. Moreover, if both nuisance functions are estimated at rate $n^{-1/4}$, the remainder is $o_P(n^{-1/2})$, meaning the estimator is efficient.
 
 #### The Targeting Step
 
 The initial estimator $\hat{\bar{Q}}^0$ (from Step 1) may not solve the EIC equation. The targeting step updates $\hat{\bar{Q}}^0$ to $\hat{\bar{Q}}^1$ using a **fluctuation model**:
-
 $$
 \text{logit}(\hat{\bar{Q}}^1(A, W)) = \text{logit}(\hat{\bar{Q}}^0(A, W)) + \epsilon \cdot H(A, W)
 $$
-
 where $H(A, W) = \frac{A}{\hat{g}(1 \mid W)} - \frac{1-A}{\hat{g}(0 \mid W)}$ is the **clever covariate**. The parameter $\epsilon$ is estimated by maximum likelihood (logistic regression with $Y$ as outcome, $\text{logit}(\hat{\bar{Q}}^0)$ as offset, and $H$ as the sole covariate).
 
 This update is designed to solve the **score equation** derived from the EIC:
-
 $$
 \sum_{i=1}^{n} H(A_i, W_i) \left( Y_i - \text{expit}\left( \text{logit}(\hat{\bar{Q}}^0(A_i, W_i)) + \epsilon \cdot H(A_i, W_i) \right) \right) = 0
 $$
-
 After updating, the plug-in estimator $\hat{\Psi}_{\text{TMLE}} = \frac{1}{n}\sum_{i=1}^n (\hat{\bar{Q}}^1(1, W_i) - \hat{\bar{Q}}^1(0, W_i))$ satisfies $P_n D^{*}(\hat{P}^1) = 0$, which is the requirement for asymptotic efficiency.
 
 #### Asymptotic Properties
 
 Under regularity conditions, the TMLE estimator satisfies:
-
 $$
 \sqrt{n} \left( \hat{\Psi}_{\text{TMLE}} - \Psi(P_0) \right) \xrightarrow{\mathcal{D}} N(0, \sigma^2_{\text{eff}})
 $$
-
 where $\sigma^2_{\text{eff}} = \text{Var}_{P_0}(D^{*}(P_0)(O))$ is the semiparametric efficiency bound. The variance can be consistently estimated by the sample variance of the EIC:
-
 $$
 \hat{\sigma}^2 = \frac{1}{n} \sum_{i=1}^{n} \left( \widehat{EIC}_i \right)^2, \quad \text{where} \quad \widehat{EIC}_i = D^{*}(\hat{P}^1)(O_i)
 $$
-
 Wald-type 95% confidence intervals are constructed as $\hat{\Psi}_{\text{TMLE}} \pm 1.96 \cdot \hat{\sigma} / \sqrt{n}$.
 
 ::: {.callout-tip}
@@ -668,10 +590,10 @@ This prevents the targeted update from leveraging overfit predictions and leads 
 
 The CV-TMLE algorithm proceeds as follows:
 
-1. **Split the data** into $V$folds (commonly$V=10$).
+1. **Split the data** into $V$ folds (commonly $V=10$).
 2. For each fold:
-   1. Estimate the initial outcome regression $Q(A, X)$and propensity score$g(A \mid X)$ on the training set.
-   2. Predict $Q$and$g$ for the validation set.
+   1. Estimate the initial outcome regression $Q(A, X)$ and propensity score $g(A \mid X)$ on the training set.
+   2. Predict $Q$ and $g$ for the validation set.
    3. Perform the TMLE fluctuation (targeting step) only on the validation set using the predicted values.
    4. Compute the influence function contribution for each observation in the validation set.
 3. Aggregate influence function values across all folds to compute the final estimate.
@@ -741,4 +663,4 @@ Cross-validated TMLE extends the benefits of TMLE to smaller samples and high-di
 ## Glossary
 
 **TMLE**
-:   Targeted Maximum Likelihood Estimation
+:   Targeted Maximum Likelihood Estimation $

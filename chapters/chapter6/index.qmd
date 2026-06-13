@@ -53,12 +53,10 @@ In addition, we define the data structure for each individual as:
 $$
 O = (L_0, A_0, L_1, A_1, \dots, L_T, A_T, Y).
 $$
-
 This longitudinal data structure allows for dynamic treatment strategies that may assign treatment at time $t$based on past covariate and treatment history. The goal of causal inference in this setting is to estimate the average causal effect of a treatment regime$\bar{a}$on the outcome$Y$, denoted:
 $$
 E[Y^{\bar{a}}].
 $$
-
 This framework forms the foundation for the causal models and estimators introduced in subsequent sections.
 
 **R Example (Simulating Longitudinal Data):**
@@ -129,7 +127,6 @@ The g-formula expresses this quantity as:
 $$
 E[Y^{\bar{a}}] = \int_{\bar{l}} E[Y \mid \bar{A}_K = \bar{a}, \bar{L}_K = \bar{l}] \prod_{t=0}^{K} f(L_t \mid \bar{L}_{t-1} = \bar{l}_{t-1}, \bar{A}_t = \bar{a}_t) d\bar{l}
 $$
-
 In practice, this formula is approximated using parametric regression models and Monte Carlo simulation. It decomposes the joint distribution of the data into a sequence of conditional models. Each covariate and the outcome are modeled conditionally on the observed treatment and covariate history.
 
 #### Step-by-Step Estimation Procedure
@@ -187,7 +184,6 @@ The validity of the g-formula relies on three assumptions:
 $$
 Y^{\bar{a}} \perp A_t \mid \bar{A}_{t-1}, \bar{L}_t \quad \text{for all } t
 $$
-
 #### Interpretation and Extensions
 
 The g-formula provides a consistent estimate of the counterfactual mean outcome under a static or dynamic treatment strategy. It generalizes standardization by incorporating time-varying covariates and treatments. The method can also be extended to simulate more complex interventions, such as treatment rules that depend on patient history.
@@ -205,19 +201,15 @@ Marginal Structural Models (MSMs) are a class of causal models designed to estim
 In longitudinal settings, the central challenge arises when confounders are affected by prior treatment. Adjusting for these confounders in a standard regression model can introduce bias, because it blocks part of the causal pathway from treatment to outcome. MSMs overcome this problem by modeling the counterfactual mean outcomes under different treatment regimes, while using inverse probability weighting (IPW) to account for confounding.
 
 Let $\bar{A}_t = (A_0, A_1, \ldots, A_t)$be the history of treatments up to time$t$, and let $Y$be the outcome measured at a final time point$T$. The goal of an MSM is to estimate:
-
 $$
 \mathbb{E}[Y^{\bar{a}}]
 $$
-
 for different treatment regimens $\bar{a}$. These counterfactual means are modeled directly, without conditioning on intermediate covariates.
 
 A typical form of an MSM is:
-
 $$
 \mathbb{E}[Y^{\bar{a}}] = \beta_0 + \beta_1 a_0 + \beta_2 a_1 + \cdots + \beta_T a_T
 $$
-
 This model expresses the expected counterfactual outcome as a function of the treatment history. It can be generalized to allow for interactions, nonlinear effects, or cumulative dose effects. For binary outcomes, the model might be fit on the log-odds scale using a logistic link.
 
 Because the true counterfactuals are not observed, MSMs are estimated using the observed outcomes weighted by the inverse probability of treatment. Inverse Probability Weighting (IPW) is a method used to address time-varying confounding in longitudinal observational studies. It reweights the sample to create a pseudo-population in which treatment assignment at each time point is independent of past confounders. This approach enables unbiased estimation of marginal causal effects when traditional regression adjustment would fail due to feedback between treatment and covariates.
@@ -230,18 +222,14 @@ Let $\hat{e}_t(W_t) = P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)$denote the esti
 $$
 W_i = \prod_{t=0}^T \frac{1}{P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)}.
 $$
-
 Stabilized weights are often preferred to reduce variance and improve finite sample performance. They are constructed by placing a numerator that only depends on baseline or prior covariates:
 $$
 W_i^{stab} = \prod_{t=0}^T \frac{P(A_t = a_t \mid \bar{A}_{t-1})}{P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)}.
 $$
-
 More generally,
-
 $$
 W_i = \prod_{t=0}^T \frac{f(A_t = a_t^i \mid \bar{A}_{t-1}^i)}{f(A_t = a_t^i \mid \bar{L}_t^i, \bar{A}_{t-1}^i)}
 $$
-
 These stabilized weights create a pseudo-population in which treatment is independent of confounders, allowing consistent estimation of the MSM parameters via weighted regression.
 
 1. Estimate the treatment model at each time point using logistic regression or machine learning to obtain probabilities $P(A_t \mid \bar{L}_t, \bar{A}_{t-1})$.
@@ -338,10 +326,9 @@ LTMLE involves the following steps:
    $$
    H_t = \prod_{s=0}^{t-1} \frac{\mathbb{I}(A_s = d_s) \cdot \mathbb{I}(C_s = 1)}{g_s(A_s \mid \bar{L}_s, \bar{A}_{s-1}) \cdot c_s(C_s \mid \bar{A}_s, \bar{L}_s)}.
    $$
-
 4. **Targeting step**:
    For each $t$, update $Q_t^0$ using a fluctuation model:
-   $$
+$$
    \text{logit}(Q_t^1) = \text{logit}(Q_t^0) + \epsilon H_t,
    $$
    where $\epsilon$is estimated by fitting a logistic regression with$Q_t^0$as the offset and$H_t$ as the covariate.
@@ -351,7 +338,6 @@ LTMLE involves the following steps:
    $$
    \hat{\psi}_T = \frac{1}{n} \sum_{i=1}^n Q_0^1(A_0 = d_0, L_0).
    $$
-
 6. **Inference**:
    Estimate standard errors using the empirical variance of the efficient influence function.
 
@@ -364,7 +350,6 @@ $$
 \text{logit}(Q_0^1) &= \text{logit}(Q_0^0) + \epsilon_0 H_0.
 \end{aligned}
 $$
-
 We then plug in the values $A_0 = d_0, A_1 = d_1$and average the final predictions to obtain$\hat{\psi}_T$.
 
 ```r
@@ -510,7 +495,6 @@ Let $\bar{d}$ denote a dynamic treatment rule. The nonparametric g-formula estim
 $$
 \hat{S}(t \mid \bar{d}) = \frac{1}{n} \sum_{i=1}^n \prod_{s=0}^{t} \hat{P}(Y_{is} = 1 \mid \text{history}_i, A_{is} = d_s)
 $$
-
 This is typically implemented via simulation: for each individual, generate a pseudo-population following rule $\bar{d}$, then compute the product of conditional survival probabilities across time.
 
 #### The Parametric g-formula for Survival
@@ -519,7 +503,6 @@ The parametric g-formula expresses the counterfactual survival probability at ti
 $$
 P(Y_t^{\bar{a}} = 1) = \int_{\bar{l}_t} \prod_{s=0}^{t} P(Y_s = 1 \mid Y_{s-1} = 1, A_{s} = a_{s}, L_s = l_s) f(L_s \mid \bar{L}_{s-1}, \bar{A}_{s}) d\bar{l}_t
 $$
-
 This formula recursively computes the survival probability at each time point, conditioning on not having failed previously. The term $P(Y_s = 1 \mid Y_{s-1} = 1, A_s, L_s)$is the conditional survival probability given being at risk at time$s$, and $f(L_s \mid \cdot)$ represents the evolution of time-varying covariates.
 
 In practice, this approach involves specifying parametric regression models for:
@@ -713,15 +696,44 @@ summary(ltmle_fit)
 
 This returns survival probability estimates under the static intervention $A = 1$, along with standard errors and confidence intervals based on the efficient influence function.
 
-**Conclusion**
+## Conclusion
 
-TMLE provides a powerful approach for estimating survival probabilities under interventions in the presence of censoring and time-dependent confounding. Compared to standard estimators, TMLE offers increased robustness and better finite-sample performance--especially when implemented with Super Learner. This makes it well-suited to longitudinal epidemiologic data where traditional methods may fail to identify the causal effect due to structural and data-adaptive complexities.
+Causal inference with longitudinal data presents unique challenges: time-varying confounders affected by prior treatment cannot be handled by standard regression methods without introducing bias. This chapter has introduced three complementary approaches for this setting.
 
-## Practical Considerations and Pitfalls
+Marginal structural models (MSMs) use inverse probability of treatment weighting to estimate the marginal causal effect of a treatment sequence, breaking the feedback between confounders and treatment. The parametric g-formula for survival data estimates counterfactual survival curves by modeling the conditional hazard at each time point. Longitudinal TMLE (LTMLE) combines the double robustness and efficiency of TMLE with the flexibility to handle time-varying treatments and confounders, providing the strongest theoretical guarantees.
 
-## Summary and Further Reading
+Key takeaways from this chapter:
+- Time-varying confounding affected by prior treatment (treatment-confounder feedback) invalidates standard regression adjustment.
+- MSMs with IPW create a pseudo-population where treatment is independent of confounders at each time point.
+- Stabilized weights reduce the variance of IPW estimators in longitudinal settings.
+- The parametric g-formula for survival estimates counterfactual survival curves under static or dynamic interventions.
+- LTMLE provides doubly-robust, semiparametric efficient estimates for longitudinal causal effects.
+- Inverse probability of censoring weighting (IPCW) is essential when follow-up is incomplete.
+
+All three methods require careful attention to the positivity assumption, correct model specification, and the handling of censoring. When applied rigorously, they enable credible causal conclusions from complex longitudinal observational data.
 
 ## Glossary
 
-**Main term**
-:   Description of main term.
+**Censoring**
+:   The loss of follow-up information before the outcome is observed; right censoring is the most common form in survival analysis.
+
+**Competing risk**
+:   An event whose occurrence precludes the occurrence of the primary event of interest.
+
+**G-computation**
+:   Another name for the g-formula; see glossary in Chapter 3.
+
+**IPCW**
+:   Inverse Probability of Censoring Weighting — a method that reweights observations to account for informative censoring.
+
+**LTMLE**
+:   Longitudinal Targeted Maximum Likelihood Estimation — an extension of TMLE for settings with time-varying treatments and confounders.
+
+**MSM**
+:   Marginal Structural Model — a model for the marginal distribution of counterfactual outcomes under a treatment sequence, typically estimated using IPW.
+
+**Stabilized weights**
+:   IPW weights that include a numerator model (often without time-varying covariates) to reduce variance.
+
+**Time-varying confounding**
+:   Confounding by a variable that changes over time and is affected by prior treatment.
