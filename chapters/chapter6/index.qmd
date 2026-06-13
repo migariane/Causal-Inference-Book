@@ -71,10 +71,6 @@ Y  <- 0.7 * L1 + 1.2 * A1 + rnorm(n)
 data <- data.frame(L0, A0, L1, A1, Y)
 head(data)
 ```
-::: {.callout-note}
-**Box 6.1 (Stata) removed** — For the IPTW computation Stata code, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 A DAG helps illustrate the challenge of time-varying confounding. Consider the following structure over two time points:
 
@@ -124,10 +120,6 @@ data <- data.frame(L0, A0, L1, A1, Y)
 model_naive <- lm(Y ~ A0 + A1 + L1, data = data)
 summary(model_naive)
 ```
-::: {.callout-note}
-**Box 6.2 (Stata) removed** — For the bootstrap IPTW Stata code, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 This regression model adjusts for $L_1$, which is affected by $A_0$, leading to biased estimates for the effect of $A_0$. Methods such as IPTW avoid this bias by reweighting rather than conditioning.
 
@@ -175,7 +167,7 @@ Y <- rbinom(n, 1, plogis(-1 + 0.8 * A1 + 0.6 * L1 + 0.3 * A0))
 
 long_data <- data.frame(L0, A0, L1, A1, Y)
 ```
-**Box 6.3 (Stata):** Marginal structural model with stabilized weights
+**Box 6.1 (Stata):** Marginal structural model with stabilized weights
 
 ```stata
 * Baseline treatment probabilities
@@ -251,10 +243,6 @@ new_data$Y_hat <- predict(model_Y, newdata = new_data, type = "response")
 g_formula_estimate <- mean(new_data$Y_hat)
 print(g_formula_estimate)
 ```
-::: {.callout-note}
-**Box 6.4 (Stata) removed** — For the data setup Stata code, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 To assess uncertainty, nonparametric bootstrap can be used to obtain confidence intervals.
 
@@ -370,10 +358,6 @@ w_A1 <- ifelse(data$A1 == 1, pnum_A1 / pden_A1, (1 - pnum_A1) / (1 - pden_A1))
 data$sw <- w_A0 * w_A1
 summary(data$sw)
 ```
-::: {.callout-note}
-**Box 6.5 (Stata) removed** — For the data preparation Stata code, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 *Note: The complete longitudinal analysis workflow (G-formula, IPTW, MSM, AIPTW, TMLE) is available at [github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).*
 
 Once the stabilized weights are estimated, they are used to fit a weighted regression model to estimate the marginal causal effect:
@@ -382,7 +366,7 @@ Once the stabilized weights are estimated, they are used to fit a weighted regre
 model_weighted <- glm(Y ~ A0 + A1, weights = sw, data = data)
 summary(model_weighted)
 ```
-**Box 6.6 (Stata):** MSM with stabilized weights
+**Box 6.2 (Stata):** MSM with stabilized weights
 
 ```stata
 * Estimate treatment models and compute stabilized weights
@@ -499,10 +483,6 @@ Q2_cf <- predict(Q2_model, newdata = new_data, type = "response")
 ATE <- mean(Q2_cf) - mean(Q2_pred)
 ATE
 ```
-::: {.callout-note}
-**Box 6.7 (Stata) removed** — For this Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 
 This provides a manual implementation of TMLE for a simple longitudinal setup.
@@ -528,10 +508,6 @@ result <- ltmle(data = longData,
 
 summary(result)
 ```
-::: {.callout-note}
-**Box 6.8 (Stata) removed** — For the LTMLE Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 
 This code estimates the expected outcome had everyone received treatment at both time points using SuperLearner to fit nuisance models. The output includes point estimates, standard errors, and confidence intervals.
@@ -589,10 +565,6 @@ p_uncensored <- 1 - predict(ipcw_model, type = "response")
 ipcw_weights <- 1 / p_uncensored
 summary(ipcw_weights)
 ```
-::: {.callout-note}
-**Box 6.10 (Stata) removed** — For the IPCW Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 
 These weights can be used in regression or IPTW analyses to adjust for informative censoring.
@@ -670,7 +642,7 @@ long_data <- data.frame(id = rep(1:n, each = K),
 # Estimate conditional survival model
 model <- glm(Y ~ time + A + L, family = binomial(), data = long_data)
 ```
-**Box 6.11 (Stata):** Stata equivalent for Box 6.11
+**Box 6.3 (Stata):** Stata equivalent for Box 6.11
 
 ```stata
 * Pooled logistic regression for discrete-time survival
@@ -809,10 +781,6 @@ data_long <- data.frame(
 initial_fit <- glm(Y ~ A + W + t, family = binomial(), data = data_long, subset = at_risk == 1)
 summary(initial_fit)
 ```
-::: {.callout-note}
-**Box 6.13 (Stata) removed** — For the survival TMLE Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 
 The subsequent steps include estimating censoring weights, constructing the clever covariate, performing the targeting update, and computing the survival curve. For brevity, we refer readers to code-based tutorials (e.g., TMLEbook) or the `ltmle` package for full pipelines.

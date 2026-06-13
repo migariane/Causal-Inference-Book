@@ -110,10 +110,6 @@ with(data, mean(
   m1hat - m0hat
 ))
 ```
-::: {.callout-note}
-**Box 5.1 (Stata) removed** — For the IPTW-RA Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 ### When It Is Used in Practice
 
@@ -206,10 +202,6 @@ term0 <- (1 - data$A) * (data$Y - data$mu0) / (1 - data$ps) + data$mu0
 ate_aiptw <- mean(term1 - term0)
 ate_aiptw
 ```
-::: {.callout-note}
-**Box 5.2 (Stata) removed** — For the `teffects ipwra` Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 ### Intuition and Advantages
 
@@ -280,10 +272,6 @@ data$w4 <- as.numeric(as.factor(data$carcinoma)); w4 <- data$w4
 data2 <- as.data.frame(Y); data2$A <- A; data2$C <- C
 data2$w1 <- w1; data2$w2 <- w2; data2$w3 <- w3; data2$w4 <- w4
 ```
-::: {.callout-note}
-**Box 5.3 (Stata) removed** — For the AIPTW by hand Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 #### Step 1: Predict the initial outcome
 
@@ -297,10 +285,6 @@ $$
 # Step 1
 Gcomp <- glm(Y ~ A + C + w1 + w2 + as.factor(w3) + as.factor(w4), family="binomial", data=data2)
 ```
-::: {.callout-note}
-**Box 5.4 (Stata) removed** — For the `teffects aipw` Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 To predict the potential outcomes, we first need to specify two variables, one where everyone receives the treatment ($A=1$) and another where everyone does not receive the treatment ($A=0$). Taking predictions of the outcome for each observation using these two variables provides us with the potential outcomes $Y(1)$ and $Y(0)$.
 $$
@@ -313,7 +297,7 @@ QAW <- predict(Gcomp)
 Q1W = predict(Gcomp, newdata=data.frame(A = 1, data2[,c("C","w1","w2","w3","w4")]))
 Q0W = predict(Gcomp, newdata=data.frame(A = 0, data2[,c("C","w1","w2","w3","w4")]))
 ```
-**Box 5.5 (Stata):** TMLE by hand (6 steps)
+**Box 5.1 (Stata):** TMLE by hand (6 steps)
 
 ```stata
 * Step 1: prediction model for the outcome Q0 (g-computation)
@@ -407,7 +391,7 @@ gW = predict(psm, type = "response")
 g1W = (1 / gW)
 g0W = (-1 / (1-gW))
 ```
-**Box 5.6 (Stata):** TMLE with eltmle command
+**Box 5.2 (Stata):** TMLE with eltmle command
 
 ```stata
 * if not already installed, type:
@@ -435,10 +419,6 @@ HAW <- (data2$A / gW -(1-data2$A) / (1 - gW))
 H1W = (1/gW)
 H0W = (-1 / (1 - gW))
 ```
-::: {.callout-note}
-**Box 5.7 (Stata) removed** — For the Monte Carlo simulation Stata code, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-:::
-
 
 The **fluctuation parameter** ($\epsilon$) is a small adjustment applied to the initial outcome model ($Q^{0}(A,\mathbf{W})$) to correct residual bias and ensure that the updated model ($Q^{1}$) aligns with the EIC. It does this by incorporating information from the clever covariate ($H(A,\mathbf{W})$) and the observed outcomes ($Y$). The fluctuation parameter is estimated by solving an estimating equation, specifically a score equation derived from the EIC. The estimating equation ensures that the updated outcome model satisfies the EIC's property:
 $$
@@ -465,7 +445,7 @@ If we take the fluctuation model above, you will see that its form is very simil
 ```r
 epsilon <- coef(glm(data2$Y ~ -1 + HAW + offset(QAW), family = "binomial"))
 ```
-**Box 5.8 (Stata):** Data setup for TMLE analysis with RHC dataset
+**Box 5.3 (Stata):** Data setup for TMLE analysis with RHC dataset
 
 ```stata
 * Download and prepare RHC data
