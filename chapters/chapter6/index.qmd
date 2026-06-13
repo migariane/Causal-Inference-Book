@@ -2,9 +2,7 @@
 
 The previous chapters have described methods that are used when the intervention occurs at only one time point. Often, there are settings where the intervention occurs at multiple time points. Such settings could be a chemotherapy given to patients with cancer at regular intervals, a series of public health policies designed to reduce environmental impact on the population's health over time, or how health outcomes change over time within certain geographical clusters.
 
-==Longitudinal TMLE==. [@Lendle2017Ltmle:Data]
-
-This chapter is split into two parts. Part I explores methods for multiple time point interventions and Part II explores methods for time-to-event outcomes.
+This chapter is split into two parts. Part I explores methods for multiple time-point interventions, including inverse probability weighting for longitudinal treatments (IPTW), marginal structural models (MSMs), and longitudinal TMLE (LTMLE) [@Lendle2017Ltmle:Data]. Part II explores methods for time-to-event outcomes, including the parametric g-formula for survival and TMLE for survival data.
 
 ## Part I: Multiple Time-Point Interventions
 
