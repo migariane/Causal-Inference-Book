@@ -110,32 +110,9 @@ with(data, mean(
   m1hat - m0hat
 ))
 ```
-**Box 5.1 (Stata):** IPTW with regression adjustment (IPTW-RA)
-
-```stata
-capture program drop ATE
-			program define ATE, rclass
-			   capture drop y1
-			   capture drop y0
-			   // Weighted (stabilized weights) regression adjustment among the treated 
-			   reg $Y $W if $A==1 [pw=sws]
-			   predict double y1, xb
-			   quiet sum y1
-			   return scalar y1=`r(mean)'
-			   // Weighted (stabilized weights) regression adjustment among the non-treated 
-			   reg $Y $W if $A==0 [pw=sws]
-			   predict double y0, xb 
-			   quiet sum y0
-			   return scalar y0=`r(mean)'
-			   mean y1 y0 
-			   // ATE 
-			   lincom _b[y1]-_b[y0]
-			   return scalar ate =`r(estimate)'
-			end
-			qui bootstrap r(ate), reps(1000) seed(1): ATE // Bootstraping for statistical inference
-			estat boot, all
-            drop ATE
-```
+::: {.callout-note}
+**Box 5.1 (Stata) removed** — For the IPTW-RA Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
+:::
 
 
 ### When It Is Used in Practice
@@ -229,13 +206,9 @@ term0 <- (1 - data$A) * (data$Y - data$mu0) / (1 - data$ps) + data$mu0
 ate_aiptw <- mean(term1 - term0)
 ate_aiptw
 ```
-**Box 5.2 (Stata):** IPTW-RA using teffects
-
-```stata
-teffects ipwra ($Y $W) ($A $W) , nolog vsquish
-		
-/* 5.2 Augmented inverse probability weighting */
-```
+::: {.callout-note}
+**Box 5.2 (Stata) removed** — For the `teffects ipwra` Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
+:::
 
 
 ### Intuition and Advantages
@@ -307,62 +280,9 @@ data$w4 <- as.numeric(as.factor(data$carcinoma)); w4 <- data$w4
 data2 <- as.data.frame(Y); data2$A <- A; data2$C <- C
 data2$w1 <- w1; data2$w2 <- w2; data2$w3 <- w3; data2$w4 <- w4
 ```
-**Box 5.3 (Stata):** AIPTW estimator by hand with bootstrap
-
-```stata
-* Step (i) prediction model for the outcome
-			qui glm $Y $A $W, fam(bin) 
-			predict double QAW, mu
-			qui glm $Y $W if $A==1, fam(bin) 
-			predict double Q1W, mu
-			qui glm $Y $W if $A==0, fam(bin)
-			predict double Q0W, mu
-			
-			* Step (ii): prediction model for the treatment
-			cap drop dps nps sws y1 y0
-			qui logit $A $W
-			predict double dps, pr
-			qui logit $A
-			predict double nps, pr
-			gen sws = .
-			replace sws = nps/dps if $A==1
-			replace sws = (1-nps)/(1-dps) if $A==0
-		
-			* Step (iii): Estimation equation
-			gen double y1 = (sws*($Y-QAW) + (Q1W))
-			quiet sum y1
-			scalar y1=`r(mean)'
-			gen double y0 = (sws*($Y-QAW) + (Q0W))
-			quiet sum y0
-			scalar y0=`r(mean)'
-			mean y1 y0
-			lincom _b[y1] - _b[y0]
-		
-			* Step (iv): Bootstrap confidence intervals
-			capture program drop ATE
-			program define ATE, rclass
-			capture drop y1
-			capture drop y0
-			capture drop Q*
-			qui glm $Y $A $W, fam(bin) 
-			predict double QAW, mu
-			qui glm $Y $W if $A==1, fam(bin) 
-			predict double Q1W, mu
-			qui glm $Y $W if $A==0, fam(bin)
-			predict double Q0W, mu
-			gen double y1 = (sws*($Y-QAW) + (Q1W))
-			quiet sum y1
-			return scalar y1=`r(mean)'
-			gen double y0 = (sws*($Y-QAW) + (Q0W))
-			quiet sum y0
-			return scalar y0=`r(mean)'
-			mean y1 y0
-			lincom _b[y1] - _b[y0]
-			return scalar ace =`r(estimate)'
-			end
-			qui bootstrap r(ace), reps(1000) seed(1): ATE
-			estat boot, all
-```
+::: {.callout-note}
+**Box 5.3 (Stata) removed** — For the AIPTW by hand Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
+:::
 
 
 #### Step 1: Predict the initial outcome
@@ -377,13 +297,9 @@ $$
 # Step 1
 Gcomp <- glm(Y ~ A + C + w1 + w2 + as.factor(w3) + as.factor(w4), family="binomial", data=data2)
 ```
-**Box 5.4 (Stata):** AIPTW using teffects
-
-```stata
-teffects aipw ($Y $W) ($A $W, logit)
-			
-/* 6. DATA-ADAPTIVE ESTIMATION: ENSEMBLE LEARNING TARGETED MAXIMUMLIKELIHOOD ESTIMATION*/
-```
+::: {.callout-note}
+**Box 5.4 (Stata) removed** — For the `teffects aipw` Stata implementation, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
+:::
 
 
 To predict the potential outcomes, we first need to specify two variables, one where everyone receives the treatment ($A=1$) and another where everyone does not receive the treatment ($A=0$). Taking predictions of the outcome for each observation using these two variables provides us with the potential outcomes $Y(1)$ and $Y(0)$.
@@ -519,69 +435,9 @@ HAW <- (data2$A / gW -(1-data2$A) / (1 - gW))
 H1W = (1/gW)
 H0W = (-1 / (1 - gW))
 ```
-**Box 5.7 (Stata):** Monte Carlo simulation comparing all methods
-
-```stata
-* Data generation
-			clear
-			set obs 1000
-			set seed 777
-			gen w1    = round(runiform(1, 5)) //Quintiles of Socioeconomic Deprivation
-			gen w2    = rbinomial(1, 0.45) //Binary: probability age >65 = 0.45
-			gen w3    = round(runiform(0, 1) + 0.75*(w2) + 0.8*(w1)) //Stage 
-			recode w3 (5/6=1)       //Stage (TNM): categorical 4 levels
-			gen w4    = round(runiform(0, 1) + 0.75*(w2) + 0.2*(w1)) //Comorbidites: categorical four levels
-			gen A     = (rbinomial(1,invlogit(-1 -  0.15*(w4) + 1.5*(w2) + 0.75*(w3) + 0.25*(w1) + 0.8*(w2)*(w4)))) //Binary treatment
-			gen Y1    = (invlogit(-3 + 1 + 0.25*(w4) + 0.75*(w3) + 0.8*(w2)*(w4) + 0.05*(w1))) // Potential outcome 1
-			gen Y0    = (invlogit(-3 + 0 + 0.25*(w4) + 0.75*(w3) + 0.8*(w2)*(w4) + 0.05*(w1))) // Potential outcome 2
-			gen psi   = Y1-Y0  // Simulated ATE
-			gen Y     = A*(Y1) + (1 - A)*Y0 // Binary outcome (consistency)
-
-	
-	// Estimate the true simulated ATE
-			mean psi
-				
-		//	ATE estimation
-			* Regression adjustment
-			teffects ra (Y i.w1 i.w2 i.w3 i.w4) (A)
-			estimates store ra
-				
-			* IPTW
-			teffects ipw (Y) (A i.w1 i.w2 i.w3 i.w4)
-			estimates store ipw
-				
-			* IPTW-RA
-			teffects ipwra (Y i.w1 i.w2 i.w3 i.w4) (A i.w1 i.w2 i.w3 i.w4)
-			estimates store ipwra	
-				
-			* AIPTW
-			teffects aipw (Y i.w1 i.w2 i.w3 i.w4) (A i.w1 i.w2 i.w3 i.w4)
-			estimates store aipw
-				
-			* Results
-			qui reg psi
-			estimates store psi
-			estout psi ra ipw ipwra aipw
-		
-		// Ensemble learning maximum likelihood estimation
-			eltmle Y A w1 w2 w3 w4, tmle
-				
-		// Relative bias of each ATE
-			* Regression adjustment
-			display abs(0.1652166 - 0.1703391)/0.1652166
-			
-			* IPTW
-			display abs(0.1652166 - 0.1617437)/0.1652166
-			
-			* IPTW-RA
-			display abs(0.1652166 - 0.1674534)/0.1652166
-			
-			* AIPTW
-			display abs(0.1652166 - 0.1697795)/0.1652166
-			
-			* ELTMLE
-			display abs(0.1652166 - 0.1652167)/0.1652166
-```
+::: {.callout-note}
+**Box 5.7 (Stata) removed** — For the Monte Carlo simulation Stata code, see the computational tutorial. Full code: [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
+:::
 
 
 The **fluctuation parameter** ($\epsilon$) is a small adjustment applied to the initial outcome model ($Q^{0}(A,\mathbf{W})$) to correct residual bias and ensure that the updated model ($Q^{1}$) aligns with the EIC. It does this by incorporating information from the clever covariate ($H(A,\mathbf{W})$) and the observed outcomes ($Y$). The fluctuation parameter is estimated by solving an estimating equation, specifically a score equation derived from the EIC. The estimating equation ensures that the updated outcome model satisfies the EIC's property:
