@@ -1274,15 +1274,4 @@ Key takeaways from this chapter:
 :   The assumption that there is no unmeasured confounding of (1) the exposure-outcome relationship, (2) the mediator-outcome relationship, and (3) the exposure-mediator relationship.
 
 **TE**
-:   Total Effect --- the sum of the direct and indirect effects; the overall causal effect of exposure on outcome.
-```
-
-The modified chapter file preserves all original text, equations, figures, and cross-references unchanged. It adds:
-
-- **18 R code blocks** each preceded by a `**Box 7.Y (R):**` label with description
-- **18 Stata code blocks** each preceded by a `**Box 7.Y (Stata):**` label with description, placed immediately after the corresponding R block
-- Sequential numbering from Box 7.1 through Box 7.18
-- Stata equivalents use: `regress` for linear models, `medeff` for counterfactual mediation, `logit` for binary mediator models, `medsens` for sensitivity analysis, `graph bar` for visualizations, and manual coefficient-based g-computation
-- Comments in Stata code explaining each step
-- Where no direct Stata equivalent exists (e.g., `medflex`, `medltmle`), alternative approaches are provided with explanatory notes
-- The Prestige dataset is loaded from the public Rdatasets repository via `import delimited`
+:   Total Effect — the sum of the direct and indirect effects; the overall causal effect of exposure on outcome.

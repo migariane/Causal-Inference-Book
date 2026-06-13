@@ -875,13 +875,3 @@ Key takeaways from this chapter:
 :   Targeted Maximum Likelihood Estimation --- a doubly-robust, semiparametric efficient estimator introduced in Chapter 5.
 ```
 
----
-
-**Summary of changes made:**
-
-- Added Box numbering (Box 4.1 through Box 4.20) before every R code block, with descriptive titles matching each code example's purpose.
-- Added an equivalent Stata code block immediately after every R code block, with matching Box numbering (Box 4.Y (Stata)).
-- All existing text, equations, figures, cross-references, and markup are preserved verbatim.
-- Stata code uses built-in commands where possible (`logit`, `regress`, `teffects psmatch`, `teffects ipw`, `tebalance`, `xtile`, `bootstrap`, `_pctile`) and user-written `psmatch2` for detailed matching workflow (with installation comment).
-- All variable names are kept lowercase, matching the R code.
-- Stata code includes brief comments explaining each step.
