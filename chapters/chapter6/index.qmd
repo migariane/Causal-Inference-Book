@@ -864,13 +864,62 @@ Censoring and competing risks are both forms of missing data or information loss
 
 ### Motivation and Examples from Survival Analysis
 
+Time-to-event outcomes are ubiquitous in medical and epidemiological research. In studies where the outcome is the time until death, disease recurrence, or hospital readmission, researchers are often interested not only in whether a treatment affects the risk of the event but also in *when* that effect occurs and how it evolves over time. Survival analysis provides the statistical framework for answering these questions.
+
+Consider a cohort of patients diagnosed with advanced cancer and followed over a five-year period. Treatment regimens may change in response to disease progression, adverse events, or biomarker levels---all of which are themselves influenced by prior treatment. For instance, a patient who develops severe toxicity to first-line chemotherapy may be switched to a less intensive regimen, and this decision depends on their current performance status, which was affected by the initial treatment. In this setting, both the treatment and the confounding variables vary over time, and the outcome---time to death---is subject to right censoring because some patients are alive at the end of follow-up or are lost to follow-up.
+
+Other motivating examples include:
+
+- **Antiretroviral therapy (ART) in HIV-positive individuals:** CD4 count and viral load are time-varying confounders that predict both the decision to initiate or modify ART and the risk of AIDS-related mortality. These markers are themselves affected by prior ART exposure, creating the treatment-confounder feedback loop described in Part I.
+- **Blood pressure management in hypertensive patients:** Antihypertensive medications are titrated based on current blood pressure readings, which are influenced by prior treatment. The outcome---time to cardiovascular events---may be censored by non-cardiovascular death or end of study.
+- **Smoking cessation and cancer recurrence:** Smoking status changes over time and may be influenced by psychosocial support interventions. The time to cancer recurrence is subject to competing risks (e.g., death from other causes).
+- **Long-term oxygen therapy in COPD patients:** Oxygen therapy decisions depend on current oxygen saturation levels, which decline over time and are affected by treatment adherence. Mortality is the primary endpoint, but follow-up may be incomplete.
+
+In each of these examples, the data structure consists of repeated measurements of treatment, confounders, and survival status over discrete time intervals. Standard survival methods such as the Cox proportional hazards model---which typically include only baseline covariates---cannot adequately address the time-varying confounding introduced by treatment-confounder feedback. Specialised methods that extend the g-formula and TMLE to the survival setting are therefore required.
+
 ### Notation and Assumptions for Survival Data
 
-### The Parametric and Nonparametric g-Formula for Survival
+To formalise causal inference for time-to-event outcomes, we extend the longitudinal notation introduced in Part I. Let the time axis be divided into discrete intervals $t = 1, 2, \dots, K$, where $K$ is the maximum follow-up time. For each individual, we observe:
 
-In time-to-event settings, the g-formula can be used to estimate counterfactual survival curves under static or dynamic treatment interventions. The goal is to evaluate the probability of survival over time under a hypothetical treatment strategy, adjusting for time-varying confounding and censoring.
+- $A_t$: treatment or exposure at time $t$
+- $L_t$: vector of time-varying covariates measured at the start of interval $t$
+- $C_t$: indicator that the individual is censored during interval $t$ (1 if censored, 0 otherwise)
+- $Y_t$: indicator of survival status at the end of interval $t$, where $Y_t = 1$ if the individual is still alive (i.e., has not experienced the event) and $Y_t = 0$ if the event has occurred by time $t$
 
-Let $T$ denote the event time and $C$ the censoring time. Define the observed time as $U = \min(T, C)$ and the event indicator $\Delta = I(T \leq C)$. Let $Y_t = I(U > t)$ be the survival status at time $t$, and let $A_t$ and $L_t$ denote time-varying treatment and confounders. The counterfactual outcome $Y_t^{\bar{a}}$ indicates survival at time $t$ under treatment regime $\bar{a} = (a_0, a_1, \dots, a_t)$.
+Let $T$ denote the event time and $C$ the censoring time. The observed time is $U = \min(T, C)$, and the event indicator is $\Delta = I(T \leq C)$. An individual contributes data up to the time of censoring or the event, whichever occurs first. At each time $t$, we only observe $Y_t$ for individuals who remain at risk (i.e., those for whom $Y_{t-1} = 1$ and $C_t = 0$). In discrete time, the *hazard* at time $t$ conditional on treatment and covariate history is:
+
+$$
+h(t \mid \bar{A}_t, \bar{L}_t) = P(Y_t = 0 \mid Y_{t-1} = 1, \bar{A}_t, \bar{L}_t).
+$$
+
+The counterfactual survival probability at time $t$ under treatment regime $\bar{a} = (a_0, a_1, \dots, a_t)$ is defined as:
+
+$$
+S^{\bar{a}}(t) = P(Y_t^{\bar{a}} = 1),
+$$
+
+where $Y_t^{\bar{a}}$ indicates survival at time $t$ had the individual followed treatment regime $\bar{a}$.
+
+**Identification assumptions.** To identify the counterfactual survival curve from observed data, the following assumptions must hold:
+
+1. **Consistency:** The observed outcome equals the counterfactual outcome under the observed treatment history. That is, if an individual receives treatment history $\bar{A}_t = \bar{a}_t$, then $Y_t = Y_t^{\bar{a}_t}$.
+
+2. **Sequential exchangeability (no unmeasured confounding):** At each time $t$, the treatment $A_t$ is independent of future counterfactual outcomes given the observed treatment and covariate history:
+   $$
+   Y_t^{\bar{a}} \perp A_t \mid \bar{A}_{t-1}, \bar{L}_t \quad \text{for all } t.
+   $$
+
+3. **Positivity:** At each time $t$, there is a non-zero probability of receiving each treatment level for every possible covariate and treatment history:
+   $$
+   0 < P(A_t = a_t \mid \bar{A}_{t-1} = \bar{a}_{t-1}, \bar{L}_t = \bar{l}_t) < 1.
+   $$
+
+4. **Independent censoring:** The censoring mechanism is independent of the potential outcomes given the observed history. Informally, the probability of being censored at time $t$ depends only on observed covariates and treatment history, not on the unobserved event time:
+   $$
+   C_t \perp T \mid \bar{A}_t, \bar{L}_t.
+   $$
+
+When censoring depends on time-varying factors affected by prior treatment (e.g., sicker patients drop out), assumption (4) is violated. In such cases, inverse probability of censoring weighting (IPCW), introduced in Section 2.1, is used to reweight the uncensored observations and recover unbiased estimates. With these assumptions in place, we now turn to estimation methods, beginning with the g-formula for survival.
 
 #### The Nonparametric g-formula for Survival
 
