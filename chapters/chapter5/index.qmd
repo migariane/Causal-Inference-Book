@@ -705,7 +705,7 @@ You can see that the bias is smallest for TMLE and largest for the naive regress
 
 The lower half of the graph shows the coverage rate. This is proportion of confidence intervals from each method that contain the true value of the ATE. If we are trying to estimate 95% confidence intervals, then we should expect that the method contains the true value of the ATE 95% of the time. TMLE gives a coverage of 95.1%, which is almost perfect. Other methods have a much lower coverage rate, which also shows the beneficial properties of TMLE.
 
-![Bias and coverage rate of various causal estimators in a simple simulation study.](figures/SimRes.pdf){#fig-SimRes fig-align="center"}
+![Bias and coverage rate of various causal estimators in a simple simulation study.](figures/SimRes.png){#fig-SimRes fig-align="center"}
 
 ## Cross-Validated Targeted Maximum Likelihood Estimation
 

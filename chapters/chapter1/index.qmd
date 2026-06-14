@@ -22,7 +22,7 @@ Overall, causal inference is an essential tool for applied researchers in a wide
 
 Constructing a causal analysis in a structured manner is necessary to obtain unbiased effect estimates and robust conclusions for real-world evidence. The *Causal Roadmap* (@fig-CIroadmap) offers a framework that can be adapted to the vast majority of studies to generate real-world evidence. The Causal Roadmap begins with defining the causal question of interest, stating whether the data and assumptions can be used to answer the question of interest, performing suitable statistical analyses, and assessing whether alternative conclusions could be obtained under alternate assumptions. The rest of this section describes each step in more detail.
 
-![Causal Inference Roadmap as detailed in [@Dang2023].](figures/CI Roadmap.pdf){#fig-CIroadmap fig-align="center"}
+![Causal Inference Roadmap as detailed in [@Dang2023].](figures/CI Roadmap.png){#fig-CIroadmap fig-align="center"}
 
 **Step 1: Causal question, model, and estimand**
 
