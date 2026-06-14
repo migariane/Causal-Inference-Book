@@ -2,7 +2,7 @@
 
 The previous chapters have described methods that are used when the intervention occurs at only one time point. Often, there are settings where the intervention occurs at multiple time points. Such settings could be a chemotherapy given to patients with cancer at regular intervals, a series of public health policies designed to reduce environmental impact on the population's health over time, or how health outcomes change over time within certain geographical clusters.
 
-This chapter is split into two parts. Part I explores methods for multiple time-point interventions, including inverse probability weighting for longitudinal treatments (IPTW), marginal structural models (MSMs), and longitudinal TMLE (LTMLE) [@Lendle2017Ltmle:Data]. Part II explores methods for time-to-event outcomes, including the parametric g-formula for survival and TMLE for survival data.
+This chapter is split into two parts. Part I explores methods for multiple time-point interventions, including inverse probability weighting for longitudinal treatments (IPTW), marginal structural models (MSMs), double robust methods (AIPTW and LTMLE), and longitudinal TMLE [@Lendle2017Ltmle:Data]. Part II explores methods for time-to-event outcomes, including the parametric g-formula for survival and TMLE for survival data.
 
 ## Part I: Multiple Time-Point Interventions
 
@@ -10,7 +10,7 @@ This chapter is split into two parts. Part I explores methods for multiple time-
 
 One of the most significant challenges in causal inference for longitudinal data is the presence of time-varying confounding. In a longitudinal setting, confounders are measured repeatedly over time and may both influence and be influenced by prior treatment. This feedback loop creates a fundamental difficulty for standard statistical methods.
 
-To understand the problem, consider covariates $L_t$that affect treatment decisions$A_t$at each time$t$, but are themselves affected by earlier treatment $A_{t-1}$. In this case, $L_t$serves as both a confounder (affecting treatment and outcome) and a mediator (affected by prior treatment). Adjusting for$L_t$ using standard regression methods may induce bias by conditioning on a variable on the causal pathway or introducing collider bias.
+To understand the problem, consider covariates $L_t$ that affect treatment decisions $A_t$ at each time $t$, but are themselves affected by earlier treatment $A_{t-1}$. In this case, $L_t$ serves as both a confounder (affecting treatment and outcome) and a mediator (affected by prior treatment). Adjusting for $L_t$ using standard regression methods may induce bias by conditioning on a variable on the causal pathway or introducing collider bias.
 
 This situation violates one of the key assumptions required for unbiased estimation in standard regression: that adjustment covariates are not affected by the exposure. In longitudinal settings, naive adjustment for time-varying confounders using outcome regression can therefore produce biased effect estimates.
 
@@ -37,29 +37,30 @@ These settings share common features: time-varying exposures, time-varying confo
 
 To formalize the discussion of causal inference with longitudinal data, we introduce notation to represent the sequence of treatments, covariates, and outcomes over time.
 
-Let $t = 0, 1, \dots, T$denote discrete time points. For an individual$i$, define:
+Let $t = 0, 1, \dots, T$ denote discrete time points. For an individual $i$, define:
 - $A_t$: treatment or exposure at time $t$
 - $L_t$: time-varying covariates measured at time $t$
 - $\bar{A}_t = (A_0, A_1, \dots, A_t)$: treatment history up to and including time $t$
 - $\bar{L}_t = (L_0, L_1, \dots, L_t)$: covariate history up to and including time $t$
 - $Y$: outcome of interest, measured at time $T+1$ or at the end of follow-up
-- $C_t$: indicator of censoring at time $t$, where $C_t = 1$if censored at time$t$
+- $C_t$: indicator of censoring at time $t$, where $C_t = 1$ if censored at time $t$
 
-We use capital letters to denote random variables and lowercase letters for their realizations. For example, $a_t$is a specific value of$A_t$. The notation $Y^{\bar{a}}$refers to the potential outcome that would be observed under the treatment regime$\bar{a} = (a_0, a_1, \dots, a_T)$.
+We use capital letters to denote random variables and lowercase letters for their realizations. For example, $a_t$ is a specific value of $A_t$. The notation $Y^{\bar{a}}$ refers to the potential outcome that would be observed under the treatment regime $\bar{a} = (a_0, a_1, \dots, a_T)$.
 
 In addition, we define the data structure for each individual as:
 $$
 O = (L_0, A_0, L_1, A_1, \dots, L_T, A_T, Y).
 $$
-This longitudinal data structure allows for dynamic treatment strategies that may assign treatment at time $t$based on past covariate and treatment history. The goal of causal inference in this setting is to estimate the average causal effect of a treatment regime$\bar{a}$on the outcome$Y$, denoted:
+This longitudinal data structure allows for dynamic treatment strategies that may assign treatment at time $t$ based on past covariate and treatment history. The goal of causal inference in this setting is to estimate the average causal effect of a treatment regime $\bar{a}$ on the outcome $Y$, denoted:
 $$
 E[Y^{\bar{a}}].
 $$
 This framework forms the foundation for the causal models and estimators introduced in subsequent sections.
 
-**R Example (Simulating Longitudinal Data):**
+**Box 6.1:** Simulating longitudinal data with time-varying treatment and confounders
 
-**Box 6.1 (R):** LTMLE for survival with the ltmle package
+::: {.panel-tabset}
+### R
 ```r
 n <- 1000
 set.seed(123)
@@ -74,32 +75,52 @@ data <- data.frame(L0, A0, L1, A1, Y)
 head(data)
 ```
 
+### Stata
+```stata
+clear all
+set seed 123
+set obs 1000
+
+* Generate baseline covariates and treatment
+generate L0 = rnormal()
+generate A0 = rbinomial(1, invlogit(0.5 * L0))
+
+* Generate follow-up covariates and treatment
+generate L1 = 0.5 * L0 + 0.8 * A0 + rnormal()
+generate A1 = rbinomial(1, invlogit(0.5 * L1))
+
+* Generate outcome
+generate Y = 0.7 * L1 + 1.2 * A1 + rnormal()
+
+list L0 A0 L1 A1 Y in 1/6
+```
+:::
+
 A DAG helps illustrate the challenge of time-varying confounding. Consider the following structure over two time points:
 
 ![Time-varying confounding DAG: $L_1$ is influenced by prior treatment $A_0$ and affects subsequent treatment $A_1$, creating treatment-confounder feedback.](figures/fig-longitudinal-dag.pdf){#fig-longitudinal-dag}
 
 
-In this DAG, $L_1$is influenced by$A_0$, and $A_1$is influenced by$L_1$, which in turn affects the outcome $Y$. Adjusting for $L_1$blocks part of the effect of$A_0$, resulting in bias.
+In this DAG, $L_1$ is influenced by $A_0$, and $A_1$ is influenced by $L_1$, which in turn affects the outcome $Y$. Adjusting for $L_1$ blocks part of the effect of $A_0$, resulting in bias.
 
-**R Example (Illustrating Bias with Standard Regression):**
+**Box 6.2:** Bias from naive regression adjustment for a time-varying confounder
 
-**Box 6.2 (R):** Pooled TMLE for survival data (manual implementation)
+::: {.panel-tabset}
+### R
 ```r
-# Simulate data
-set.seed(123)
-n <- 1000
-L0 <- rnorm(n)
-A0 <- rbinom(n, 1, plogis(0.5 * L0))
-L1 <- 0.5 * L0 + 0.8 * A0 + rnorm(n)
-A1 <- rbinom(n, 1, plogis(0.5 * L1))
-Y <- 0.7 * L1 + 1.2 * A1 + rnorm(n)
-
-data <- data.frame(L0, A0, L1, A1, Y)
-
+# Using the data generated in Box 6.1
 # Standard regression adjusting for L1
 model_naive <- lm(Y ~ A0 + A1 + L1, data = data)
 summary(model_naive)
 ```
+
+### Stata
+```stata
+* Using the data generated in Box 6.1
+* Standard regression adjusting for L1
+regress Y A0 A1 L1
+```
+:::
 
 This regression model adjusts for $L_1$, which is affected by $A_0$, leading to biased estimates for the effect of $A_0$. Methods such as IPTW avoid this bias by reweighting rather than conditioning.
 
@@ -111,9 +132,9 @@ The g-formula, introduced by Robins (1986), provides a way to estimate causal ef
 
 #### Motivating Setting
 
-Suppose data are collected over $K$time points. At each time$t$ $(t = 0, \dots, K)$, we observe time-varying covariates $L_t$, treatment variables $A_t$, and eventually an outcome $Y$. The goal is to estimate the causal effect of a treatment strategy $\bar{a} = (a_0, a_1, \ldots, a_K)$on the outcome$Y$.
+Suppose data are collected over $K$ time points. At each time $t$ $(t = 0, \dots, K)$, we observe time-varying covariates $L_t$, treatment variables $A_t$, and eventually an outcome $Y$. The goal is to estimate the causal effect of a treatment strategy $\bar{a} = (a_0, a_1, \ldots, a_K)$ on the outcome $Y$.
 
-Let $\bar{A}_t = (A_0, A_1, \dots, A_t)$and$\bar{L}_t = (L_0, L_1, \dots, L_t)$denote the treatment and covariate history, respectively. The counterfactual outcome under a specific treatment strategy$\bar{a}$is denoted$Y^{\bar{a}}$. We aim to estimate $E[Y^{\bar{a}}]$, the expected outcome if all individuals had received treatment strategy $\bar{a}$.
+Let $\bar{A}_t = (A_0, A_1, \dots, A_t)$ and $\bar{L}_t = (L_0, L_1, \dots, L_t)$ denote the treatment and covariate history, respectively. The counterfactual outcome under a specific treatment strategy $\bar{a}$ is denoted $Y^{\bar{a}}$. We aim to estimate $E[Y^{\bar{a}}]$, the expected outcome if all individuals had received treatment strategy $\bar{a}$.
 
 #### The Longitudinal G-formula
 
@@ -125,18 +146,20 @@ In practice, this formula is approximated using parametric regression models and
 
 #### Step-by-Step Estimation Procedure
 
-1. **Model the data-generating process.** Specify models for each time-varying covariate $L_t$and the final outcome$Y$, conditioning on previous covariates and treatments.
+1. **Model the data-generating process.** Specify models for each time-varying covariate $L_t$ and the final outcome $Y$, conditioning on previous covariates and treatments.
 
-2. **Simulate counterfactuals.** For each individual, simulate covariates and outcomes under a specific intervention strategy $\bar{a}$. This requires sequentially predicting covariates $L_t$using the fitted models, and using these to predict the outcome$Y$.
+2. **Simulate counterfactuals.** For each individual, simulate covariates and outcomes under a specific intervention strategy $\bar{a}$. This requires sequentially predicting covariates $L_t$ using the fitted models, and using these to predict the outcome $Y$.
 
 3. **Average the counterfactual outcomes.** Estimate $E[Y^{\bar{a}}]$ by averaging the predicted counterfactual outcomes across the simulated pseudo-population.
 
-#### Illustrative Example in R
+#### Illustrative Example
 
 We now provide a full example using simulated data with two time points.
 
+**Box 6.3:** Simulating data for the longitudinal g-computation example
 
-**Box 6.3 (R):** Estimating survival curve under intervention using g-formula
+::: {.panel-tabset}
+### R
 ```r
 # Simulate longitudinal data
 set.seed(42)
@@ -149,68 +172,28 @@ Y <- rbinom(n, 1, plogis(-1 + 0.8 * A1 + 0.6 * L1 + 0.3 * A0))
 
 long_data <- data.frame(L0, A0, L1, A1, Y)
 ```
-**Box 6.1 (Stata):** Marginal structural model with stabilized weights
 
+### Stata
 ```stata
-* Baseline treatment probabilities
-			logit $A, vce(robust) nolog
-			predict double nps, pr
-			
-			* propensity score model
-			logit $A $W, vce(robust) nolog
-			predict double dps, pr
-			
-			* Unstabilized weight
-			cap drop ipw
-			gen ipw = .
-			replace ipw=($A==1)/dps if $A==1
-			replace ipw=($A==0)/(1-dps) if $A==0
-			sum ipw 
-		
-			* Stabilized weight 
-			gen sws = .
-			replace sws = nps/dps if $A==1
-			replace sws = (1-nps)/(1-dps) if $A==0
-			sum sws
+clear all
+set seed 42
+set obs 1000
 
-			* MSM 
-			reg $Y $A [pw=ipw], vce(robust) 	// MSM unstabilized weight
-			reg $Y $A [pw=sws], vce(robust) 	// MSM stabilized weight
-
-            * Bootstrap the 95% confidence intervals
-			capture program drop ATE
-			program define ATE, rclass
-			capture drop nps
-			capture drop dps
-			capture drop sws
-		    * Baseline treatment probabilities
-				logit $A, vce(robust) nolog
-				predict double nps, pr
-				* propensity score model
-				logit $A $W, vce(robust) nolog
-				predict double dps, pr
-				* Stabilized weight 
-				gen sws = .
-				replace sws = nps/dps if $A==1
-				replace sws = (1-nps)/(1-dps) if $A==0
-				sum sws
-				* MSM 
-				reg $Y $A [pw=sws], vce(robust) 	// MSM stabilized weight
-			    return scalar ace = e(b)[1,1]
-			end
-			qui bootstrap r(ace), reps(1000) seed(1): ATE
-			estat boot, all
-			drop ATE
-			
-/* 5.Double Robuts Methods */
-/* 5.1 IPTW with regression adjustment */
+* Simulate longitudinal data
+generate L0 = rnormal()
+generate A0 = rbinomial(1, invlogit(0.3 * L0))
+generate L1 = rnormal(0.5 * A0 + 0.6 * L0, 1)
+generate A1 = rbinomial(1, invlogit(0.4 * A0 + 0.7 * L1))
+generate Y = rbinomial(1, invlogit(-1 + 0.8 * A1 + 0.6 * L1 + 0.3 * A0))
 ```
-
+:::
 
 We now implement parametric g-computation to estimate the outcome under the intervention $A_0 = 1, A_1 = 1$.
 
+**Box 6.4:** Manual parametric g-computation for a binary outcome
 
-**Box 6.4 (R):** Simulating time-to-event data for survival g-formula
+::: {.panel-tabset}
+### R
 ```r
 # Step 1: Fit models for L1 and Y
 model_L1 <- lm(L1 ~ A0 + L0, data = long_data)
@@ -226,7 +209,58 @@ new_data$Y_hat <- predict(model_Y, newdata = new_data, type = "response")
 # Step 3: Estimate E[Y^{a}]
 g_formula_estimate <- mean(new_data$Y_hat)
 print(g_formula_estimate)
+
+# Bootstrap for 95% CI
+boot_est <- replicate(500, {
+  idx <- sample(nrow(long_data), replace = TRUE)
+  boot_data <- long_data[idx, ]
+  m_L1 <- lm(L1 ~ A0 + L0, data = boot_data)
+  m_Y  <- glm(Y ~ A0 + A1 + L1, data = boot_data, family = binomial())
+  nd <- boot_data
+  nd$A0 <- 1; nd$A1 <- 1
+  nd$L1 <- predict(m_L1, newdata = nd)
+  nd$Y_hat <- predict(m_Y, newdata = nd, type = "response")
+  mean(nd$Y_hat)
+})
+quantile(boot_est, c(0.025, 0.975))
 ```
+
+### Stata
+```stata
+* Step 1: Fit models for L1 and Y
+glm L1 A0 L0, family(gaussian) link(identity)
+logit Y A0 A1 L1
+
+* Step 2-3: Predict under intervention A0 = 1, A1 = 1
+preserve
+  replace A0 = 1
+  replace A1 = 1
+  predict double L1_hat, xb
+  replace L1 = L1_hat
+  predict double Y_hat, pr
+  summarize Y_hat
+restore
+
+* Bootstrap for 95% CI
+capture program drop gcomp_boot
+program define gcomp_boot, rclass
+  preserve
+    bsample
+    glm L1 A0 L0, family(gaussian) link(identity)
+    logit Y A0 A1 L1
+    replace A0 = 1
+    replace A1 = 1
+    predict double L1_hat, xb
+    replace L1 = L1_hat
+    predict double Y_hat, pr
+    summarize Y_hat
+    return scalar psi = r(mean)
+  restore
+end
+bootstrap r(psi), reps(500) seed(42): gcomp_boot
+estat bootstrap, all
+```
+:::
 
 To assess uncertainty, nonparametric bootstrap can be used to obtain confidence intervals.
 
@@ -255,7 +289,7 @@ Marginal Structural Models (MSMs) are a class of causal models designed to estim
 
 In longitudinal settings, the central challenge arises when confounders are affected by prior treatment. Adjusting for these confounders in a standard regression model can introduce bias, because it blocks part of the causal pathway from treatment to outcome. MSMs overcome this problem by modeling the counterfactual mean outcomes under different treatment regimes, while using inverse probability weighting (IPW) to account for confounding.
 
-Let $\bar{A}_t = (A_0, A_1, \ldots, A_t)$be the history of treatments up to time$t$, and let $Y$be the outcome measured at a final time point$T$. The goal of an MSM is to estimate:
+Let $\bar{A}_t = (A_0, A_1, \ldots, A_t)$ be the history of treatments up to time $t$, and let $Y$ be the outcome measured at a final time point $T$. The goal of an MSM is to estimate:
 $$
 \mathbb{E}[Y^{\bar{a}}]
 $$
@@ -269,11 +303,11 @@ This model expresses the expected counterfactual outcome as a function of the tr
 
 Because the true counterfactuals are not observed, MSMs are estimated using the observed outcomes weighted by the inverse probability of treatment. Inverse Probability Weighting (IPW) is a method used to address time-varying confounding in longitudinal observational studies. It reweights the sample to create a pseudo-population in which treatment assignment at each time point is independent of past confounders. This approach enables unbiased estimation of marginal causal effects when traditional regression adjustment would fail due to feedback between treatment and covariates.
 
-In longitudinal studies, confounders measured at time $t$, denoted $L_t$, often affect subsequent treatment $A_t$and are themselves influenced by prior treatment$A_{t-1}$. This dual role of $L_t$ as both a confounder and an intermediate variable invalidates standard regression techniques, which cannot properly adjust for such variables without introducing bias.
+In longitudinal studies, confounders measured at time $t$, denoted $L_t$, often affect subsequent treatment $A_t$ and are themselves influenced by prior treatment $A_{t-1}$. This dual role of $L_t$ as both a confounder and an intermediate variable invalidates standard regression techniques, which cannot properly adjust for such variables without introducing bias.
 
 To estimate the effect of a treatment regime $\bar{a} = (a_0, \dots, a_T)$, we use IPW to account for the time-varying nature of both treatment and confounding. This involves modeling the treatment mechanism over time and assigning weights to each individual based on the inverse of their probability of receiving their observed treatment history, conditional on their covariate history.
 
-Let $\hat{e}_t(W_t) = P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)$denote the estimated probability of treatment at time$t$, given past treatment and covariate history. The unstabilized IP weight is:
+Let $\hat{e}_t(W_t) = P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)$ denote the estimated probability of treatment at time $t$, given past treatment and covariate history. The unstabilized IP weight is:
 $$
 W_i = \prod_{t=0}^T \frac{1}{P(A_t = a_t \mid \bar{A}_{t-1}, \bar{L}_t)}.
 $$
@@ -291,7 +325,7 @@ These stabilized weights create a pseudo-population in which treatment is indepe
 2. Compute stabilized IP weights for each individual across all time points.
 3. Fit the MSM using a weighted regression model, regressing the outcome on treatment history, using the IP weights.
 
-The parameters in an MSM can be interpreted as the causal effect of treatment on the outcome, averaged over the population. For example, $\beta_1$in the above model reflects the marginal causal effect of treatment at time$t=0$, assuming correct model specification and no unmeasured confounding.
+The parameters in an MSM can be interpreted as the causal effect of treatment on the outcome, averaged over the population. For example, $\beta_1$ in the above model reflects the marginal causal effect of treatment at time $t=0$, assuming correct model specification and no unmeasured confounding.
 
 MSMs can be extended to:
 
@@ -310,8 +344,10 @@ If these assumptions are violated, the MSM estimates may be biased or unstable. 
 
 ### Weighted Regression to Estimate the Causal Effect
 
+**Box 6.5:** Computing stabilized inverse probability of treatment weights
 
-**Box 6.5 (R):** Inverse probability of censoring weights (IPCW)
+::: {.panel-tabset}
+### R
 ```r
 # Simulated longitudinal data
 set.seed(123)
@@ -344,33 +380,107 @@ w_A1 <- ifelse(data$A1 == 1, pnum_A1 / pden_A1, (1 - pnum_A1) / (1 - pden_A1))
 data$sw <- w_A0 * w_A1
 summary(data$sw)
 ```
+
+### Stata
+```stata
+* Simulate data for MSM estimation
+clear all
+set seed 123
+set obs 1000
+generate L0 = rnormal()
+generate A0 = rbinomial(1, invlogit(0.4 * L0))
+generate L1 = 0.7 * L0 + 0.9 * A0 + rnormal()
+generate A1 = rbinomial(1, invlogit(0.4 * L1))
+generate Y  = 1.5 * A0 + 1.2 * A1 + 0.5 * L1 + rnormal()
+
+* Numerator models (baseline only)
+logit A0 L0, vce(robust) nolog
+predict double num_A0, pr
+logit A1 A0 L0, vce(robust) nolog
+predict double num_A1, pr
+
+* Denominator models (full, including time-varying confounders)
+logit A0 L0, vce(robust) nolog
+predict double den_A0, pr
+logit A1 A0 L0 L1, vce(robust) nolog
+predict double den_A1, pr
+
+* Compute stabilized weights
+generate sw_A0 = num_A0 / den_A0 if A0 == 1
+replace  sw_A0 = (1 - num_A0) / (1 - den_A0) if A0 == 0
+generate sw_A1 = num_A1 / den_A1 if A1 == 1
+replace  sw_A1 = (1 - num_A1) / (1 - den_A1) if A1 == 0
+generate sw = sw_A0 * sw_A1
+summarize sw
+```
+:::
+
 *Note: The complete longitudinal analysis workflow (G-formula, IPTW, MSM, AIPTW, TMLE) is available at [github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).*
 
 Once the stabilized weights are estimated, they are used to fit a weighted regression model to estimate the marginal causal effect:
 
+**Box 6.6:** Fitting a weighted marginal structural model
 
-**Box 6.6 (R):** Competing risks analysis with the cmprsk package
+::: {.panel-tabset}
+### R
 ```r
+# Fit weighted MSM
 model_weighted <- glm(Y ~ A0 + A1, weights = sw, data = data)
 summary(model_weighted)
-```
-**Box 6.2 (Stata):** MSM with stabilized weights
 
+# Bootstrap 95% CI
+boot_ate <- replicate(500, {
+  idx <- sample(nrow(data), replace = TRUE)
+  d <- data[idx, ]
+  num_A0 <- glm(A0 ~ L0, family = binomial, data = d)
+  num_A1 <- glm(A1 ~ A0 + L0, family = binomial, data = d)
+  den_A0 <- glm(A0 ~ L0, family = binomial, data = d)
+  den_A1 <- glm(A1 ~ A0 + L0 + L1, family = binomial, data = d)
+  pn0 <- predict(num_A0, type = "response")
+  pn1 <- predict(num_A1, type = "response")
+  pd0 <- predict(den_A0, type = "response")
+  pd1 <- predict(den_A1, type = "response")
+  w0 <- ifelse(d$A0 == 1, pn0/pd0, (1-pn0)/(1-pd0))
+  w1 <- ifelse(d$A1 == 1, pn1/pd1, (1-pn1)/(1-pd1))
+  d$sw <- w0 * w1
+  coef(glm(Y ~ A0 + A1, weights = sw, data = d))["A1"]
+})
+quantile(boot_ate, c(0.025, 0.975))
+```
+
+### Stata
 ```stata
-* Estimate treatment models and compute stabilized weights
-logit $A $W                         // Denominator model
-predict double dps, pr
-logit $A                            // Numerator model (baseline only)
-predict double nps, pr
+* Fit marginal structural model with stabilized weights
+regress Y A0 A1 [pw = sw], vce(robust)
 
-* Stabilized weights
-gen sws = .
-replace sws = nps/dps if $A==1
-replace sws = (1-nps)/(1-dps) if $A==0
-
-* Fit marginal structural model
-regress $Y $A [pw=sws], vce(robust)
+* Bootstrap the 95% confidence intervals
+capture program drop ATE
+program define ATE, rclass
+  capture drop num_A0 num_A1 den_A0 den_A1 sw_A0 sw_A1 sw
+  * Numerator models
+  logit A0 L0, vce(robust) nolog
+  predict double num_A0, pr
+  logit A1 A0 L0, vce(robust) nolog
+  predict double num_A1, pr
+  * Denominator models
+  logit A0 L0, vce(robust) nolog
+  predict double den_A0, pr
+  logit A1 A0 L0 L1, vce(robust) nolog
+  predict double den_A1, pr
+  * Stabilized weights
+  generate sw_A0 = num_A0 / den_A0 if A0 == 1
+  replace  sw_A0 = (1 - num_A0) / (1 - den_A0) if A0 == 0
+  generate sw_A1 = num_A1 / den_A1 if A1 == 1
+  replace  sw_A1 = (1 - num_A1) / (1 - den_A1) if A1 == 0
+  generate sw = sw_A0 * sw_A1
+  * MSM
+  regress Y A0 A1 [pw = sw], vce(robust)
+  return scalar ate = _b[A1]
+end
+bootstrap r(ate), reps(500) seed(1): ATE
+estat bootstrap, all
 ```
+:::
 
 *Note: Full longitudinal workflow available at [github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).*
 
@@ -378,63 +488,127 @@ This regression provides an estimate of the average treatment effect under the a
 
 Inverse probability weighting is foundational for marginal structural models and plays a central role in modern causal inference for longitudinal data. While powerful, IPW requires careful diagnostics for positivity violations and extreme weights, which are discussed in later sections.
 
-### Targeted Maximum Likelihood Estimation for Longitudinal Data
+### Double Robust Methods for Longitudinal Data
 
-Longitudinal Targeted Maximum Likelihood Estimation (LTMLE) extends the TMLE framework to settings with time-varying exposures and confounders. It provides doubly robust and asymptotically efficient estimates of causal effects, including the average treatment effect under dynamic intervention rules. In the longitudinal context, the method applies an iterative targeting step moving backward in time, updating the predicted outcome at each step to align with the causal parameter of interest [@vanderLaan2011; @Schomaker_2019].
+The methods presented so far --- IPTW and the g-formula --- each rely on a single model being correctly specified. IPTW requires a correct treatment model; the g-formula requires correct outcome and covariate models. In practice, we rarely know which model is correct. **Doubly robust (DR) estimators** solve this problem by combining both modeling approaches: they remain consistent if *either* the outcome model *or* the treatment model is correctly specified --- not necessarily both.
 
-Let $\bar{A}_t = (A_0, \dots, A_t)$, $\bar{L}_t = (L_0, \dots, L_t)$, and $Y_T$be the outcome at the final time point$T$. Let $\bar{d}_t$ denote a dynamic treatment rule. The target parameter is:
-$$
-\psi_T = \mathbb{E}\left[ Y_T^{\bar{d}} \right],
-$$
-where $Y_T^{\bar{d}}$is the counterfactual outcome under the treatment regime$\bar{d}$.
+For longitudinal data, this property is especially valuable because the sequential nature of treatment and confounding multiplies the opportunities for model misspecification. Two main classes of doubly robust estimators are used in longitudinal settings: **AIPTW** (Augmented Inverse Probability of Treatment Weighting), which augments IPTW with outcome regression predictions, and **LTMLE** (Longitudinal Targeted Maximum Likelihood Estimation), which adds a targeting step to optimize the bias-variance trade-off for the parameter of interest. Both methods inherit the double-robustness property while differing in their implementation complexity and finite-sample behaviour.
 
-LTMLE involves the following steps:
+**Box 6.7:** AIPTW for longitudinal data: IPTW with outcome regression
 
-1. **Initial outcome model (Q-model)**:
-   Regress $Y_T$on$\bar{A}_T$and$\bar{L}_T$to estimate$Q_T^0 = \mathbb{E}(Y_T \mid \bar{A}_T, \bar{L}_T)$. Then recursively, for each $t = T-1, \dots, 0$, estimate:
-   $$
-   Q_t^0 = \mathbb{E}(Q_{t+1}^1 \mid \bar{A}_t, \bar{L}_t),
-   $$
-   where $Q_{t+1}^1$ is the updated outcome from the targeting step.
-
-2. **Treatment and censoring models (g-models)**:
-   Estimate the treatment mechanism $g_t(A_t \mid \bar{A}_{t-1}, \bar{L}_t)$and the censoring mechanism$c_t(C_t \mid \bar{A}_t, \bar{L}_t)$.
-
-3. **Clever covariates**:
-   Define the clever covariate:
-   $$
-   H_t = \prod_{s=0}^{t-1} \frac{\mathbb{I}(A_s = d_s) \cdot \mathbb{I}(C_s = 1)}{g_s(A_s \mid \bar{L}_s, \bar{A}_{s-1}) \cdot c_s(C_s \mid \bar{A}_s, \bar{L}_s)}.
-   $$
-4. **Targeting step**:
-   For each $t$, update $Q_t^0$ using a fluctuation model:
-$$
-   \text{logit}(Q_t^1) = \text{logit}(Q_t^0) + \epsilon H_t,
-   $$
-   where $\epsilon$is estimated by fitting a logistic regression with$Q_t^0$as the offset and$H_t$ as the covariate.
-
-5. **Estimation of $\psi_T$**:
-   The final estimate is obtained as:
-   $$
-   \hat{\psi}_T = \frac{1}{n} \sum_{i=1}^n Q_0^1(A_0 = d_0, L_0).
-   $$
-6. **Inference**:
-   Estimate standard errors using the empirical variance of the efficient influence function.
-
-**Manual Example (by hand)**
-
-Consider a setting with two time points ($t=0,1$) and a binary outcome $Y$. Let $A_0, A_1$denote treatment at each time, and$L_0, L_1$covariates. Suppose we fit logistic regression models for the Q-model and g-models, and calculate clever covariates as above. We update$Q_1^0$ using:
-$$
-\begin{aligned}
-\text{logit}(Q_1^1) &= \text{logit}(Q_1^0) + \epsilon_1 H_1, \\
-\text{logit}(Q_0^1) &= \text{logit}(Q_0^0) + \epsilon_0 H_0.
-\end{aligned}
-$$
-We then plug in the values $A_0 = d_0, A_1 = d_1$and average the final predictions to obtain$\hat{\psi}_T$.
-
-
-**Box 6.7 (R):** LTMLE using the ltmle R package
+::: {.panel-tabset}
+### R
 ```r
-# Simulate simple data
+# Using the data structure from Box 6.5 (L0, A0, L1, A1, Y)
+set.seed(123)
+n <- 1000
+L0 <- rnorm(n)
+A0 <- rbinom(n, 1, plogis(0.4 * L0))
+L1 <- 0.7 * L0 + 0.9 * A0 + rnorm(n)
+A1 <- rbinom(n, 1, plogis(0.4 * L1))
+Y  <- 1.5 * A0 + 1.2 * A1 + 0.5 * L1 + rnorm(n)
+data <- data.frame(L0, A0, L1, A1, Y)
+
+# Step 1: Fit outcome models Q(A0, A1, L0, L1)
+Q_model <- lm(Y ~ A0 * A1 + L0 + L1, data = data)
+
+# Step 2: Fit treatment models g(A0 | L0) and g(A1 | A0, L0, L1)
+g0 <- glm(A0 ~ L0, family = binomial, data = data)
+g1 <- glm(A1 ~ A0 + L0 + L1, family = binomial, data = data)
+
+# Step 3: Predict outcomes and propensity scores
+data$g0_hat <- predict(g0, type = "response")
+data$g1_hat <- predict(g1, type = "response")
+
+# Counterfactual predictions under A0=1, A1=1
+data_cf <- data
+data_cf$A0 <- 1; data_cf$A1 <- 1
+Q_cf <- predict(Q_model, newdata = data_cf)
+Q_obs <- predict(Q_model, newdata = data)
+
+# Step 4: Compute doubly robust estimator
+# IPTW component
+iptw_wt <- (data$A0 / data$g0_hat) * (data$A1 / data$g1_hat)
+# Augmentation: add regression predictions to residuals
+dr_component <- iptw_wt * (data$Y - Q_obs) + Q_cf
+
+# ATE under always-treated vs observed
+psi_dr <- mean(Q_cf)  # E[Y^{a=(1,1)}]
+print(psi_dr)
+
+# Bootstrap for inference
+boot_dr <- replicate(500, {
+  idx <- sample(n, replace = TRUE)
+  d <- data[idx, ]
+  Q_m <- lm(Y ~ A0 * A1 + L0 + L1, data = d)
+  g0_m <- glm(A0 ~ L0, family = binomial, data = d)
+  g1_m <- glm(A1 ~ A0 + L0 + L1, family = binomial, data = d)
+  d_cf <- d; d_cf$A0 <- 1; d_cf$A1 <- 1
+  mean(predict(Q_m, newdata = d_cf))
+})
+quantile(boot_dr, c(0.025, 0.975))
+```
+
+### Stata
+```stata
+* Simulate data for AIPTW example
+clear all
+set seed 123
+set obs 1000
+generate L0 = rnormal()
+generate A0 = rbinomial(1, invlogit(0.4 * L0))
+generate L1 = 0.7 * L0 + 0.9 * A0 + rnormal()
+generate A1 = rbinomial(1, invlogit(0.4 * L1))
+generate Y  = 1.5 * A0 + 1.2 * A1 + 0.5 * L1 + rnormal()
+
+* Step 1: Fit outcome model Q(A0, A1, L0, L1)
+regress Y c.A0##c.A1 L0 L1
+predict double Q_obs, xb
+
+* Step 2: Fit treatment models
+logit A0 L0, vce(robust) nolog
+predict double g0_hat, pr
+logit A1 A0 L0 L1, vce(robust) nolog
+predict double g1_hat, pr
+
+* Step 3: Counterfactual predictions under A0=1, A1=1
+preserve
+  replace A0 = 1
+  replace A1 = 1
+  predict double Q_cf, xb
+  summarize Q_cf
+  return list
+restore
+
+* Bootstrap for DR estimator
+capture program drop aiptw_boot
+program define aiptw_boot, rclass
+  preserve
+    bsample
+    regress Y c.A0##c.A1 L0 L1
+    predict double Q_obs, xb
+    logit A0 L0, vce(robust) nolog
+    predict double g0_hat, pr
+    logit A1 A0 L0 L1, vce(robust) nolog
+    predict double g1_hat, pr
+    replace A0 = 1
+    replace A1 = 1
+    predict double Q_cf, xb
+    summarize Q_cf
+    return scalar psi = r(mean)
+  restore
+end
+bootstrap r(psi), reps(500) seed(42): aiptw_boot
+estat bootstrap, all
+```
+:::
+
+**Box 6.8:** LTMLE: Manual step-by-step implementation (two time points)
+
+::: {.panel-tabset}
+### R
+```r
+# Simulate data
 set.seed(123)
 n <- 500
 L0 <- rbinom(n, 1, 0.5)
@@ -444,46 +618,112 @@ A1 <- rbinom(n, 1, plogis(-0.4 + 0.5 * L1 + 0.3 * A0))
 Y <- rbinom(n, 1, plogis(-1 + 0.6 * A1 + 0.5 * L1 + 0.2 * A0))
 data <- data.frame(L0, A0, L1, A1, Y)
 
-# Step 1: Estimate Q2 (E[Y | A0, A1, L0, L1])
+# Step 1: Estimate Q2 (E[Y | A0, A1, L0, L1]) -- initial outcome model at t=1
 Q2_model <- glm(Y ~ A0 + A1 + L0 + L1, data = data, family = binomial)
 Q2_pred <- predict(Q2_model, type = "response")
 
-# Step 2: Estimate Q1 (E[Q2 | A0, L0, L1])
+# Step 2: Estimate Q1 (E[Q2 | A0, L0, L1]) -- conditional expectation at t=0
 data$Q2 <- Q2_pred
 Q1_model <- glm(Q2 ~ A0 + L0 + L1, data = data, family = binomial)
 Q1_pred <- predict(Q1_model, type = "response")
 
-# Step 3: Estimate g models (treatment mechanism)
+# Step 3: Estimate g models (treatment mechanisms)
 g1 <- glm(A1 ~ A0 + L0 + L1, data = data, family = binomial)
 g1_pred <- predict(g1, type = "response")
+g0 <- glm(A0 ~ L0, data = data, family = binomial)
+g0_pred <- predict(g0, type = "response")
 
-# Step 4: Calculate clever covariate for A1 = 1
+# Step 4: Calculate clever covariates
+# For t=1 (A1 = 1 under static intervention):
 data$H1 <- ifelse(A1 == 1, 1 / g1_pred, 0)
+# For t=0 (A0 = 1):
+data$H0 <- ifelse(A0 == 1, 1 / g0_pred, 0)
 
-# Step 5: Target Q2 using clever covariate
-fluct_model <- glm(Y ~ -1 + offset(qlogis(Q2_pred)) + H1, data = data, family = binomial)
+# Step 5: Targeting -- update Q2 using clever covariate H1
+fluct_model <- glm(Y ~ -1 + offset(qlogis(Q2_pred)) + H1,
+                   data = data, family = binomial)
 epsilon <- coef(fluct_model)["H1"]
 Q2_star <- plogis(qlogis(Q2_pred) + epsilon * data$H1)
 
-# Step 6: Plug in A0=1, A1=1 to get counterfactual prediction
+# Step 6: Counterfactual prediction under A0=1, A1=1
 new_data <- data
-new_data$A0 <- 1
-new_data$A1 <- 1
+new_data$A0 <- 1; new_data$A1 <- 1
 Q2_cf <- predict(Q2_model, newdata = new_data, type = "response")
 ATE <- mean(Q2_cf) - mean(Q2_pred)
 ATE
 ```
 
+### Stata
+```stata
+* Simulate longitudinal data for LTMLE
+clear all
+set seed 123
+set obs 500
+generate L0 = rbinomial(1, 0.5)
+generate A0 = rbinomial(1, invlogit(-0.5 + 0.8 * L0))
+generate L1 = rbinomial(1, invlogit(0.3 * A0 + 0.4 * L0))
+generate A1 = rbinomial(1, invlogit(-0.4 + 0.5 * L1 + 0.3 * A0))
+generate Y  = rbinomial(1, invlogit(-1 + 0.6 * A1 + 0.5 * L1 + 0.2 * A0))
 
-This provides a manual implementation of TMLE for a simple longitudinal setup.
+* Step 1: Estimate initial outcome model Q2
+logit Y A0 A1 L0 L1
+predict double Q2_pred, pr
 
-**Example Using `ltmle` in R**
+* Step 2: Estimate Q1 (E[Q2 | A0, L0, L1])
+logit Q2_pred A0 L0 L1
+predict double Q1_pred, pr
 
+* Step 3: Estimate treatment mechanisms
+logit A1 A0 L0 L1
+predict double g1_pred, pr
+logit A0 L0
+predict double g0_pred, pr
 
-**Box 6.8 (R):** LTMLE manual implementation (two time points)
+* Step 4: Clever covariate for targeting at t=1 (A1=1 intervention)
+generate H1 = 1 / g1_pred if A1 == 1
+replace  H1 = 0 if A1 == 0
+
+* Step 5: Targeting step -- update Q2
+generate logit_Q2 = logit(Q2_pred)
+logit Y, offset(logit_Q2)
+* The coefficient on H1 in a model with offset gives epsilon
+constraint 1 H1 = 1  // dummy to get coefficient
+logit Y H1, offset(logit_Q2) nolog
+* Manual update (epsilon extracted from coefficient)
+matrix eps = e(b)
+local epsilon = eps[1,1]
+generate double Q2_star = invlogit(logit_Q2 + `epsilon' * H1)
+
+* Step 6: Counterfactual under always-treated
+preserve
+  replace A0 = 1
+  replace A1 = 1
+  predict double Q2_cf, pr
+  summarize Q2_cf
+restore
+```
+:::
+
+This provides a manual implementation of TMLE for a simple longitudinal setup. The key insight is that the targeting step uses a clever covariate to update the initial outcome model, removing bias for the parameter of interest.
+
+**Box 6.9:** LTMLE using the ltmle R package
+
+::: {.panel-tabset}
+### R
 ```r
 library(ltmle)
-data(longData)
+
+# Simulate data compatible with ltmle format
+set.seed(123)
+n <- 500
+W <- rnorm(n)
+L0 <- rbinom(n, 1, plogis(0.5 * W))
+A0 <- rbinom(n, 1, plogis(-0.5 + 0.8 * L0))
+L1 <- rbinom(n, 1, plogis(0.3 * A0 + 0.4 * L0))
+A1 <- rbinom(n, 1, plogis(-0.4 + 0.5 * L1 + 0.3 * A0))
+Y <- rbinom(n, 1, plogis(-1 + 0.6 * A1 + 0.5 * L1 + 0.2 * A0 + 0.1 * W))
+
+ltmle_data <- data.frame(W, L0, A0, L1, A1, Y)
 
 # Define nodes
 Anodes <- c("A0", "A1")
@@ -491,20 +731,29 @@ Lnodes <- c("L0", "L1")
 Ynodes <- "Y"
 
 # Fit LTMLE under a static intervention (always treat)
-result <- ltmle(data = longData,
+result <- ltmle(data = ltmle_data,
                 Anodes = Anodes,
                 Lnodes = Lnodes,
                 Ynodes = Ynodes,
-                abar = c(1,1),
+                abar = c(1, 1),
                 SL.library = c("SL.glm", "SL.gam", "SL.mean"))
 
 summary(result)
 ```
 
+### Stata
+```stata
+* Longitudinal TMLE is available in R via the ltmle package.
+* Stata users can implement the manual targeting algorithm shown in Box 6.8
+* using logit, predict, and the clever covariate construction.
+* For production use, the R ltmle package or the eltmle Stata module
+* (for single-time-point TMLE) are recommended.
+```
+:::
 
 This code estimates the expected outcome had everyone received treatment at both time points using SuperLearner to fit nuisance models. The output includes point estimates, standard errors, and confidence intervals.
 
-In summary, LTMLE provides a powerful and flexible approach for estimating causal effects in longitudinal studies with multiple time-point interventions and a single outcome. It combines double robustness, semiparametric efficiency, and machine learning adaptability, making it particularly suitable for complex, real-world longitudinal data.
+In summary, doubly robust methods provide a powerful framework for estimating causal effects in longitudinal studies. AIPTW offers a simple, closed-form estimator that combines IPTW with outcome regression. LTMLE extends this with a targeting step that optimizes the bias-variance tradeoff, providing semiparametric efficiency when both models are correctly specified. Together, they offer practical and theoretically grounded tools for handling time-varying confounding.
 
 ## Part II: Time-to-event outcome
 
@@ -514,7 +763,7 @@ In longitudinal studies, participants are followed over time to assess the effec
 
 Censoring is problematic because it introduces missing data in the outcome and may bias effect estimates if the reason for censoring is related to treatment or covariates. The standard assumption for valid inference in the presence of censoring is *independent censoring*--that is, the probability of being censored at any time depends only on observed covariates and treatment history, not on unmeasured factors or the potential outcomes themselves.
 
-Let $C_t$be the indicator that a subject is censored at time$t$, and define the observed data structure as:
+Let $C_t$ be the indicator that a subject is censored at time $t$, and define the observed data structure as:
 $$
 O = (L_0, A_0, C_0, L_1, A_1, C_1, \dots, L_T, A_T, C_T, Y).
 $$
@@ -526,9 +775,10 @@ In some longitudinal studies, individuals may experience one of several mutually
 
 Standard survival analysis methods, such as the Kaplan-Meier estimator or Cox proportional hazards model, treat competing events as censoring, which can overestimate the cumulative incidence of the primary event. Instead, the correct estimand is often the *cumulative incidence function* (CIF), which estimates the marginal probability of experiencing each event over time.
 
-**R Example (Competing Risks using the `cmprsk` package):**
+**Box 6.10:** Competing risks analysis with cumulative incidence functions
 
-**Box 6.9 (R):** Fitting weighted MSM to estimate marginal causal effect
+::: {.panel-tabset}
+### R
 ```r
 library(cmprsk)
 # Simulated data: time = event time, status = event type (0=censoring, 1=event, 2=competing risk)
@@ -543,14 +793,41 @@ cif <- cuminc(time, status, group)
 plot(cif, lty = 1:2, col = c("blue", "red"))
 ```
 
-### R Example: Inverse Probability of Censoring Weights (IPCW)
+### Stata
+```stata
+* Simulate competing risks data
+clear all
+set seed 123
+set obs 500
+generate time = rexponential(0.1)
+generate status = runiform()
+generate group = rbinomial(1, 0.5)
+* Recode: 0 = censored, 1 = event of interest, 2 = competing event
+recode status (0/0.3 = 0) (0.3/0.8 = 1) (0.8/1 = 2)
 
+* Declare survival data with competing risks
+stset time, failure(status == 1)
 
-**Box 6.10 (R):** Computing stabilized IP weights for a marginal structural model
+* Cumulative incidence function by group
+stcompet cif = ci, compet1(2) by(group)
+* Plot cumulative incidence
+twoway (line cif time if group == 0, sort) ///
+       (line cif time if group == 1, sort), ///
+       ytitle("Cumulative Incidence") xtitle("Time")
+```
+:::
+
+### Inverse Probability of Censoring Weights (IPCW)
+
+**Box 6.11:** Inverse probability of censoring weights
+
+::: {.panel-tabset}
+### R
 ```r
 # Simulate dropout indicator
 library(survival)
 set.seed(456)
+n <- 500
 L0 <- rnorm(n)
 A0 <- rbinom(n, 1, plogis(0.3 * L0))
 C <- rbinom(n, 1, plogis(0.4 * A0 - 0.2 * L0)) # Censoring indicator (1 = censored)
@@ -562,6 +839,24 @@ ipcw_weights <- 1 / p_uncensored
 summary(ipcw_weights)
 ```
 
+### Stata
+```stata
+* Simulate data for IPCW
+clear all
+set seed 456
+set obs 500
+generate L0 = rnormal()
+generate A0 = rbinomial(1, invlogit(0.3 * L0))
+generate C  = rbinomial(1, invlogit(0.4 * A0 - 0.2 * L0))
+
+* Estimate probability of remaining uncensored
+logit C A0 L0
+predict double p_cens, pr
+generate p_uncens = 1 - p_cens
+generate ipcw = 1 / p_uncens
+summarize ipcw
+```
+:::
 
 These weights can be used in regression or IPTW analyses to adjust for informative censoring.
 
@@ -575,7 +870,7 @@ Censoring and competing risks are both forms of missing data or information loss
 
 In time-to-event settings, the g-formula can be used to estimate counterfactual survival curves under static or dynamic treatment interventions. The goal is to evaluate the probability of survival over time under a hypothetical treatment strategy, adjusting for time-varying confounding and censoring.
 
-Let $T$denote the event time and$C$the censoring time. Define the observed time as$U = \min(T, C)$and the event indicator$\Delta = I(T \leq C)$. Let $Y_t = I(U > t)$be the survival status at time$t$, and let $A_t$and$L_t$denote time-varying treatment and confounders. The counterfactual outcome$Y_t^{\bar{a}}$indicates survival at time$t$under treatment regime$\bar{a} = (a_0, a_1, \dots, a_t)$.
+Let $T$ denote the event time and $C$ the censoring time. Define the observed time as $U = \min(T, C)$ and the event indicator $\Delta = I(T \leq C)$. Let $Y_t = I(U > t)$ be the survival status at time $t$, and let $A_t$ and $L_t$ denote time-varying treatment and confounders. The counterfactual outcome $Y_t^{\bar{a}}$ indicates survival at time $t$ under treatment regime $\bar{a} = (a_0, a_1, \dots, a_t)$.
 
 #### The Nonparametric g-formula for Survival
 
@@ -589,22 +884,24 @@ This is typically implemented via simulation: for each individual, generate a ps
 
 #### The Parametric g-formula for Survival
 
-The parametric g-formula expresses the counterfactual survival probability at time $t$under treatment regime$\bar{a}$ as:
+The parametric g-formula expresses the counterfactual survival probability at time $t$ under treatment regime $\bar{a}$ as:
 $$
 P(Y_t^{\bar{a}} = 1) = \int_{\bar{l}_t} \prod_{s=0}^{t} P(Y_s = 1 \mid Y_{s-1} = 1, A_{s} = a_{s}, L_s = l_s) f(L_s \mid \bar{L}_{s-1}, \bar{A}_{s}) d\bar{l}_t
 $$
-This formula recursively computes the survival probability at each time point, conditioning on not having failed previously. The term $P(Y_s = 1 \mid Y_{s-1} = 1, A_s, L_s)$is the conditional survival probability given being at risk at time$s$, and $f(L_s \mid \cdot)$ represents the evolution of time-varying covariates.
+This formula recursively computes the survival probability at each time point, conditioning on not having failed previously. The term $P(Y_s = 1 \mid Y_{s-1} = 1, A_s, L_s)$ is the conditional survival probability given being at risk at time $s$, and $f(L_s \mid \cdot)$ represents the evolution of time-varying covariates.
 
 In practice, this approach involves specifying parametric regression models for:
 - $P(Y_s = 1 \mid Y_{s-1} = 1, A_s, L_s)$: the outcome model (e.g., pooled logistic regression)
 - $f(L_s \mid A_{s-1}, L_{s-1})$: the covariate models
 
-#### Worked Example in R (Parametric g-formula)
+#### Worked Example
 
 We simulate a simple time-to-event dataset with time-varying covariates and treatment:
 
+**Box 6.12:** Simulating time-to-event data with time-varying covariates
 
-**Box 6.11 (R):** Parametric g-computation for longitudinal data
+::: {.panel-tabset}
+### R
 ```r
 set.seed(123)
 n <- 1000
@@ -640,27 +937,28 @@ long_data <- data.frame(id = rep(1:n, each = K),
 # Estimate conditional survival model
 model <- glm(Y ~ time + A + L, family = binomial(), data = long_data)
 ```
-**Box 6.3 (Stata):** Stata equivalent for Box 6.11
 
+### Stata
 ```stata
-* Pooled logistic regression for discrete-time survival
-* Reshape wide to long format, then:
-logit Y time A L, vce(robust)
-* Predict under intervention A=1 for all time points
-replace A = 1
-predict double Y_hat, pr
-* Compute survival curve from predicted hazards
-bysort time: egen surv = mean(1 - Y_hat)
-gen surv_curve = surv if time == 1
-replace surv_curve = surv_curve[_n-1] * surv if time > 1
+* Simulate time-to-event data with time-varying covariates
+clear all
+set seed 123
+set obs 1000
+* Generate baseline
+generate L1 = rnormal()
+generate A1 = rbinomial(1, invlogit(0.5 * L1))
+* Generate follow-up times (simplified long format generation)
+* For brevity, expand to person-time using stset/stsplit after
+* declaring survival data. See Box 6.14 for the pooled logit approach.
 ```
+:::
 
+To estimate the survival curve under a hypothetical intervention $A_t = 1$ for all $t$:
 
+**Box 6.13:** Estimating counterfactual survival curves under a treatment intervention
 
-To estimate the survival curve under a hypothetical intervention $A_t = 1$for all$t$:
-
-
-**Box 6.12 (R):** Simulating longitudinal data for g-computation example
+::: {.panel-tabset}
+### R
 ```r
 pred_data <- long_data
 pred_data$A <- 1
@@ -672,6 +970,27 @@ surv_curve <- cumprod(surv_probs)
 plot(1:K, surv_curve, type = "s", ylim = c(0,1),
      ylab = "Survival Probability", xlab = "Time")
 ```
+
+### Stata
+```stata
+* Pooled logistic regression for discrete-time survival
+logit Y time A L, vce(robust)
+
+* Predict under intervention A = 1 for all time points
+preserve
+  replace A = 1
+  predict double Y_hat, pr
+  * Compute survival curve from predicted hazards
+  bysort time: egen surv = mean(1 - Y_hat)
+  generate surv_curve = surv if time == 1
+  replace surv_curve = surv_curve[_n-1] * surv if time > 1
+  * Plot survival curve
+  twoway (line surv_curve time, sort), ///
+    ytitle("Survival Probability") xtitle("Time") ///
+    ylabel(0(0.2)1)
+restore
+```
+:::
 
 #### Interpretation and Uses
 
@@ -716,7 +1035,7 @@ The parameter of interest is often a marginal survival probability under a stati
 $$
 \Psi(P_0) = \mathbb{E}_{P_0}[S^a(t)] = P(T^a > t),
 $$
-where $T^a$is the potential failure time under intervention$A = a$, and $S^a(t)$ is the corresponding survival curve. TMLE targets this quantity while accounting for censoring and confounding.
+where $T^a$ is the potential failure time under intervention $A = a$, and $S^a(t)$ is the corresponding survival curve. TMLE targets this quantity while accounting for censoring and confounding.
 
 **Efficient Influence Curve**
 
@@ -731,12 +1050,12 @@ where $H(t, A, W)$ is a clever covariate constructed using inverse probability w
 We now describe the procedure following Petersen et al. (2014) for static interventions:
 
 1. **Estimate the initial outcome model.** Fit a pooled logistic regression model for the event indicator at each time point $t$, conditional on $A$, $W$, and $t$.
-2. **Estimate the treatment and censoring mechanisms.** Estimate $g(A \mid W)$and$P(C \geq t \mid A, W)$.
+2. **Estimate the treatment and censoring mechanisms.** Estimate $g(A \mid W)$ and $P(C \geq t \mid A, W)$.
 3. **Construct clever covariates.** Define:
    $$
    H_i(t) = \frac{I(A_i = a) I(T_i \geq t)}{\hat{g}(A_i \mid W_i) \hat{P}(C_i \geq t \mid A_i, W_i)}
    $$
-4. **Target the outcome model.** Update the initial model by performing logistic regression with offset equal to the logit of the initial prediction and covariate $H_i(t)$to estimate a fluctuation parameter$\epsilon$.
+4. **Target the outcome model.** Update the initial model by performing logistic regression with offset equal to the logit of the initial prediction and covariate $H_i(t)$ to estimate a fluctuation parameter $\epsilon$.
 5. **Update survival estimates.** Use the updated predicted hazards to compute the targeted survival probability:
    $$
    \hat{S}^a(t) = \prod_{s=1}^t \left(1 - \hat{P}(T = s \mid A = a, W) \right)
@@ -747,8 +1066,10 @@ We now describe the procedure following Petersen et al. (2014) for static interv
 
 We simulate a simplified dataset for illustration. Suppose we have baseline treatment $A$, covariate $W$, and time-to-event outcome $T$ (censored at time 5).
 
+**Box 6.14:** Pooled TMLE for survival: fitting the initial outcome model
 
-**Box 6.13 (R):** Illustrating bias with standard regression adjustment for L1
+::: {.panel-tabset}
+### R
 ```r
 library(survival)
 library(dplyr)
@@ -768,6 +1089,7 @@ C <- sample(2:6, n, replace = TRUE)
 T_obs <- pmin(T_true, C)
 Delta <- as.integer(T_true <= C)
 
+# Step 1: Create person-time dataset
 data_long <- data.frame(
   id = rep(1:n, each = 5),
   t = rep(1:5, n),
@@ -779,11 +1101,37 @@ data_long <- data.frame(
   mutate(Y = as.integer(T == t & Delta == 1),
          at_risk = as.integer(T >= t))
 
-# Step 1: Fit initial pooled logistic regression
-initial_fit <- glm(Y ~ A + W + t, family = binomial(), data = data_long, subset = at_risk == 1)
+# Step 2: Fit initial pooled logistic regression (TMLE step 1)
+initial_fit <- glm(Y ~ A + W + t, family = binomial(),
+                   data = data_long, subset = at_risk == 1)
 summary(initial_fit)
 ```
 
+### Stata
+```stata
+* Simulate survival data for pooled TMLE
+clear all
+set seed 123
+set obs 500
+generate W = rnormal()
+generate A = rbinomial(1, invlogit(W))
+* Simulate event times (discrete, t=1..5)
+* (Simplified: generate directly rather than from hazards for brevity)
+generate T_true = ceil(6 * runiform())
+generate C_time = ceil(4 * runiform()) + 2
+generate T_obs = min(T_true, C_time)
+generate Delta = (T_true <= C_time)
+
+* Step 1: Expand to person-time format
+stset T_obs, failure(Delta == 1) id(id)
+stsplit t, at(failures)
+generate at_risk = (_t <= T_obs)
+generate Y = (_t == T_obs & Delta == 1)
+
+* Step 2: Fit initial pooled logistic regression
+logit Y A W t if at_risk == 1, vce(robust)
+```
+:::
 
 The subsequent steps include estimating censoring weights, constructing the clever covariate, performing the targeting update, and computing the survival curve. For brevity, we refer readers to code-based tutorials (e.g., TMLEbook) or the `ltmle` package for full pipelines.
 
@@ -791,25 +1139,51 @@ The subsequent steps include estimating censoring weights, constructing the clev
 
 We now implement TMLE for a longitudinal survival setting using the `ltmle` package. This automates estimation of survival curves under static interventions.
 
+**Box 6.15:** TMLE for survival using the ltmle package
 
-**Box 6.14 (R):** Simulating longitudinal data with two time points
+::: {.panel-tabset}
+### R
 ```r
 library(ltmle)
-data(exampleData)
-timepoints <- 1:6
+
+# Simulate survival data compatible with ltmle
+set.seed(123)
+n <- 300
+W1 <- rnorm(n)
+W2 <- rbinom(n, 1, 0.5)
+A <- rbinom(n, 1, plogis(0.5 * W1 + 0.3 * W2))
+Y1 <- rbinom(n, 1, plogis(-2 + 0.8 * A + 0.4 * W1))
+C1 <- rbinom(n, 1, 0.1)  # 10% censoring at t=1
+Y2 <- rbinom(n, 1, plogis(-2 + 0.8 * A + 0.4 * W1 + 0.1))
+C2 <- rbinom(n, 1, 0.1)
+
+ltmle_data <- data.frame(W1, W2, A,
+                         C1 = C1, L1 = Y1,
+                         C2 = C2, Y2 = Y2)
 
 # Static intervention A = 1
-ltmle_fit <- ltmle(exampleData, Anodes=paste0("A", timepoints),
-                   Cnodes=paste0("C", timepoints),
-                   Lnodes=paste0("L", timepoints),
-                   Ynodes=paste0("Y", timepoints),
-                   survivalOutcome = TRUE,
-                   abar = rep(1, length(timepoints)))
+ltmle_fit <- ltmle(data = ltmle_data,
+                   Anodes = "A",
+                   Cnodes = c("C1", "C2"),
+                   Lnodes = "L1",
+                   Ynodes = "Y2",
+                   survivalOutcome = FALSE,
+                   abar = 1)
 
 summary(ltmle_fit)
 ```
 
-This returns survival probability estimates under the static intervention $A = 1$, along with standard errors and confidence intervals based on the efficient influence function.
+### Stata
+```stata
+* TMLE for survival data is available in R via the ltmle package.
+* Stata users can adapt the pooled TMLE algorithm shown in Box 6.14
+* using logit, predict, and manual clever covariate construction.
+* The targeting step uses the same fluctuation approach (offset + clever covariate)
+* described in the LTMLE section (Box 6.8).
+```
+:::
+
+This returns survival probability estimates under the static intervention, along with standard errors and confidence intervals based on the efficient influence function.
 
 ## Conclusion
 
@@ -821,6 +1195,7 @@ Key takeaways from this chapter:
 - Time-varying confounding affected by prior treatment (treatment-confounder feedback) invalidates standard regression adjustment.
 - MSMs with IPW create a pseudo-population where treatment is independent of confounders at each time point.
 - Stabilized weights reduce the variance of IPW estimators in longitudinal settings.
+- Doubly robust methods (AIPTW, LTMLE) protect against model misspecification by combining outcome and treatment models.
 - The parametric g-formula for survival estimates counterfactual survival curves under static or dynamic interventions.
 - LTMLE provides doubly-robust, semiparametric efficient estimates for longitudinal causal effects.
 - Inverse probability of censoring weighting (IPCW) is essential when follow-up is incomplete.
@@ -846,6 +1221,9 @@ All three methods require careful attention to the positivity assumption, correc
 
 **MSM**
 :   Marginal Structural Model — a model for the marginal distribution of counterfactual outcomes under a treatment sequence, typically estimated using IPW.
+
+**AIPTW**
+:   Augmented Inverse Probability of Treatment Weighting — a doubly robust estimator that combines IPTW with outcome regression predictions.
 
 **Stabilized weights**
 :   IPW weights that include a numerator model (often without time-varying covariates) to reduce variance.
