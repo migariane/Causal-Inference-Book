@@ -492,22 +492,30 @@ gen eps2 = a[1,2]
 The **fluctuation parameter** ($\epsilon$) is a small adjustment applied to the initial outcome model ($Q^{0}(A,\mathbf{W})$) to correct residual bias and ensure that the updated model ($Q^{1}$) aligns with the EIC. It does this by incorporating information from the clever covariate ($H(A,\mathbf{W})$) and the observed outcomes ($Y$). The fluctuation parameter is estimated by solving an estimating equation, specifically a score equation derived from the EIC. The estimating equation ensures that the updated outcome model satisfies the EIC's property:
 $$
 E[D(Y,A,W;Q,g)] = 0$$
-where $D(.)$is the EIC, which includes the clever covariate$H(A,W)$.
+where $D(.)$ is the EIC, which includes the clever covariate $H(A,W)$.
 
 In practice, the score equation used to estimate $\epsilon$ is:
 $$
-\sum_{i} H(A_{i}, W_{i}) \times (Y_{i} - Q^{1}(A_{i},W_{i})) = 0$$
-where $Q^{1}(A_{i},W_{i}) = Q^{0}(A_{i},W_{i}) + \left( \epsilon \cdot H(A_{i},W_{i}) \right) $
-
-You may be asking "why do we need to solve an estimating equation?". By solving the score equation, TMLE ensures that the estimator $\widehat{\psi}$satisfies$E[D]=0$, meaning the bias has been corrected.
-
-For a binary outcome, the fluctuation model is often logistic:
+\sum_{i} H(A_{i}, W_{i}) \times (Y_{i} - Q^{1}(A_{i},W_{i})) = 0
 $$
-logit(Q^{1}(A,W)) = logit(Q^{0}(A,W)) + \epsilon \cdot H(A,W)$$
-Thus the estimating equation becomes:
+where $Q^{1}(A_{i},W_{i})$ is the updated (targeted) prediction. You may be asking "why do we need to solve an estimating equation?". By solving the score equation, TMLE ensures that the estimator $\widehat{\psi}$ satisfies $E[D]=0$, meaning the bias has been corrected.
+
+The form of the update from $Q^{0}$ to $Q^{1}$ depends on the outcome type:
+
+- **For continuous outcomes**, a linear (additive) fluctuation model can be used:
+  $$
+  Q^{1}(A,W) = Q^{0}(A,W) + \epsilon \cdot H(A,W)
+  $$
+
+- **For binary outcomes** (our case), the fluctuation model is logistic, ensuring that the updated predictions remain within $[0,1]$:
+  $$
+  \text{logit}(Q^{1}(A,W)) = \text{logit}(Q^{0}(A,W)) + \epsilon \cdot H(A,W)
+  $$
+
+Under the logistic fluctuation model, the estimating equation becomes:
 $$
-\sum_{i} H(A_{i}, W_{i}) \times \left( Y_{i} - expit \left( \, logit(Q^{0}(A_{i},W_{i})) + \epsilon \cdot H(A_{i},W_{i}) \right) \right) = 0$$
-While this equation might seem complicated to compute, this equation is simply solved iteratively using maximum likelihood estimation.
+\sum_{i} H(A_{i}, W_{i}) \times \left( Y_{i} - \text{expit} \left( \, \text{logit}(Q^{0}(A_{i},W_{i})) + \epsilon \cdot H(A_{i},W_{i}) \right) \right) = 0
+$$
 
 If we take the fluctuation model above, you will see that its form is very similar to the form of a logistic regression model, such as $logit(E[Y|X]) = \beta_{0} + \beta_{1}X$. The difference is that in the right hand side of our fluctuation model the "intercept" ($logit(Q^{0}(A,W))$) is not a constant value like $\beta_{0}$; it is a vector of values of the initial prediction of the outcome. Thus, instead of a constant-value intercept, we use $logit(Q^{0}(A,W))$ as an offset (a fixed intercept) in a logistic regression model. We can now solve our estimating equation for the EIC by using a logistic regression model with the observed outcome $Y$ as the outcome, $logit(\widehat{Q}^{0}(A,W))$ as an offset, and one covariate, $H(A,W)$. The coefficient for the one covariate provides us with an estimate of the fluctuation parameter ($\epsilon$).
 
@@ -980,6 +988,15 @@ Cross-Validated Targeted Maximum Likelihood Estimation (CV-TMLE) is an extension
 
 While standard TMLE already enjoys double robustness and asymptotic efficiency when both models are correctly specified, it may perform poorly in small samples if the machine learning estimators overfit the training data. Standard TMLE typically involves estimating the initial outcome regression and propensity score on the full dataset, which can lead to optimistic predictions and targeted updates that fail to generalize. CV-TMLE addresses this by ensuring that the data used to perform the targeting step is distinct from the data used to estimate the initial regressions.
 
+Beyond overfitting, standard TMLE has a more fundamental theoretical requirement: valid statistical inference depends on the nuisance function estimators belonging to a **Donsker class** — a class of functions whose empirical processes converge to a Gaussian limit at rate $n^{-1/2}$. When highly adaptive machine learning algorithms (e.g., random forests, gradient boosting, or neural networks) are used within the Super Learner library, the resulting estimators may not satisfy the Donsker class condition. This can inflate the bias of the targeted estimand and produce anti-conservative variance estimates, leading to poor confidence interval coverage [@Smith2025CVTMLE].
+
+The Donsker class condition is particularly likely to be violated under:
+- **Near-positivity violations**, where estimated propensity scores are close to 0 or 1, causing the clever covariate $H(A,W)$ to take extreme values.
+- **Small sample sizes**, where the complexity of the machine learning algorithms exceeds what the data can support.
+- **Flexible Super Learner libraries**, where highly adaptive learners (e.g., regression trees, random forests) can overfit, increasing bias and reducing variance in ways that invalidate standard errors.
+
+CV-TMLE provides a straightforward remedy: by separating the estimation of nuisance functions (on training folds) from the targeting step (on validation folds), it ensures that the targeted update and inference are based on **out-of-sample predictions**. This breaks the dependence that causes the Donsker class violation, restoring valid inference even when highly flexible learners are used. As shown by @Smith2025CVTMLE, CV-TMLE vastly improves confidence interval coverage without adversely affecting bias, especially in settings with near-positivity violations or small samples. Importantly, CV-TMLE is also **much less sensitive to the choice of the Super Learner library** than standard TMLE — making it a safer default when the optimal set of learners is unknown in advance.
+
 Key advantages of CV-TMLE include:
 
 - Improved finite-sample performance by reducing overfitting bias.
@@ -1047,7 +1064,7 @@ Alternatively, the `ltmle` package can also be used to perform CV-TMLE when work
 
 In small to moderate samples, the benefits of CV-TMLE become especially clear. The standard TMLE may exhibit instability due to overfitting of the initial estimators, particularly when using highly adaptive algorithms such as random forests or neural networks. By ensuring that targeting is performed on out-of-sample predictions, CV-TMLE avoids this problem and more closely approximates the behavior of the estimator in large samples.
 
-Empirical studies have shown that CV-TMLE achieves better coverage of confidence intervals and lower mean squared error in small samples, particularly when the complexity of the outcome or treatment models is high. As such, CV-TMLE is now regarded as a default strategy in many machine-learning-integrated causal inference pipelines.
+Empirical studies have shown that CV-TMLE achieves better coverage of confidence intervals and lower mean squared error in small samples, particularly when the complexity of the outcome or treatment models is high [@Smith2025CVTMLE]. The Donsker class condition discussed above provides the theoretical explanation: cross-validating the targeting step ensures the empirical process of the nuisance estimators remains well-behaved, even when the individual learners themselves fall outside the Donsker class. As such, CV-TMLE is now regarded as a default strategy in many machine-learning-integrated causal inference pipelines, especially when flexible Super Learner libraries or near-positivity problems are anticipated.
 
 ::: {.callout-note}
 ## Two Layers of Cross-Validation in CV-TMLE
