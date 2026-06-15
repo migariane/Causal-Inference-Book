@@ -30,6 +30,9 @@ jobs:
           install.packages(c("knitr", "rmarkdown"))
         shell: Rscript {0}
 
+      - name: Install TinyTeX
+        run: quarto install tinytex
+
       - name: Render Book
         run: |
           quarto render
