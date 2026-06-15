@@ -39,33 +39,11 @@ Direct Acyclic Graphs (DAGs), which are informed by expertise in the subject are
 
 In general, incorporating a collider into a regression model is discouraged if the goal is to estimate causal effects, as it can introduce bias. However, if the model is aimed at prediction, including colliders might be beneficial if it decreases prediction error.
 
-To illustrate both concepts, we use a linear regression modeling framework to adjust for confounding in a set of boxes containing R software commented code. We introduce three scenarios to illustrate the differences in adjusting for confounders or colliders @fig-DAG2 In @fig-DAG2 (panel A), the causal effect of $A$on$Y$is confounded by$W$. In @fig-DAG2 (panel B), the causal effect of $A$on$Y$is not confounded but adjusting for the collider$C$induces a bias. Lastly, in @fig-DAG2 (panel C), there are no confounders but conditioning on the collider$C$opens a back-door path through$W1$and$W2$.
+To illustrate both concepts, we use a linear regression modeling framework to adjust for confounding in a set of boxes containing R software commented code. We introduce three scenarios to illustrate the differences in adjusting for confounders or colliders @fig-DAG2. In @fig-DAG2 (panel A), the causal effect of $A$ on $Y$ is confounded by $W$. In @fig-DAG2 (panel B), the causal effect of $A$ on $Y$ is not confounded but adjusting for the collider $C$ induces a bias. Lastly, in @fig-DAG2 (panel C), there are no confounders but conditioning on the collider $C$ opens a back-door path through $W1$ and $W2$.
 
-```{mermaid}
-graph LR
-  subgraph PanelA["Panel A"]
-    W((W)) --> A[A]
-    W --> Y[Y]
-    A --> Y
-  end
-  subgraph PanelB["Panel B"]
-    A2[A] --> C((C))
-    Y2[Y] --> C
-    A2 --> Y2
-  end
-  subgraph PanelC["Panel C"]
-    W1((W1)) --> A3[A]
-    W1 --> C3((C))
-    W2((W2)) --> C3
-    W2 --> Y3[Y]
-    A3 --> Y3
-  end
-```
+![DAGs showing confounding (Panel A), collider bias (Panel B), and M-bias (Panel C)](figures/Fig.2.1.png){#fig-DAG2 fig-align="center"}
 
-Data consistent with the directed acyclic graph (DAG) depicted in @fig-DAG2 was generated (Box 2.1), following a process akin to that described by [@Luque-Fernandez2018]: The confounder, represented by **$W$** in @fig-DAG2, was simulated as a standard normal random variable, characterized by a mean of 0 ($\mu=0$) and a variance of 1 ($\sigma^{2}=1$). The generation of the exposure, $A$, was contingent upon the value of $W$, incorporating an error term with a standard normal distribution. Subsequently, the outcome, $Y$, was generated as a function of both $A$and$W$, with an additional error term also drawn from a standard normal distribution. These assumptions establish linear relationships between the variables and a simulated causal effect of $A$on$Y$with a coefficient of 0.3. Linear regression models, both unadjusted (fit1) and adjusted for$W$(fit2), were then employed to estimate associations between$A$and$Y$.
-
-**Box 2.1**: Generate data consistent with @fig-DAG2 (panel A)
-
+Data consistent with the directed acyclic graph (DAG) depicted in @fig-DAG2 was generated (Box 2.1), following a process akin to that described by [@Luque-Fernandez2018]: The confounder, represented by **$W$** in @fig-DAG2, was simulated as a standard normal random variable, characterized by a mean of 0 ($\mu=0$) and a variance of 1 ($\sigma^{2}=1$). The generation of the exposure, $A$, was contingent upon the value of $W$, incorporating an error term with a standard normal distribution. Subsequently, the outcome, $Y$, was generated as a function of both $A$ and $W$, with an additional error term also drawn from a standard normal distribution. These assumptions establish linear relationships between the variables and a simulated causal effect of $A$ on $Y$ with a coefficient of 0.3. Linear regression models, both unadjusted (fit1) and adjusted for $W$ (fit2), were then employed to estimate associations between $A$ and $Y$.
 **Box 2.1 (R):** Generate data consistent with @fig-DAG2 (panel A)
 
 ```r
@@ -130,32 +108,29 @@ graph combine crude adjusted, name(combined, replace) ///
     title("Regression adjustment: Confounding bias")
 ```
 
-The first regression analysis, without conditioning on W, illustrates this bias. The estimated coefficient for $A$(0.472) exhibits an upward bias compared to the true causal effect (0.3) specified in the simulation. In contrast, the second regression adds$W$ as a covariate, effectively closing the open back-door path. This approach yields a more accurate estimate of the causal effect (0.289), closer to the true value. The remaining residual difference of 0.011 can be attributed to sampling variability.
+The first regression analysis, without conditioning on W, illustrates this bias. The estimated coefficient for $A$ (0.472) exhibits an upward bias compared to the true causal effect (0.3) specified in the simulation. In contrast, the second regression adds $W$ as a covariate, effectively closing the open back-door path. This approach yields a more accurate estimate of the causal effect (0.289), closer to the true value. The remaining residual difference of 0.011 can be attributed to sampling variability.
 
-@fig-DAG2 shows the confounding bias based on the slope from the linear adjustment contrasting A without adjustment for W versus B with adjustment for W.
+@fig-confounding shows the confounding bias based on the slope from the linear adjustment contrasting A without adjustment for W versus B with adjustment for W.
 
-![Regression adjustment: univariate (A), bivariate adjustement (B) models fit for the linear association between Y and A.](figures/Fig.2.2.png){#fig-DAG2 fig-align="center"}
+![Regression adjustment: univariate (A), bivariate adjustement (B) models fit for the linear association between Y and A.](figures/Fig.2.2.png){#fig-confounding fig-align="center"}
 
-@fig-DAG2 highlights the key role of $W$as a confounder in this causal structure. Its unique position without parent nodes indicates that it is not influenced by any other variable in the DAG. Consequently,$W$is generated independently within the model. However, both$A$and$Y$share a common parent in$W$, creating an open back-door path between them. This path explains the potential for confounding bias.
+@fig-DAG2 highlights the key role of $W$ as a confounder in this causal structure. Its unique position without parent nodes indicates that it is not influenced by any other variable in the DAG. Consequently, $W$ is generated independently within the model. However, both $A$ and $Y$ share a common parent in $W$, creating an open back-door path between them. This path explains the potential for confounding bias.
 
-In contrast to @fig-DAG2 (panel A), where the causal arrows originate from node $W$, @fig-DAG2 (panel B) presents a different causal structure with arrows directed toward node $C$from both$A$and$Y$. Conditioning on $C$in this scenario, through methods such as regression or stratification, introduces collider bias. This arises because node$C$acts as a collider on the path$A \rightarrow C \leftarrow Y$, where two causal pathways converge.
+In contrast to @fig-DAG2 (panel A), where the causal arrows originate from node $W$, @fig-DAG2 (panel B) presents a different causal structure with arrows directed toward node $C$ from both $A$ and $Y$. Conditioning on $C$ in this scenario, through methods such as regression or stratification, introduces collider bias. This arises because node $C$ acts as a collider on the path $A \rightarrow C \leftarrow Y$, where two causal pathways converge.
 
-To illustrate this concept, consider a scenario where the wetness of the ground ($C$) is solely influenced by rain ($A$) and an automatic sprinkler ($Y$) set on a timer. In this case, knowing that the ground is wet (conditioning on $C$) while simultaneously observing that it did not rain (negating path $A \rightarrow C$) implies that the sprinkler must be on (positive effect on $C$via path$Y \rightarrow C$). Failing to account for the collider $C$ in the analysis might lead to the erroneous conclusion that rain negatively influences sprinkler usage, despite pre-existing knowledge of their independence.[@pearl09causality]
+To illustrate this concept, consider a scenario where the wetness of the ground ($C$) is solely influenced by rain ($A$) and an automatic sprinkler ($Y$) set on a timer. In this case, knowing that the ground is wet (conditioning on $C$) while simultaneously observing that it did not rain (negating path $A \rightarrow C$) implies that the sprinkler must be on (positive effect on $C$ via path $Y \rightarrow C$). Failing to account for the collider $C$ in the analysis might lead to the erroneous conclusion that rain negatively influences sprinkler usage, despite pre-existing knowledge of their independence.[@pearl09causality]
 
 Violation of the ignorability assumption due to collider conditioning: conditioning on a collider variable, such as $C$ in @fig-DAG2 (panel B), can induce a spurious association between the exposure ($A$) and the potential outcomes ($Y(a)$). This undermines the conditional ignorability assumption ($Y(a)\perp A \mid W, C$), which requires the exposure to be independent of the potential outcomes given the conditioning set (see Chapter One).
 
-@fig-DAG2 (panel B) illustrates this concept. Conditioning on $C$ opens the back-door path ($A \rightarrow C \leftarrow Y$) previously blocked by the collider itself. This opens a channel for the effect of $A$on$Y$to indirectly influence the observed association between$A$and$Y(a)$. As a result, the observed association becomes a mixture of both the causal effect of $A$on$Y$and the spurious association induced by the back-door path. This confounds the interpretation of the association, as it is no longer solely attributable to the direct causal effect of$A$on$Y$. Therefore, conditioning on a collider can lead to spurious associations, hindering the identification of true causal relationships from observational data.
+@fig-DAG2 (panel B) illustrates this concept. Conditioning on $C$ opens the back-door path ($A \rightarrow C \leftarrow Y$) previously blocked by the collider itself. This opens a channel for the effect of $A$ on $Y$ to indirectly influence the observed association between $A$ and $Y(a)$. As a result, the observed association becomes a mixture of both the causal effect of $A$ on $Y$ and the spurious association induced by the back-door path. This confounds the interpretation of the association, as it is no longer solely attributable to the direct causal effect of $A$ on $Y$. Therefore, conditioning on a collider can lead to spurious associations, hindering the identification of true causal relationships from observational data.
 
-@fig-DAG2 (panel C) gives another, more complex collider structure usually known as M-bias, in which the collider ($C$) is the effect of a common cause ($W1$) of the exposure ($A$) and a common cause ($W2$) of the outcome ($Y$). There is only one back-door path, and it is already blocked by the collider ($C$); thus we do not need to control for anything. This is the difference between confounders and colliders: a path will be open if one does not adjust for confounders but blocked if adjustment is made. For colliders, it is the other way around. However, some could consider $C$to be a classical confounder as it is associated with both$A$, via ($A \leftarrow W1 \rightarrow C$), and with $Y$, via a path that does not go through $A$ ($C \leftarrow W2 \rightarrow Y$), and it is not in the causal pathway between $A$and$Y$. However, controlling for $C$ will introduce a collider bias. If one were to use the traditional characteristics used to identify confounders (i.e., a third variable [$W$] associated with both the exposure [$A$] and the outcome [$Y$] that is not on the causal pathway between $A$and$Y$), then one could confuse a collider with a confounder.
+@fig-DAG2 (panel C) gives another, more complex collider structure usually known as M-bias, in which the collider ($C$) is the effect of a common cause ($W1$) of the exposure ($A$) and a common cause ($W2$) of the outcome ($Y$). There is only one back-door path, and it is already blocked by the collider ($C$); thus we do not need to control for anything. This is the difference between confounders and colliders: a path will be open if one does not adjust for confounders but blocked if adjustment is made. For colliders, it is the other way around. However, some could consider $C$ to be a classical confounder as it is associated with both $A$, via ($A \leftarrow W1 \rightarrow C$), and with $Y$, via a path that does not go through $A$ ($C \leftarrow W2 \rightarrow Y$), and it is not in the causal pathway between $A$ and $Y$. However, controlling for $C$ will introduce a collider bias. If one were to use the traditional characteristics used to identify confounders (i.e., a third variable [$W$] associated with both the exposure [$A$] and the outcome [$Y$] that is not on the causal pathway between $A$ and $Y$), then one could confuse a collider with a confounder.
 
-@fig-DAG2 (panel C) presents a more intricate collider structure exhibiting M-bias, where the collider, $C$, is influenced by both $W$1, a common cause with exposure $A$, and $W$2, a common cause with outcome $Y$. Notably, a single back-door path exists, but collider $C$already blocks it, eliminating the need for adjustment. This highlights a fundamental distinction between confounders and colliders: while adjusting for confounders reveals potential causal effects by unblocking paths, adjusting for colliders like$C$ inadvertently introduces bias by opening blocked paths, leading to the M-bias phenomenon.
+@fig-DAG2 (panel C) presents a more intricate collider structure exhibiting M-bias, where the collider, $C$, is influenced by both $W1$, a common cause with exposure $A$, and $W2$, a common cause with outcome $Y$. Notably, a single back-door path exists, but collider $C$ already blocks it, eliminating the need for adjustment. This highlights a fundamental distinction between confounders and colliders: while adjusting for confounders reveals potential causal effects by unblocking paths, adjusting for colliders like $C$ inadvertently introduces bias by opening blocked paths, leading to the M-bias phenomenon.
 
-However, some may misinterpret $C$as a traditional confounder. It is indeed associated with both$A$(via$W$1) and $Y$(via$W$2), and it lies outside the direct causal pathway between $A$and$Y$. Despite these characteristics, controlling for $C$would induce collider bias, highlighting the critical distinction between association and causation. Therefore, relying solely on the conventional properties of confounders (association with both exposure and outcome, off-pathway location) can lead to misidentification and spurious inferences when dealing with colliders like$C$. This underscores the importance of carefully considering the underlying causal structure and potential collider bias before implementing adjustment strategies.
+However, some may misinterpret $C$ as a traditional confounder. It is indeed associated with both $A$ (via $W1$) and $Y$ (via $W2$), and it lies outside the direct causal pathway between $A$ and $Y$. Despite these characteristics, controlling for $C$ would induce collider bias, highlighting the critical distinction between association and causation. Therefore, relying solely on the conventional properties of confounders (association with both exposure and outcome, off-pathway location) can lead to misidentification and spurious inferences when dealing with colliders like $C$. This underscores the importance of carefully considering the underlying causal structure and potential collider bias before implementing adjustment strategies.
 
-Building upon the simulated scenario depicted in @fig-DAG2 (panel B), we replicate the data generation process through a simplified linear mechanism outlined in Box 2.2 Initially, we draw variable $A$from a standard normal distribution conditioned on the confounder$W$. Subsequently, we generate outcome $Y$as the sum of the effect of$A$, the confounder $W$, and an error term. Similarly, variable $C$is generated as a function of both$A$and$Y$, incorporating additional error. This revised configuration, as illustrated in @fig-DAG2 (panel B), establishes both $A$(exposure) and$Y$(outcome) as parents of$C$(collider), creating a common effect situation. We then proceed to analyze the data by fitting two models: an adjusted model for$W$excluding the collider (fit3) and a model that incorporates the collider (fit4), also referred to as the collider model). Notably, the true causal coefficient of exposure$A$is established as 0.3, with the collider$C$demonstrating coefficients of 1.0 for both its association with exposure$A$and outcome$Y$.
-
-Box 2.2: To generate data consistent with @fig-DAG2 (panel B)
-
+Building upon the simulated scenario depicted in @fig-DAG2 (panel B), we replicate the data generation process through a simplified linear mechanism outlined in Box 2.2. Initially, we draw variable $A$ from a standard normal distribution conditioned on the confounder $W$. Subsequently, we generate outcome $Y$ as the sum of the effect of $A$, the confounder $W$, and an error term. Similarly, variable $C$ is generated as a function of both $A$ and $Y$, incorporating additional error. This revised configuration, as illustrated in @fig-DAG2 (panel B), establishes both $A$ (exposure) and $Y$ (outcome) as parents of $C$ (collider), creating a common effect situation. We then proceed to analyze the data by fitting two models: an adjusted model for $W$ excluding the collider (fit3) and a model that incorporates the collider (fit4), also referred to as the collider model). Notably, the true causal coefficient of exposure $A$ is established as 0.3, with the collider $C$ demonstrating coefficients of 1.0 for both its association with exposure $A$ and outcome $Y$.
 **Box 2.2 (R):** Generate data consistent with @fig-DAG2 (panel B)
 
 ```r
@@ -218,9 +193,9 @@ graph combine g1 g2, name(combined, replace) ///
     title("Regression adjustment: Collider bias")
 ```
 
-In contrast to the previous section, ignoring the collider variable $C$in the regression model resulted in an estimate of the true coefficient for$A$(0.3) that was remarkably close, at 0.298. However, adjusting for$C$introduced a substantial bias, leading to an estimate of -0.3 as depicted in @fig-DAG3 While the model incorporating the collider (fit4) performs competitively from a predictive standpoint, as evidenced by its lower Akaike Information Criterion (AIC), it paradoxically alters the direction of the association between$A$and$Y$. This phenomenon, where conditioning on the collider introduces bias while ignoring it does not, arises when both $A$and$Y$ are positively correlated with the collider. Thus, in this specific case, including the collider in the regression model introduces a bias while excluding it does not.
+In contrast to the previous section, ignoring the collider variable $C$ in the regression model resulted in an estimate of the true coefficient for $A$ (0.3) that was remarkably close, at 0.298. However, adjusting for $C$ introduced a substantial bias, leading to an estimate of -0.3 as depicted in @fig-collider. While the model incorporating the collider (fit4) performs competitively from a predictive standpoint, as evidenced by its lower Akaike Information Criterion (AIC), it paradoxically alters the direction of the association between $A$ and $Y$. This phenomenon, where conditioning on the collider introduces bias while ignoring it does not, arises when both $A$ and $Y$ are positively correlated with the collider. Thus, in this specific case, including the collider in the regression model introduces a bias while excluding it does not.
 
-![Regression adjustment: confounding bias (A), collider bias (B) models fit for the linear association between Y and A.](figures/Fig.2.3.png){#fig-DAG3 fig-align="center"}
+![Regression adjustment: confounding bias (A), collider bias (B) models fit for the linear association between Y and A.](figures/Fig.2.3.png){#fig-collider fig-align="center"}
 
 ## Motivating example
 
@@ -228,25 +203,15 @@ To illustrate the impact of conditioning on a collider variable, we simulated a 
 
 Hypertension affects nearly one-third of the American population, with over half exhibiting uncontrolled hypertension. Extensive evidence confirms a positive association between cumulative daily sodium intake (grams) exceeding recommended levels and elevated SBP (mmHg). Moreover, advancing age brings about anatomical and physiological changes in the kidneys, compromising their ability to regulate extracellular fluid volume and composition. Notably, these changes include diminished glomerular filtration rate and an impaired capacity to maintain water and sodium homeostasis in response to external factors. Additionally, age-related structural modifications in the arteries contribute to the observed association between age and SBP.
 
-The strong association between age and both high SBP and impaired sodium homeostasis poses a challenge for assessing the true relationship between sodium intake (SOD) and SBP. Age acts as a potential confounder in this scenario, residing on the causal pathway between SOD and SBP as illustrated in @fig-DAG3 This implies that controlling for age solely based on its association with both the exposure (SOD) and the outcome (SBP) could introduce bias into the estimated effect of SOD on SBP.
+The strong association between age and both high SBP and impaired sodium homeostasis poses a challenge for assessing the true relationship between sodium intake (SOD) and SBP. Age acts as a potential confounder in this scenario, residing on the causal pathway between SOD and SBP as illustrated in @fig-DAG3. This implies that controlling for age solely based on its association with both the exposure (SOD) and the outcome (SBP) could introduce bias into the estimated effect of SOD on SBP.
 
-Further complicating the analysis is the role of proteinuria (PRO). High levels of 24-hour urinary protein excretion are observed in response to both sustained high SBP and increased dietary sodium intake, as shown in @fig-DAG3 This places proteinuria in the position of a potential collider variable. Controlling for proteinuria in the presence of unmeasured common causes with both SOD and SBP (represented by the arrow converging on PRO in @fig-DAG3) could introduce collider bias, potentially underestimating or overestimating the true effect of SOD on SBP. Therefore, researchers conducting such analyses should carefully consider the potential for both confounding and collider bias. Controlling for age remains crucial when its influence on SBP pathways is understood and adequately represented in the model. However, if the underlying physiological mechanisms are incompletely understood, or if proteinuria is mistakenly conceptualized as a confounder, controlling for it could lead to biased estimates.
+Further complicating the analysis is the role of proteinuria (PRO). High levels of 24-hour urinary protein excretion are observed in response to both sustained high SBP and increased dietary sodium intake, as shown in @fig-DAG3. This places proteinuria in the position of a potential collider variable. Controlling for proteinuria in the presence of unmeasured common causes with both SOD and SBP (represented by the arrow converging on PRO in @fig-DAG3) could introduce collider bias, potentially underestimating or overestimating the true effect of SOD on SBP. Therefore, researchers conducting such analyses should carefully consider the potential for both confounding and collider bias. Controlling for age remains crucial when its influence on SBP pathways is understood and adequately represented in the model. However, if the underlying physiological mechanisms are incompletely understood, or if proteinuria is mistakenly conceptualized as a confounder, controlling for it could lead to biased estimates.
 
-```{mermaid}
-graph TD
-  AGE((AGE)) --> SOD((SOD))
-  AGE --> SBP((SBP))
-  SOD --> SBP
-  SOD --> PRO((PRO))
-  SBP --> PRO
-```
+![DAG for the sodium intake, systolic blood pressure, and proteinuria example](figures/Fig.2.4.png){#fig-DAG3 fig-align="center"}
 
 This section focuses on simulating data to illustrate the paradoxical effect of 24-hour dietary sodium intake (grams) on systolic blood pressure (SBP) after conditioning on a potential collider, urinary proteinuria. The simulated data will be based on the structural relationships depicted in the DAG presented in @fig-DAG3 (see Box 2.3 for details).
 
-Box 2.3 provides a function to simulate data for this example. The true causal effect of sodium intake on systolic blood pressure (SBP) is represented by a beta coefficient of 1.05, as shown in the formula for SBP: systolic blood pressure $=\beta_{1} \cdot sodium + \beta_{2} \cdot age + \epsilon$, where $\beta_{1} = 1.05$, $\beta_{2} = 2.0$, and $\epsilon$denotes a standard normally distributed error term. Additionally, the coefficients for the association of proteinuria (PRO) with SBP and sodium intake are 2.0 and 2.8, respectively, as specified in the formula for PRO: PRO$= \beta_{1} \cdot SBP + \beta_{2} \cdot Sodium + \epsilon$, where $\beta_{1} = 2.0$, $\beta_{2} = 2.8$, and $\epsilon$ represents a standard normally distributed error term.
-
-Box 2.3: Data generation consistent with @fig-DAG3
-
+Box 2.3 provides a function to simulate data for this example. The true causal effect of sodium intake on systolic blood pressure (SBP) is represented by a beta coefficient of 1.05, as shown in the formula for SBP: systolic blood pressure $=\beta_{1} \cdot sodium + \beta_{2} \cdot age + \epsilon$, where $\beta_{1} = 1.05$, $\beta_{2} = 2.0$, and $\epsilon$ denotes a standard normally distributed error term. Additionally, the coefficients for the association of proteinuria (PRO) with SBP and sodium intake are 2.0 and 2.8, respectively, as specified in the formula for PRO: PRO $= \beta_{1} \cdot SBP + \beta_{2} \cdot Sodium + \epsilon$, where $\beta_{1} = 2.0$, $\beta_{2} = 2.8$, and $\epsilon$ represents a standard normally distributed error term.
 **Box 2.3 (R):** Data generation consistent with @fig-DAG3
 
 ```r
@@ -305,10 +270,7 @@ $$
 Model 3:
 $$
 \text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \beta2 \cdot Age + \beta3 \cdot Proteinuria + \epsilon
-$$
-Box 2.4: Linear regression models in R
-
-**Box 2.4 (R):** Linear regression models in R
+$$**Box 2.4 (R):** Linear regression models in R
 
 ```r
 library(broom) # load packages to visualize regression model's output
@@ -370,9 +332,6 @@ graph combine fit1_stata fit2_stata fit3_stata, rows(1) name(combined, replace) 
 ```
 
 To further investigate the association between sodium intake and hypertension, defined as a binary outcome (systolic blood pressure $\geq$140 mmHg = 1,$<$ 140 mmHg = 0), we employed three logistic regression models. The first model served as a baseline, excluding any adjustments. The second model incorporated age as a potential confounder, while the third additionally adjusted for proteinuria, identified as a collider variable due to its potential influence on both sodium intake and hypertension. Notably, these models mirrored the specifications previously described, with the exception of the binary outcome variable (hypertension). Box 2.5 demonstrates the R code for fitting and visualizing these models as a forest plot.
-
-Box 2.5: Multiplicative scale visualization using a forest plot function
-
 **Box 2.5 (R):** Logistic regression models for hypertension outcome
 
 ```r
@@ -433,16 +392,13 @@ estimates store m3
 
 **Effect of conditioning on a collider**
 
-@fig-figure5 depicts the estimated effect of sodium intake on systolic blood pressure (SBP) after conditioning on a collider variable, along with corresponding 95% confidence intervals. The adjusted regression line represents the predicted SBP conditional on the median value of age (@fig-figure5 panel B) or both age and proteinuria (@fig-figure5 panel C). Notably, unlike the unadjusted and bivariate models in @fig-figure5 (panels A and B, respectively), the collider-adjusted model in @fig-figure5 (panel C) reveals a negative association between sodium intake and SBP. Here, a one-unit increase in sodium intake is associated with a predicted decrease of 0.9 mmHg in SBP.
+@fig-collider-effect depicts the estimated effect of sodium intake on systolic blood pressure (SBP) after conditioning on a collider variable, along with corresponding 95% confidence intervals. The adjusted regression line represents the predicted SBP conditional on the median value of age (@fig-collider-effect panel B) or both age and proteinuria (@fig-collider-effect panel C). Notably, unlike the unadjusted and bivariate models in @fig-collider-effect (panels A and B, respectively), the collider-adjusted model in @fig-collider-effect (panel C) reveals a negative association between sodium intake and SBP. Here, a one-unit increase in sodium intake is associated with a predicted decrease of 0.9 mmHg in SBP.
 
-![Collider effect for the illustration: univariate (A), bivariate (B) and multivariate (C) models fit for the linear association between systolic blood pressure and 24-h sodium dietary intake, adjusted for age acting as a confounder and proteinuria acting as a collider, n=1000.](figures/Figure5.png){#fig-figure5 fig-align="center"}
+![Collider effect for the illustration: univariate (A), bivariate (B) and multivariate (C) models fit for the linear association between systolic blood pressure and 24-h sodium dietary intake, adjusted for age acting as a confounder and proteinuria acting as a collider, n=1000.](figures/Fig.2.5.png){#fig-collider-effect fig-align="center"}
 
 ## Monte-Carlo simulation
 
-The code employed for conducting Monte-Carlo simulations on the additive scale, utilizing the same parameters as outlined in Box 2.3, is presented in Box 2.6 Within the linear model, the simulated causal effect of 24-hour sodium intake on SBP was 1.05 mmHg. The coefficients corresponding to the associations between proteinuria (PRO) and SBP, as well as PRO and sodium intake, were 2.0 and 2.8, respectively. Upon completion of 1000 simulation iterations, the estimated additive effect of 24-hour sodium intake on SBP was determined to be -0.91 mmHg. This indicates a decrease of -0.91 units in SBP for every unit increase in sodium intake. Notably, conditioning on proteinuria, a collider variable, introduced a relative bias of 13.3%.
-
-Box 2.6: Monte Carlo simulations
-
+The code employed for conducting Monte-Carlo simulations on the additive scale, utilizing the same parameters as outlined in Box 2.3, is presented in Box 2.6. Within the linear model, the simulated causal effect of 24-hour sodium intake on SBP was 1.05 mmHg. The coefficients corresponding to the associations between proteinuria (PRO) and SBP, as well as PRO and sodium intake, were 2.0 and 2.8, respectively. Upon completion of 1000 simulation iterations, the estimated additive effect of 24-hour sodium intake on SBP was determined to be -0.91 mmHg. This indicates a decrease of -0.91 units in SBP for every unit increase in sodium intake. Notably, conditioning on proteinuria, a collider variable, introduced a relative bias of 13.3%.
 **Box 2.6 (R):** Monte Carlo simulations
 
 ```r
