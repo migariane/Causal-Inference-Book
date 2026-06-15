@@ -144,39 +144,6 @@ format:
     linkcolor: blue
     citecolor: blue
     urlcolor: blue
-    include-in-header:
-      text: |
-        \usepackage{amsmath}
-        \usepackage{amssymb}
-        \usepackage{bm}
-        \newcommand{\btheta}{\boldsymbol{\theta}}
-        \newcommand{\bbeta}{\boldsymbol{\beta}}
-        \newcommand{\bmu}{\boldsymbol{\mu}}
-        \newcommand{\bSigma}{\boldsymbol{\Sigma}}
-        \newcommand{\bx}{\mathbf{x}}
-        \newcommand{\bX}{\mathbf{X}}
-        \newcommand{\by}{\mathbf{y}}
-        \newcommand{\bY}{\mathbf{Y}}
-        \newcommand{\bU}{\mathbf{U}}
-        \newcommand{\E}{\mathbb{E}}
-        \newcommand{\Var}{\operatorname{Var}}
-        \newcommand{\Cov}{\operatorname{Cov}}
-        \newcommand{\Corr}{\operatorname{Corr}}
-        \newcommand{\iid}{\stackrel{\text{i.i.d.}}{\sim}}
-        \newcommand{\tendD}{\stackrel{\mathcal{D}}{\longrightarrow}}
-        \newcommand{\reals}{\mathbb{R}}
-        \newcommand{\PP}{\mathbb{P}}
-        \newcommand{\I}{\mathbb{I}}
-        \newcommand{\SE}{\operatorname{SE}}
-        \newcommand{\SD}{\operatorname{SD}}
-        \newcommand{\MSE}{\operatorname{MSE}}
-        \newcommand{\argmax}{\operatorname{argmax}}
-        \newcommand{\argmin}{\operatorname{argmin}}
-        \newcommand{\logit}{\operatorname{logit}}
-        \newcommand{\expit}{\operatorname{expit}}
-        \newcommand{\odds}{\operatorname{odds}}
-        \newcommand{\Prb}{\operatorname{Pr}}
-        \newcommand{\indep}{\perp\!\!\!\perp}
 
 execute:
   warning: false
