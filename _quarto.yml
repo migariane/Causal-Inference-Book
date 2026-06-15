@@ -144,6 +144,9 @@ format:
     linkcolor: blue
     citecolor: blue
     urlcolor: blue
+    include-in-header:
+      text: |
+        \usepackage{bm}
 
 execute:
   warning: false
