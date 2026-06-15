@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="This book introduces the concepts of causal inference from a beginner’s perspective and leads the interested reader to numerous approaches to answer counterfactual questions using computational methods in R and Stata.">
+
+<title>4&nbsp; Methods Based on the Propensity Score – Computational Causal Inference for Applied Researchers</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/chapter5/index.html" rel="next">
+<link href="../../chapters/chapter3/index.html" rel="prev">
+<link href="../../figures/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-327a23648f728c563436848380818549.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<script>
+MathJax = {
+  tex: {
+    macros: {
+      btheta: "\\boldsymbol{\\theta}",
+      bbeta: "\\boldsymbol{\\beta}",
+      bmu: "\\boldsymbol{\\mu}",
+      bSigma: "\\boldsymbol{\\Sigma}",
+      bx: "\\mathbf{x}",
+      bX: "\\mathbf{X}",
+      by: "\\mathbf{y}",
+      bY: "\\mathbf{Y}",
+      bU: "\\mathbf{U}",
+      E: "\\mathbb{E}",
+      Var: ["\\operatorname{Var}"],
+      Cov: ["\\operatorname{Cov}"],
+      Corr: ["\\operatorname{Corr}"],
+      iid: "\\stackrel{\\text{i.i.d.}}{\\sim}",
+      tendD: "\\stackrel{\\mathcal{D}}{\\longrightarrow}",
+      reals: "\\mathbb{R}",
+      PP: "\\mathbb{P}",
+      P: "\\mathbb{P}",
+      I: "\\mathbb{I}",
+      A: "\\mathbb{A}",
+      SE: ["\\operatorname{SE}"],
+      SD: ["\\operatorname{SD}"],
+      MSE: ["\\operatorname{MSE}"],
+      argmax: ["\\operatorname{argmax}"],
+      argmin: ["\\operatorname{argmin}"],
+      logit: ["\\operatorname{logit}"],
+      expit: ["\\operatorname{expit}"],
+      odds: ["\\operatorname{odds}"],
+      Pr: ["\\operatorname{Pr}"],
+      indep: "\\perp\\!\\!\\!\\perp"
+    }
+  }
+};
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/chapter3/index.html">G-Methods</a></li><li class="breadcrumb-item"><a href="../../chapters/chapter4/index.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Methods Based on the Propensity Score</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Computational Causal Inference for Applied Researchers</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/migariane/Causal-Inference-Book" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="../../Computational-Causal-Inference-for-Applied-Researchers.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
+              <i class="bi bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter1/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter2/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Regression adjustment</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">G-Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter3/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">G-formula</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter4/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Methods Based on the Propensity Score</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Advanced Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter5/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Double-robust estimators</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter6/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Inference for Longitudinal Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter7/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Sensitivity Analysis &amp; Discussion</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter8/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter9/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Discussion</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-ps-intro" id="toc-sec-ps-intro" class="nav-link active" data-scroll-target="#sec-ps-intro"><span class="header-section-number">4.1</span> Introduction</a></li>
+  <li><a href="#sec-ps-ps" id="toc-sec-ps-ps" class="nav-link" data-scroll-target="#sec-ps-ps"><span class="header-section-number">4.2</span> The Propensity Score</a>
+  <ul class="collapse">
+  <li><a href="#sec-ps-properties" id="toc-sec-ps-properties" class="nav-link" data-scroll-target="#sec-ps-properties"><span class="header-section-number">4.2.1</span> Key Properties of the Propensity Score</a></li>
+  <li><a href="#the-balancing-property" id="toc-the-balancing-property" class="nav-link" data-scroll-target="#the-balancing-property"><span class="header-section-number">4.2.2</span> The Balancing Property</a></li>
+  <li><a href="#unconfoundedness-given-the-propensity-score" id="toc-unconfoundedness-given-the-propensity-score" class="nav-link" data-scroll-target="#unconfoundedness-given-the-propensity-score"><span class="header-section-number">4.2.3</span> Unconfoundedness Given the Propensity Score</a></li>
+  <li><a href="#common-support-and-positivity" id="toc-common-support-and-positivity" class="nav-link" data-scroll-target="#common-support-and-positivity"><span class="header-section-number">4.2.4</span> Common Support and Positivity</a></li>
+  <li><a href="#biasvariance-trade-off-in-propensity-score-methods" id="toc-biasvariance-trade-off-in-propensity-score-methods" class="nav-link" data-scroll-target="#biasvariance-trade-off-in-propensity-score-methods"><span class="header-section-number">4.2.5</span> Bias–Variance Trade-off in Propensity Score Methods</a></li>
+  <li><a href="#sec-ps-estimation" id="toc-sec-ps-estimation" class="nav-link" data-scroll-target="#sec-ps-estimation"><span class="header-section-number">4.2.6</span> Estimating the Propensity Score</a></li>
+  <li><a href="#logistic-regression" id="toc-logistic-regression" class="nav-link" data-scroll-target="#logistic-regression"><span class="header-section-number">4.2.7</span> Logistic Regression</a></li>
+  <li><a href="#machine-learning-approaches" id="toc-machine-learning-approaches" class="nav-link" data-scroll-target="#machine-learning-approaches"><span class="header-section-number">4.2.8</span> Machine Learning Approaches</a></li>
+  <li><a href="#model-checking-and-covariate-balance" id="toc-model-checking-and-covariate-balance" class="nav-link" data-scroll-target="#model-checking-and-covariate-balance"><span class="header-section-number">4.2.9</span> Model Checking and Covariate Balance</a></li>
+  </ul></li>
+  <li><a href="#sec-ps-methods" id="toc-sec-ps-methods" class="nav-link" data-scroll-target="#sec-ps-methods"><span class="header-section-number">4.3</span> Methods Using the Propensity Score</a>
+  <ul class="collapse">
+  <li><a href="#sec-ps-matching" id="toc-sec-ps-matching" class="nav-link" data-scroll-target="#sec-ps-matching"><span class="header-section-number">4.3.1</span> Matching on the Propensity Score</a></li>
+  <li><a href="#sec-ps-stratification" id="toc-sec-ps-stratification" class="nav-link" data-scroll-target="#sec-ps-stratification"><span class="header-section-number">4.3.2</span> Stratification (or Subclassification)</a></li>
+  <li><a href="#sec-ps-regression" id="toc-sec-ps-regression" class="nav-link" data-scroll-target="#sec-ps-regression"><span class="header-section-number">4.3.3</span> Covariate Adjustment Using the Propensity Score</a></li>
+  <li><a href="#sec-ps-iptw" id="toc-sec-ps-iptw" class="nav-link" data-scroll-target="#sec-ps-iptw"><span class="header-section-number">4.3.4</span> Inverse Probability of Treatment Weighting (IPTW)</a></li>
+  </ul></li>
+  <li><a href="#sec-ps-practical" id="toc-sec-ps-practical" class="nav-link" data-scroll-target="#sec-ps-practical"><span class="header-section-number">4.4</span> Practical Considerations</a>
+  <ul class="collapse">
+  <li><a href="#assessing-overlap-and-positivity" id="toc-assessing-overlap-and-positivity" class="nav-link" data-scroll-target="#assessing-overlap-and-positivity"><span class="header-section-number">4.4.1</span> Assessing Overlap and Positivity</a></li>
+  <li><a href="#checking-covariate-balance" id="toc-checking-covariate-balance" class="nav-link" data-scroll-target="#checking-covariate-balance"><span class="header-section-number">4.4.2</span> Checking Covariate Balance</a></li>
+  <li><a href="#sensitivity-to-propensity-score-model-choice" id="toc-sensitivity-to-propensity-score-model-choice" class="nav-link" data-scroll-target="#sensitivity-to-propensity-score-model-choice"><span class="header-section-number">4.4.3</span> Sensitivity to Propensity Score Model Choice</a></li>
+  <li><a href="#choosing-among-propensity-score-methods" id="toc-choosing-among-propensity-score-methods" class="nav-link" data-scroll-target="#choosing-among-propensity-score-methods"><span class="header-section-number">4.4.4</span> Choosing Among Propensity Score Methods</a></li>
+  </ul></li>
+  <li><a href="#sec-ps-summary" id="toc-sec-ps-summary" class="nav-link" data-scroll-target="#sec-ps-summary"><span class="header-section-number">4.5</span> Summary and Comparison</a>
+  <ul class="collapse">
+  <li><a href="#comparison-with-the-g-formula" id="toc-comparison-with-the-g-formula" class="nav-link" data-scroll-target="#comparison-with-the-g-formula"><span class="header-section-number">4.5.1</span> Comparison with the G-formula</a></li>
+  <li><a href="#when-to-use-propensity-score-methods" id="toc-when-to-use-propensity-score-methods" class="nav-link" data-scroll-target="#when-to-use-propensity-score-methods"><span class="header-section-number">4.5.2</span> When to Use Propensity Score Methods</a></li>
+  <li><a href="#strengths-and-limitations" id="toc-strengths-and-limitations" class="nav-link" data-scroll-target="#strengths-and-limitations"><span class="header-section-number">4.5.3</span> Strengths and Limitations</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">4.6</span> Conclusion</a></li>
+  <li><a href="#glossary" id="toc-glossary" class="nav-link" data-scroll-target="#glossary"><span class="header-section-number">4.7</span> Glossary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/migariane/Causal-Inference-Book/edit/main/chapters/chapter4/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/blob/main/chapters/chapter4/index.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/chapter3/index.html">G-Methods</a></li><li class="breadcrumb-item"><a href="../../chapters/chapter4/index.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Methods Based on the Propensity Score</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-ps" class="quarto-section-identifier"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Methods Based on the Propensity Score</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="sec-ps-intro" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="sec-ps-intro"><span class="header-section-number">4.1</span> Introduction</h2>
+<p>In observational studies, estimating causal effects is complicated by the presence of confounding—systematic differences in baseline characteristics between treatment groups. While one approach to adjusting for confounding is through outcome modeling (e.g., the g-formula), an alternative strategy involves balancing the distribution of confounders between treatment groups. This is the central idea behind propensity score methods.</p>
+<p>The <em>propensity score</em>, introduced by <span class="citation" data-cites="Rosenbaum1983">(<a href="../../references.html#ref-Rosenbaum1983" role="doc-biblioref">Rosenbaum &amp; Rubin, 1983</a>)</span>, is defined as the probability of receiving the treatment given a set of observed covariates: <span class="math display">\[
+e(W) = P(A = 1 \mid W),
+\]</span> where <span class="math inline">\(A\)</span>is the binary treatment indicator and<span class="math inline">\(W\)</span>is a vector of observed covariates. The key insight is that, under certain assumptions, conditioning on the propensity score is sufficient to control for confounding. Specifically, if treatment assignment is strongly ignorable given the covariates<span class="math inline">\(W\)</span>, then it is also ignorable given the scalar quantity <span class="math inline">\(e(W)\)</span>. That is: <span class="math display">\[
+Y^0, Y^1 \perp A \mid e(W),
+\]</span> where <span class="math inline">\(Y^0\)</span>and<span class="math inline">\(Y^1\)</span> are the potential outcomes under control and treatment, respectively.</p>
+<p>This property makes the propensity score a powerful tool: it allows us to reduce a potentially high-dimensional confounding problem into a one-dimensional balancing problem. By adjusting for the propensity score—rather than all covariates directly—we can remove confounding bias due to observed covariates, provided certain conditions are met.</p>
+<p>In settings with multiple confounders, the validity of the propensity score relies heavily on correctly modeling the propensity score. In a perfectly randomized experiment, exchangeability is inherent due to the randomization process. However, in an observational study, conditional exchangeability can only be assumed if all confounders have been accurately captured by the propensity score. To fully exploit this conditional exchangeability, the propensity score, which is inherently unknown, must be appropriately modeled using the available data.</p>
+<p>In this chapter, we explore the range of methods built upon the propensity score. These include: - <strong>Matching</strong>, where treated and control individuals with similar propensity scores are compared; - <strong>Stratification</strong>, where the data are divided into strata (e.g., quintiles) of the propensity score and comparisons are made within strata; - <strong>Covariate adjustment using the propensity score</strong>, where the score is included as a covariate in a regression model; - <strong>Inverse probability of treatment weighting (IPTW)</strong>, which uses the propensity score to create a pseudo-population in which treatment is independent of covariates; - And <strong>doubly robust estimators</strong>, which combine propensity score modeling with outcome modeling.</p>
+<p>Each method has strengths and limitations. Unlike outcome modeling approaches such as the g-formula, propensity score methods do not rely on specifying the correct model for the outcome. Instead, they shift the modeling burden to the treatment assignment mechanism. This can be advantageous when the outcome is difficult to model, but it also introduces new challenges, including the need for careful diagnostic checks and attention to positivity and overlap.</p>
+<p>In the sections that follow, we describe each of these methods in detail, illustrate them with examples and code, and provide guidance on when and how to apply them in practice.</p>
+</section>
+<section id="sec-ps-ps" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="sec-ps-ps"><span class="header-section-number">4.2</span> The Propensity Score</h2>
+<section id="sec-ps-properties" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="sec-ps-properties"><span class="header-section-number">4.2.1</span> Key Properties of the Propensity Score</h3>
+<p>The usefulness of the propensity score in causal inference stems from a set of key theoretical properties. These properties justify the use of the propensity score as a balancing score and support its role in adjusting for confounding in observational studies.</p>
+</section>
+<section id="the-balancing-property" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="the-balancing-property"><span class="header-section-number">4.2.2</span> The Balancing Property</h3>
+<p>The fundamental property of the propensity score is its ability to balance covariates between treated and untreated individuals. Formally, for individuals with the same value of the propensity score, the distribution of observed covariates <span class="math inline">\(W\)</span>is independent of treatment assignment<span class="math inline">\(A\)</span>. That is, <span class="math display">\[
+A \perp W \mid e(W),
+\]</span> where <span class="math inline">\(e(W) = P(A = 1 \mid W)\)</span>. This means that within strata of the propensity score, the treated and untreated groups are expected to have similar distributions of baseline covariates. This balancing property is essential, as it enables causal comparisons by mimicking the balance achieved through randomization.</p>
+</section>
+<section id="unconfoundedness-given-the-propensity-score" class="level3" data-number="4.2.3">
+<h3 data-number="4.2.3" class="anchored" data-anchor-id="unconfoundedness-given-the-propensity-score"><span class="header-section-number">4.2.3</span> Unconfoundedness Given the Propensity Score</h3>
+<p>If the potential outcomes are independent of treatment assignment conditional on covariates—that is, <span class="math display">\[
+Y^0, Y^1 \perp A \mid W,
+\]</span> then this also holds conditional on the propensity score: <span class="math display">\[
+Y^0, Y^1 \perp A \mid e(W).
+\]</span> This result, sometimes called the <em>strong ignorability given the propensity score</em>, implies that adjusting for the propensity score alone is sufficient to remove confounding bias due to measured covariates, under the assumption that all confounders are included in <span class="math inline">\(W\)</span>.</p>
+</section>
+<section id="common-support-and-positivity" class="level3" data-number="4.2.4">
+<h3 data-number="4.2.4" class="anchored" data-anchor-id="common-support-and-positivity"><span class="header-section-number">4.2.4</span> Common Support and Positivity</h3>
+<p>For propensity score methods to be valid, there must be sufficient overlap in the distribution of the propensity score between the treated and untreated groups. This is known as the <em>common support</em> or <em>overlap</em> condition. Formally, for every value of the covariates <span class="math inline">\(W\)</span>, we require: <span class="math display">\[
+0 &lt; P(A = 1 \mid W) &lt; 1.
+\]</span> This assumption, known as <em>positivity</em>, ensures that each individual has a positive probability of receiving both treatment and control, given their covariates. If some individuals are deterministically treated or untreated based on their covariates, causal effects for those individuals are not identifiable.</p>
+<p>In practice, violations of positivity are detected when there are extreme propensity scores close to 0 or 1. These lead to practical issues such as poor covariate balance and unstable estimates, particularly in weighting-based methods like IPTW.</p>
+</section>
+<section id="biasvariance-trade-off-in-propensity-score-methods" class="level3" data-number="4.2.5">
+<h3 data-number="4.2.5" class="anchored" data-anchor-id="biasvariance-trade-off-in-propensity-score-methods"><span class="header-section-number">4.2.5</span> Bias–Variance Trade-off in Propensity Score Methods</h3>
+<p>Propensity score methods often involve a trade-off between bias and variance. For example, narrowing the matching caliper or stratifying into more finely grained subclasses can reduce bias but may also increase variance due to smaller effective sample sizes. Conversely, wider matches or coarser stratification increase the sample size but risk residual confounding.</p>
+<p>The choice of propensity score method (e.g., matching, stratification, weighting) and implementation details (e.g., number of strata, use of replacement in matching) should be guided by diagnostics such as covariate balance measures and sensitivity analyses.</p>
+</section>
+<section id="sec-ps-estimation" class="level3" data-number="4.2.6">
+<h3 data-number="4.2.6" class="anchored" data-anchor-id="sec-ps-estimation"><span class="header-section-number">4.2.6</span> Estimating the Propensity Score</h3>
+<p>The first step in applying propensity score methods is to estimate the propensity score—defined as the probability of receiving the treatment, given observed covariates: <span class="math display">\[
+e(W) = P(A = 1 \mid W).
+\]</span> In practice, this conditional probability is not known and must be estimated from the data. The choice of model for estimating the propensity score is crucial, as all subsequent causal inferences depend on its quality. An incorrectly specified propensity score model may result in poor covariate balance and biased effect estimates, even if the methods used afterward are correctly implemented.</p>
+</section>
+<section id="logistic-regression" class="level3" data-number="4.2.7">
+<h3 data-number="4.2.7" class="anchored" data-anchor-id="logistic-regression"><span class="header-section-number">4.2.7</span> Logistic Regression</h3>
+<p>The most common method for estimating the propensity score is <em>logistic regression</em>. In this approach, the treatment assignment <span class="math inline">\(A \in \{0,1\}\)</span>is modeled as a function of the covariates<span class="math inline">\(W\)</span>: <span class="math display">\[
+\text{logit}(P(A = 1 \mid W)) = \alpha_0 + \alpha_1 W_1 + \alpha_2 W_2 + \cdots + \alpha_k W_k.
+\]</span> This yields a predicted probability for each individual of receiving the treatment, given their covariate profile. Logistic regression has the advantages of being interpretable, familiar, and easy to implement, and it often performs adequately when the number of confounders is moderate and their relationships with treatment are roughly linear on the logit scale.</p>
+<p>However, model misspecification is a risk. Important interactions or non-linearities may be missed unless explicitly included. Therefore, flexible modeling and diagnostic checks are essential.</p>
+</section>
+<section id="machine-learning-approaches" class="level3" data-number="4.2.8">
+<h3 data-number="4.2.8" class="anchored" data-anchor-id="machine-learning-approaches"><span class="header-section-number">4.2.8</span> Machine Learning Approaches</h3>
+<p>As an alternative to parametric models, <em>machine learning algorithms</em> can be used to estimate the propensity score in a more flexible, data-adaptive way. These include:</p>
+<ul>
+<li>Classification trees and random forests</li>
+<li>Gradient boosting machines (e.g., XGBoost)</li>
+<li>Neural networks</li>
+<li>Generalized additive models</li>
+<li>Ensemble learners (e.g., Super Learner)</li>
+</ul>
+<p>Machine learning methods can capture complex, non-linear relationships and interactions among covariates without the need to specify them manually. This can improve covariate balance and reduce bias. However, these methods may overfit or produce propensity scores near 0 or 1, which can lead to unstable weights in IPTW.</p>
+<p>For this reason, ensemble methods like <em>Super Learner</em>—which combine multiple candidate models via cross-validation—are increasingly used in modern causal inference to improve robustness and predictive performance.</p>
+</section>
+<section id="model-checking-and-covariate-balance" class="level3" data-number="4.2.9">
+<h3 data-number="4.2.9" class="anchored" data-anchor-id="model-checking-and-covariate-balance"><span class="header-section-number">4.2.9</span> Model Checking and Covariate Balance</h3>
+<p>Regardless of the estimation method, it is essential to evaluate whether the resulting propensity score model achieves <em>covariate balance</em> between the treated and control groups. The ultimate goal is not predictive accuracy of treatment assignment but rather balance of covariates conditional on the propensity score.</p>
+<p>Diagnostics include:</p>
+<ul>
+<li>Standardized mean differences for each covariate before and after adjustment</li>
+<li>Histograms or density plots of propensity scores by treatment group</li>
+<li>Plots of balance vs.&nbsp;propensity score strata or quantiles</li>
+</ul>
+<p>A good model may not perfectly predict treatment but should result in <em>well-balanced covariates</em> across treatment groups in the adjusted (pseudo-)population. If balance is poor, the model may need to be refit, potentially adding interaction terms, non-linear terms (e.g., splines), or trying a more flexible estimation method.</p>
+<p>In summary, the estimation of the propensity score is not a purely predictive task—it is a causal modeling task aimed at achieving balance to support unbiased estimation of treatment effects.</p>
+</section>
+</section>
+<section id="sec-ps-methods" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="sec-ps-methods"><span class="header-section-number">4.3</span> Methods Using the Propensity Score</h2>
+<section id="sec-ps-matching" class="level3" data-number="4.3.1">
+<h3 data-number="4.3.1" class="anchored" data-anchor-id="sec-ps-matching"><span class="header-section-number">4.3.1</span> Matching on the Propensity Score</h3>
+<p>Matching is one of the most commonly used propensity score methods. The idea is to pair treated and control individuals with similar values of the estimated propensity score, so that comparisons are made between units with similar covariate distributions. Matching aims to recreate a pseudo-randomized experiment by ensuring that treatment and control groups are balanced on observed covariates.</p>
+<section id="nearest-neighbor-matching" class="level4">
+<h4 class="anchored" data-anchor-id="nearest-neighbor-matching">Nearest Neighbor Matching</h4>
+<p>In nearest neighbor matching, each treated individual is matched to one or more control individuals whose estimated propensity score is closest in absolute value. The most basic form is 1:1 matching without replacement, although other ratios (e.g., 1:2, 1:k) are possible.</p>
+<p>This method is intuitive and easy to implement but may result in poor matches if the propensity score distributions between groups do not overlap well.</p>
+<p><strong>Box 4.1 (R): Nearest Neighbor Matching</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MatchIt)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate data</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">A =</span> <span class="fu">rbinom</span>(<span class="dv">1000</span>, <span class="dv">1</span>, <span class="fl">0.5</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">W1 =</span> <span class="fu">rnorm</span>(<span class="dv">1000</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">W2 =</span> <span class="fu">rbinom</span>(<span class="dv">1000</span>, <span class="dv">1</span>, <span class="fl">0.4</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>ps <span class="ot">&lt;-</span> <span class="fu">glm</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">family =</span> binomial)<span class="sc">$</span>fitted.values</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform nearest neighbor matching</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>match_nn <span class="ot">&lt;-</span> <span class="fu">matchit</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">method =</span> <span class="st">"nearest"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(match_nn)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>matched_data <span class="ot">&lt;-</span> <span class="fu">match.data</span>(match_nn)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.1 (Stata): Nearest Neighbor Matching</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>* Simulate <span class="kw">data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">clear</span> <span class="ot">all</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="dv">seed</span> 1234</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="kw">obs</span> 1000</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> A = (runiform() &gt; 0.5)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> W1 = rnormal()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> W2 = (runiform() &gt; 0.4)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>* Estimate propensity <span class="kw">score</span> via <span class="kw">logistic</span> regression</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="kw">logit</span> A W1 W2</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> ps, pr</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>* Nearest neighbor matching (1:1, no replacement)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>* psmatch2 is user-written; install with: <span class="kw">ssc</span> install psmatch2</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>psmatch2 A, pscore(ps) neighbor(1) noreplacement</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="caliper-and-radius-matching" class="level4">
+<h4 class="anchored" data-anchor-id="caliper-and-radius-matching">Caliper and Radius Matching</h4>
+<p>Caliper matching imposes a maximum allowable distance (caliper) between the propensity scores of matched pairs. This reduces the risk of poor matches by ensuring that treated units are only matched to controls with sufficiently similar scores.</p>
+<p>Radius matching generalizes this idea by allowing each treated individual to be matched with all controls within the caliper range.</p>
+<p><strong>Box 4.2 (R): Caliper Matching</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>match_caliper <span class="ot">&lt;-</span> <span class="fu">matchit</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                             <span class="at">method =</span> <span class="st">"nearest"</span>, <span class="at">caliper =</span> <span class="fl">0.2</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(match_caliper)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.2 (Stata): Caliper Matching</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>* Caliper matching with maximum distance <span class="kw">of</span> 0.2 <span class="kw">on</span> the propensity <span class="kw">score</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>psmatch2 A, pscore(ps) neighbor(1) noreplacement caliper(0.2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="matching-with-or-without-replacement" class="level4">
+<h4 class="anchored" data-anchor-id="matching-with-or-without-replacement">Matching with or without Replacement</h4>
+<p>In matching <em>with replacement</em>, a control unit can be used as a match for more than one treated unit. This is especially useful when the number of treated and control units is highly imbalanced or when the overlap in propensity scores is limited.</p>
+<p>Matching <em>without replacement</em> restricts each control to be used only once. This may yield less optimal matches but preserves a more diverse control group.</p>
+<p><strong>Box 4.3 (R): Matching with Replacement</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>match_wr <span class="ot">&lt;-</span> <span class="fu">matchit</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">method =</span> <span class="st">"nearest"</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(match_wr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.3 (Stata): Matching with Replacement</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>* Matching with replacement</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>psmatch2 A, pscore(ps) neighbor(1) replacement</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="covariate-balance-diagnostics" class="level4">
+<h4 class="anchored" data-anchor-id="covariate-balance-diagnostics">Covariate Balance Diagnostics</h4>
+<p>After matching, it is essential to assess whether covariates are balanced between treatment groups. Standardized mean differences (SMDs) are commonly used for this purpose. A typical threshold for acceptable balance is an absolute SMD less than 0.1.</p>
+<p><strong>Box 4.4 (R): Covariate Balance Diagnostics</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">summary</span>(match_nn), <span class="at">type =</span> <span class="st">"qq"</span>)  <span class="co"># Balance plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.4 (Stata): Covariate Balance Diagnostics</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>* Standardized <span class="kw">mean</span> differences before and after matching</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>pstest W1 W2, both <span class="kw">graph</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Other diagnostics include: - Histograms or density plots of propensity scores - Love plots of standardized differences - Covariate-specific p-values (with caution)</p>
+</section>
+<section id="estimating-treatment-effects-after-matching" class="level4">
+<h4 class="anchored" data-anchor-id="estimating-treatment-effects-after-matching">Estimating Treatment Effects after Matching</h4>
+<p>Once matching is complete and balance is assessed, the treatment effect can be estimated by comparing outcomes between matched treated and control units. For 1:1 matching, a paired difference in means is often used: <span class="math display">\[
+\widehat{ATT} = \frac{1}{n_t} \sum_{i \in \text{treated}} \left(Y_i - Y_{j(i)}\right),
+\]</span> where <span class="math inline">\(Y_i\)</span>is the outcome for treated unit<span class="math inline">\(i\)</span>and<span class="math inline">\(Y_{j(i)}\)</span> is the outcome of the matched control.</p>
+<p><strong>Box 4.5 (R): Estimating ATT after Matching</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>matched_data <span class="ot">&lt;-</span> <span class="fu">match.data</span>(match_nn)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(matched_data<span class="sc">$</span>Y[matched_data<span class="sc">$</span>A <span class="sc">==</span> <span class="dv">1</span>]) <span class="sc">-</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(matched_data<span class="sc">$</span>Y[matched_data<span class="sc">$</span>A <span class="sc">==</span> <span class="dv">0</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.5 (Stata): Estimating ATT after Matching</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>* ATT estimation <span class="kw">using</span> psmatch2 output (restrict to matched <span class="kw">sample</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">keep</span> <span class="kw">if</span> _weight != 0 &amp; _weight != .</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> Y <span class="kw">if</span> A == 1, <span class="kw">meanonly</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> y1 = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> Y <span class="kw">if</span> A == 0, <span class="kw">meanonly</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> y0 = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="kw">display</span> <span class="st">"ATT = "</span> %9.4f <span class="ot">`y1'</span> - <span class="ot">`y0'</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>* Alternative: built-<span class="kw">in</span> teffects psmatch</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>teffects psmatch (Y) (A W1 W2, <span class="kw">logit</span>), atet</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Bootstrapping is often used to estimate confidence intervals post-matching since standard variance formulas may not be valid in the matched sample.</p>
+<p><strong>Summary:</strong> Matching on the propensity score is a flexible, intuitive approach to reduce confounding. Success depends on overlap in propensity scores and careful attention to post-matching diagnostics.</p>
+</section>
+</section>
+<section id="sec-ps-stratification" class="level3" data-number="4.3.2">
+<h3 data-number="4.3.2" class="anchored" data-anchor-id="sec-ps-stratification"><span class="header-section-number">4.3.2</span> Stratification (or Subclassification)</h3>
+<p>Stratification, also known as subclassification, is a propensity score method that involves dividing the study population into strata (or subclasses) based on quantiles of the estimated propensity score. Within each stratum, the treated and control groups are compared directly. This method reduces confounding by ensuring that comparisons are made between subjects with similar covariate distributions.</p>
+<section id="forming-strata-by-propensity-score-quantiles" class="level4">
+<h4 class="anchored" data-anchor-id="forming-strata-by-propensity-score-quantiles">Forming Strata by Propensity Score Quantiles</h4>
+<p>The most common approach is to divide the range of the estimated propensity score into quintiles (i.e., five equally sized groups). This aims to create approximately homogeneous groups within which treatment assignment is as-if random.</p>
+<p><strong>Box 4.6 (R): Forming Strata by Propensity Score Quantiles</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>pscore <span class="ot">&lt;-</span> <span class="fu">glm</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">family =</span> binomial)<span class="sc">$</span>fitted.values</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create strata (quintiles)</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>stratum <span class="ot">&lt;-</span> <span class="fu">cut</span>(data<span class="sc">$</span>pscore,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">breaks =</span> <span class="fu">quantile</span>(data<span class="sc">$</span>pscore, <span class="at">probs =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.2</span>)),</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">include.lowest =</span> <span class="cn">TRUE</span>, <span class="at">labels =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(data<span class="sc">$</span>stratum, data<span class="sc">$</span>A)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.6 (Stata): Forming Strata by Propensity Score Quantiles</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>* Estimate propensity <span class="kw">score</span> via <span class="kw">logistic</span> regression</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">logit</span> A W1 W2</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> pscore, pr</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>* Create quintile <span class="kw">strata</span> based <span class="kw">on</span> the propensity <span class="kw">score</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="kw">xtile</span> stratum = pscore, nq(5)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="kw">tabulate</span> stratum A</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>More or fewer strata can be used depending on the sample size. Rosenbaum and Rubin (1984) showed that stratification into five strata typically removes about 90% of the bias due to confounding.</p>
+</section>
+<section id="effect-estimation-within-strata" class="level4">
+<h4 class="anchored" data-anchor-id="effect-estimation-within-strata">Effect Estimation within Strata</h4>
+<p>Once strata are formed, treatment effects are estimated within each stratum separately. For example, within each stratum <span class="math inline">\(s\)</span>, the average treatment effect can be computed as: <span class="math display">\[
+\widehat{ATE}_s = \bar{Y}^1_s - \bar{Y}^0_s,
+\]</span> where <span class="math inline">\(\bar{Y}^1_s\)</span>and<span class="math inline">\(\bar{Y}^0_s\)</span>are the average outcomes among treated and control units within stratum<span class="math inline">\(s\)</span>, respectively.</p>
+<p><strong>Box 4.7 (R): Effect Estimation within Strata</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">by</span>(data, data<span class="sc">$</span>stratum, <span class="cf">function</span>(df) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(df<span class="sc">$</span>Y[df<span class="sc">$</span>A <span class="sc">==</span> <span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(df<span class="sc">$</span>Y[df<span class="sc">$</span>A <span class="sc">==</span> <span class="dv">0</span>])</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.7 (Stata): Effect Estimation within Strata</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>* Stratum-specific ATE</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">forvalues</span> <span class="fu">s</span> = 1/5 {</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">summarize</span> Y <span class="kw">if</span> stratum == <span class="ot">`s'</span> &amp; A == 1, <span class="kw">meanonly</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> y1 = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">summarize</span> Y <span class="kw">if</span> stratum == <span class="ot">`s'</span> &amp; A == 0, <span class="kw">meanonly</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> y0 = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">display</span> <span class="st">"Stratum `s': ATE = "</span> %9.4f <span class="ot">`y1'</span> - <span class="ot">`y0'</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If the outcome is binary, logistic regression can also be used within each stratum to estimate risk differences, risk ratios, or odds ratios.</p>
+</section>
+<section id="aggregating-across-strata" class="level4">
+<h4 class="anchored" data-anchor-id="aggregating-across-strata">Aggregating Across Strata</h4>
+<p>The overall average treatment effect is computed by aggregating the stratum-specific effects, weighting by the proportion of the population in each stratum: <span class="math display">\[
+\widehat{ATE} = \sum_{s=1}^S \widehat{ATE}_s \times \frac{n_s}{n},
+\]</span> where <span class="math inline">\(n_s\)</span>is the number of individuals in stratum<span class="math inline">\(s\)</span>and<span class="math inline">\(n\)</span> is the total sample size.</p>
+<p><strong>Box 4.8 (R): Aggregating Across Strata</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>agg_ate <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(stratum) <span class="sc">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">ate =</span> <span class="fu">mean</span>(Y[A <span class="sc">==</span> <span class="dv">1</span>]) <span class="sc">-</span> <span class="fu">mean</span>(Y[A <span class="sc">==</span> <span class="dv">0</span>])</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">weighted_ate =</span> <span class="fu">sum</span>(ate <span class="sc">*</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)))</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>agg_ate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.8 (Stata): Aggregating Across Strata</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>* Stratum-specific ATE with population weights</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">bysort</span> stratum: <span class="kw">generate</span> n_s = _N</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="kw">bysort</span> stratum: <span class="kw">egen</span> y1_s = <span class="kw">mean</span>(Y) <span class="kw">if</span> A == 1</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">bysort</span> stratum: <span class="kw">egen</span> y0_s = <span class="kw">mean</span>(Y) <span class="kw">if</span> A == 0</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="kw">bysort</span> stratum: <span class="kw">generate</span> ate_s = y1_s - y0_s <span class="kw">if</span> <span class="dt">_n</span> == 1</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>* Weighted average across <span class="kw">strata</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> ate_s [aw = n_s]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This estimator approximates the marginal ATE, provided that each stratum contains both treated and control individuals.</p>
+</section>
+<section id="assessing-balance-within-strata" class="level4">
+<h4 class="anchored" data-anchor-id="assessing-balance-within-strata">Assessing Balance within Strata</h4>
+<p>To evaluate whether stratification has successfully balanced covariates, one should assess covariate balance within each stratum. This can be done by calculating standardized mean differences (SMDs) between treated and control groups within each stratum.</p>
+<p><strong>Box 4.9 (R): Assessing Balance within Strata</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tableone)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">CreateTableOne</span>(<span class="at">vars =</span> <span class="fu">c</span>(<span class="st">"W1"</span>, <span class="st">"W2"</span>), <span class="at">strata =</span> <span class="st">"stratum"</span>, <span class="at">data =</span> data, <span class="at">factorVars =</span> <span class="st">"A"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.9 (Stata): Assessing Balance within Strata</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>* Standardized <span class="kw">mean</span> differences within each stratum</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="kw">forvalues</span> <span class="fu">s</span> = 1/5 {</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">display</span> <span class="kw">as</span> <span class="bn">text</span> <span class="st">"=== Stratum `s' ==="</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">foreach</span> <span class="kw">var</span> <span class="kw">in</span> W1 W2 {</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">summarize</span> <span class="ot">`var'</span> <span class="kw">if</span> stratum == <span class="ot">`s'</span> &amp; A == 1, <span class="kw">meanonly</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">local</span> m1 = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">local</span> v1 = <span class="fu">r</span>(Var)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">summarize</span> <span class="ot">`var'</span> <span class="kw">if</span> stratum == <span class="ot">`s'</span> &amp; A == 0, <span class="kw">meanonly</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">local</span> m0 = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">local</span> v0 = <span class="fu">r</span>(Var)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">local</span> smd = (<span class="ot">`m1'</span> - <span class="ot">`m0'</span>) / <span class="fu">sqrt</span>((<span class="ot">`v1'</span> + <span class="ot">`v0'</span>) / 2)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">display</span> <span class="st">"`var': SMD = "</span> %7.4f <span class="ot">`smd'</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Visual tools such as Love plots can also be used to summarize covariate balance across all strata.</p>
+<p><strong>Summary:</strong> Stratification is an intuitive and accessible method to adjust for confounding using the propensity score. Its simplicity and transparency make it particularly useful in moderate sample sizes, although bias can remain if strata are not sufficiently homogeneous.</p>
+</section>
+</section>
+<section id="sec-ps-regression" class="level3" data-number="4.3.3">
+<h3 data-number="4.3.3" class="anchored" data-anchor-id="sec-ps-regression"><span class="header-section-number">4.3.3</span> Covariate Adjustment Using the Propensity Score</h3>
+<p>An alternative to matching, stratification, or weighting is to include the propensity score directly as a covariate in a regression model for the outcome. This method is sometimes referred to as “covariate adjustment using the propensity score.” It involves modeling the outcome as a function of both the treatment and the estimated propensity score.</p>
+<section id="propensity-score-as-a-covariate-in-regression" class="level4">
+<h4 class="anchored" data-anchor-id="propensity-score-as-a-covariate-in-regression">Propensity Score as a Covariate in Regression</h4>
+<p>In this approach, the outcome <span class="math inline">\(Y\)</span> is modeled as: <span class="math display">\[
+E[Y \mid A, e(W)] = f(A, e(W)),
+\]</span> where <span class="math inline">\(e(W)\)</span> is the estimated propensity score. A typical implementation for a continuous outcome is a linear regression model: <span class="math display">\[
+Y_i = \beta_0 + \beta_1 A_i + \beta_2 \hat{e}(W_i) + \varepsilon_i,
+\]</span> and for a binary outcome, a logistic regression model: <span class="math display">\[
+\text{logit}(P(Y_i = 1)) = \beta_0 + \beta_1 A_i + \beta_2 \hat{e}(W_i).
+\]</span> The coefficient <span class="math inline">\(\beta_1\)</span> captures the association between treatment and outcome, adjusted for the propensity score.</p>
+<p>This method reduces the dimensionality of adjustment: instead of adjusting for all covariates in <span class="math inline">\(W\)</span>, one adjusts for a scalar summary, <span class="math inline">\(\hat{e}(W)\)</span>. However, it is not guaranteed to produce unbiased estimates of the average treatment effect (ATE), especially when the outcome model is misspecified.</p>
+<p><strong>Box 4.10 (R): Covariate Adjustment with PS - Linear Regression</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate propensity scores</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>ps_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">family =</span> binomial)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>pscore <span class="ot">&lt;-</span> ps_model<span class="sc">$</span>fitted.values</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Outcome model using propensity score as a covariate</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>outcome_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y <span class="sc">~</span> A <span class="sc">+</span> pscore, <span class="at">data =</span> data)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(outcome_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.10 (Stata): Covariate Adjustment with PS - Linear Regression</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>* Estimate propensity <span class="kw">score</span> via <span class="kw">logistic</span> regression</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">logit</span> A W1 W2</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> pscore, pr</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>* Outcome <span class="kw">model</span> with propensity <span class="kw">score</span> <span class="kw">as</span> a covariate (continuous outcome)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> Y A pscore</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For binary outcomes:</p>
+<p><strong>Box 4.11 (R): Covariate Adjustment with PS - Logistic Regression</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Logistic regression</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>logit_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y <span class="sc">~</span> A <span class="sc">+</span> pscore, <span class="at">data =</span> data, <span class="at">family =</span> binomial)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logit_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.11 (Stata): Covariate Adjustment with PS - Logistic Regression</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>* Outcome <span class="kw">model</span> with propensity <span class="kw">score</span> <span class="kw">as</span> a covariate (binary outcome)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">logit</span> Y A pscore, <span class="kw">or</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This method can be sensitive to misspecification of the outcome model. For example, if <span class="math inline">\(e(W)\)</span>has a non-linear relationship with<span class="math inline">\(Y\)</span>, then modeling it linearly may yield biased estimates.</p>
+</section>
+<section id="comparison-with-outcome-modeling" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-with-outcome-modeling">Comparison with Outcome Modeling</h4>
+<p>Covariate adjustment using the propensity score differs from traditional outcome modeling (also known as regression adjustment) in that it replaces the vector of covariates <span class="math inline">\(W\)</span>with a scalar summary,<span class="math inline">\(e(W)\)</span>. In standard outcome regression, the model is: <span class="math display">\[
+Y_i = \beta_0 + \beta_1 A_i + \boldsymbol{\beta}_2^T W_i + \varepsilon_i.
+\]</span> This method directly adjusts for all confounders, assuming the model for <span class="math inline">\(E[Y \mid A, W]\)</span> is correctly specified. While it allows more flexibility in modeling covariates, it also suffers more severely from curse of dimensionality and collinearity.</p>
+<p>In contrast, adjusting for <span class="math inline">\(e(W)\)</span> reduces the covariate adjustment to a single dimension. However, it does not offer the same level of protection against confounding, especially in the presence of effect modification, non-linear relationships, or heterogeneous treatment effects.</p>
+<p><strong>Key differences:</strong> - <strong>Dimensionality:</strong> Propensity score adjustment uses a scalar summary, reducing complexity. - <strong>Model dependency:</strong> Traditional regression depends heavily on correct specification of the full outcome model; PS adjustment relies more on correct treatment model. - <strong>Interpretation:</strong> Coefficients from PS-adjusted models estimate conditional treatment effects, not marginal ATEs.</p>
+<p>Although less commonly used in modern practice due to its sensitivity to model misspecification and weaker performance in finite samples, covariate adjustment using the propensity score remains a useful tool in situations with limited overlap or when other methods are infeasible.</p>
+<p>For improved performance, this method is often used in conjunction with doubly robust estimators, as discussed in later sections.</p>
+</section>
+</section>
+<section id="sec-ps-iptw" class="level3" data-number="4.3.4">
+<h3 data-number="4.3.4" class="anchored" data-anchor-id="sec-ps-iptw"><span class="header-section-number">4.3.4</span> Inverse Probability of Treatment Weighting (IPTW)</h3>
+<p>Inverse Probability of Treatment Weighting (IPTW) is a propensity score-based method that reweights the sample to create a pseudo-population in which treatment assignment is independent of baseline covariates. This allows for the estimation of causal effects by comparing outcomes between weighted treatment groups.</p>
+<p>In observational studies, some individuals will be more likely than others to be treated (A=1) due to their characteristics. Suppose some individuals who were treated were unlikely to be treated based on a specific set of features encapsulated in a particular vector of confounders (<strong>W</strong>). To balance the differences in characteristics between treatment groups, we re-weight the outcome variable of these individuals by the inverse of their probability of the treatment (A) actually received (i.e., propensity score). Originally, the weights were motivated from the classical Horvitz and Thompson survey estimator used to re-weight the outcome variable by the inverse probability that it is observed, thus accounting for the sampling process.<span class="citation" data-cites="Horvitz1952">(<a href="../../references.html#ref-Horvitz1952" role="doc-biblioref">Horvitz &amp; Thompson, 1952</a>)</span> The result of this weighting procedure is that, among the treated we up-weight those who had a low probability of being treated, and among the untreated we up-weight those who were unlikely to be untreated; that is, the individuals underrepresented in their treatment group. As a consequence, the weighted set of data is unchanged apart from A and <strong>W</strong> are now conditionally independent. Therefore, a comparison of <span class="math inline">\(Y_{w}(1)\)</span>to <span class="math inline">\(Y_{w}(0)\)</span> gives a marginal causal effect under the three identification assumptions (Appendix 1) whilst also assuming the propensity score model is correctly specified. The inverse probability of treatment weighting (IPTW), and the g-formula when targeting the same estimand (i,e., the ATE), are equivalent in the nonparametric setting.<span class="citation" data-cites="Robins1986 Rosenbaum1983">(<a href="../../references.html#ref-Robins1986" role="doc-biblioref">Robins, 1986</a>; <a href="../../references.html#ref-Rosenbaum1983" role="doc-biblioref">Rosenbaum &amp; Rubin, 1983</a>)</span> We provide a proof of the equivalence between IPTW and G-computation procedures using the law of total expectation. <span class="math display">\[
+\begin{aligned}
+&amp; \underbrace{E\left(\frac{{I}(a = 1)}{P(A=1 \mid \boldsymbol{W})}\,Y\right)}_{IPTW} \,=\, \\
+        &amp; \text{By definition of expectations...} \\
+    &amp;=\, \sum_{w,a,y} \frac{I(a=1)}{P(A=1|W=w)} \, y \, P(Y=y,A=a,W=w) \\
+        &amp; \\
+        &amp; \text{By the law of total probability...} \\
+    &amp;=\, \sum_{w,a,y} \frac{I(a=1)}{P(A=1\,|\,W=w)} \, y \, P(Y=y\, | \,A=a,W=w) \, P(A=a\,|\,W=w) \, P(W=w) \\
+        &amp; \\
+        &amp; \text{Cancellation by evaluating at A=1...} \\
+    &amp;=\, \sum_{w,y} \,y\, P(Y=y\,|\,A=1,W=w)\,P(W=w) \\
+        &amp; \\
+        &amp; \text{By definition of expectations...} \\
+    &amp;=\, \sum_{w} E(Y\,|\,A=1,W=w)\,P(W=w) \\
+        &amp; \\
+        &amp; \text{Finally, again by definition of expectations...} \\
+    &amp;=\, \underbrace{E[E(Y\,|\,A=1,W)]}_{G-computation}
+\end{aligned}
+\]</span> Departing from the identification assumptions of the ATE for the regression adjustment G-computation estimand (ATE = <span class="math inline">\(E_{w}(E(Y|A=1,\textbf{W}) - E_{w}(Y|A=0,\textbf{W})\)</span>), we can rewrite the same estimand as a function of the distribution of A given W (i.e., <span class="math inline">\(P(A = 1|\textbf{W})\)</span>, a.k.a propensity score or treatment mechanism).</p>
+<p>Therefore, the estimator is given by <span id="eq-iptw"><span class="math display">\[
+\text{ATE}\,=\,\frac{1}{n}\sum^{n}_{i=1}\left(\frac{A_{i}}{P(A_{i}=1\mid\boldsymbol{W}_{i})}\,-\,\frac{1\,-\,A_{i}}{(1\,-\,P(A_{i}=1\mid\boldsymbol{W}_{i}))}\right)Y_{i}.
+\tag{4.1}\]</span></span></p>
+<section id="defining-weights-for-ate-att-and-atu" class="level4">
+<h4 class="anchored" data-anchor-id="defining-weights-for-ate-att-and-atu">Defining Weights for ATE, ATT, and ATU</h4>
+<p>The basic idea of IPTW is to weight each individual by the inverse of the probability of receiving the treatment they actually received. These weights depend on the estimand of interest:</p>
+<ul>
+<li><strong>Average Treatment Effect (ATE):</strong> <span class="math display">\[
+w_i^{ATE} = \begin{cases}
+\frac{1}{\hat{e}(W_i)} &amp; \text{if } A_i = 1, \\
+\frac{1}{1 - \hat{e}(W_i)} &amp; \text{if } A_i = 0.
+\end{cases}
+\]</span></li>
+<li><strong>Average Treatment Effect on the Treated (ATT):</strong> <span class="math display">\[
+w_i^{ATT} = \begin{cases}
+1 &amp; \text{if } A_i = 1, \\
+\frac{\hat{e}(W_i)}{1 - \hat{e}(W_i)} &amp; \text{if } A_i = 0.
+\end{cases}
+\]</span></li>
+<li><strong>Average Treatment Effect on the Untreated (ATU):</strong> <span class="math display">\[
+w_i^{ATU} = \begin{cases}
+\frac{1 - \hat{e}(W_i)}{\hat{e}(W_i)} &amp; \text{if } A_i = 1, \\
+1 &amp; \text{if } A_i = 0.
+\end{cases}
+\]</span> <strong>Box 4.12 (R): ATE Weights</strong></li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>ps_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">family =</span> binomial)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>pscore <span class="ot">&lt;-</span> ps_model<span class="sc">$</span>fitted.values</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>weight_ate <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(data<span class="sc">$</span>A <span class="sc">==</span> <span class="dv">1</span>,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                          <span class="dv">1</span> <span class="sc">/</span> data<span class="sc">$</span>pscore,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                          <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> data<span class="sc">$</span>pscore))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.12 (Stata): ATE Weights</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>* Estimate propensity <span class="kw">score</span> via <span class="kw">logistic</span> regression</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="kw">logit</span> A W1 W2</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> pscore, pr</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>* Generate ATE weights (inverse probability weights)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> weight_ate = <span class="fu">cond</span>(A == 1, 1 / pscore, 1 / (1 - pscore))</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> weight_ate</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="stabilized-vs.-unstabilized-weights" class="level4">
+<h4 class="anchored" data-anchor-id="stabilized-vs.-unstabilized-weights">Stabilized vs.&nbsp;Unstabilized Weights</h4>
+<p>There is a modified version of the IPTW estimator (<a href="#eq-iptw" class="quarto-xref">Equation&nbsp;<span>4.1</span></a>) consisting of stabilised weights proposed by <span class="citation" data-cites="Hajek1971CommentEds">(<a href="../../references.html#ref-Hajek1971CommentEds" role="doc-biblioref"><strong>Hajek1971CommentEds?</strong></a>)</span>, which is more commonly used in practice when treatment and exposure vary over time (i.e., time dependent confounding). Stabilised weights should have a mean of 1, but some values could be higher (i.e., large weights). Unstabilized weights can sometimes have large variability, particularly when propensity scores are close to 0 or 1. Stabilized weights help mitigate this by multiplying the numerator of the weight by the marginal probability of treatment: <span class="math display">\[
+w_i^{stab} = \begin{cases}
+\frac{P(A = 1)}{\hat{e}(W_i)} &amp; \text{if } A_i = 1, \\
+\frac{P(A = 0)}{1 - \hat{e}(W_i)} &amp; \text{if } A_i = 0.
+\end{cases}
+\]</span> The stabilised version of the IPTW estimator is given by <span class="math display">\[
+\text{ATE} \,=\,\frac{\sum\left(\frac{AY}{P(A=1\mid\boldsymbol{W})}\right)}{\sum\left(\frac{A}{P(A=1\mid\boldsymbol{W})}\right)}\,-\,\frac{\sum\left(\frac{(1\,-\,A)Y}{1\,-\,P(A=1\mid\boldsymbol{W})}\right)}{\sum\left(\frac{(1\,-\,A)}{1\,-\,P(A=1\mid\boldsymbol{W})}\right)}.
+\]</span> <strong>Box 4.13 (R): Stabilized ATE Weights</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>p_A <span class="ot">&lt;-</span> <span class="fu">mean</span>(data<span class="sc">$</span>A <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>stab_weight <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(data<span class="sc">$</span>A <span class="sc">==</span> <span class="dv">1</span>,</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                          p_A <span class="sc">/</span> data<span class="sc">$</span>pscore,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>                          (<span class="dv">1</span> <span class="sc">-</span> p_A) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> data<span class="sc">$</span>pscore))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.13 (Stata): Stabilized ATE Weights</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>* Marginal probability <span class="kw">of</span> treatment</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> A, <span class="kw">meanonly</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> p_A = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>* Generate stabilized ATE weights</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> stab_weight = <span class="fu">cond</span>(A == 1, <span class="ot">`p_A'</span> / pscore, (1 - <span class="ot">`p_A'</span>) / (1 - pscore))</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> stab_weight</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="dealing-with-extreme-weights" class="level4">
+<h4 class="anchored" data-anchor-id="dealing-with-extreme-weights">Dealing with Extreme Weights</h4>
+<p>Extreme weights occur when estimated propensity scores are close to 0 or 1, leading to instability and large variances. Strategies to manage this include: - <strong>Truncation:</strong> Cap weights at a specified percentile (e.g., 1st and 99th percentiles). - <strong>Weight trimming:</strong> Exclude individuals with weights above a certain threshold. - <strong>Use of stabilized weights:</strong> As previously shown. - <strong>Improved PS estimation:</strong> Use flexible models (e.g., machine learning) to improve PS estimates.</p>
+<p><strong>Box 4.14 (R): Weight Truncation</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Truncate at 1st and 99th percentiles</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>lower <span class="ot">&lt;-</span> <span class="fu">quantile</span>(data<span class="sc">$</span>weight_ate, <span class="fl">0.01</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>upper <span class="ot">&lt;-</span> <span class="fu">quantile</span>(data<span class="sc">$</span>weight_ate, <span class="fl">0.99</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>trunc_weight <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(data<span class="sc">$</span>weight_ate, lower), upper)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.14 (Stata): Weight Truncation</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>* Compute 1st and 99th percentiles <span class="kw">of</span> the weights</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>_pctile weight_ate, <span class="kw">p</span>(1, 99)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="fu">lower</span> = <span class="fu">r</span>(r1)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="fu">upper</span> = <span class="fu">r</span>(r2)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>* Truncate weights <span class="fu">at</span> these thresholds</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> trunc_weight = <span class="fu">min</span>(<span class="fu">max</span>(weight_ate, <span class="ot">`lower'</span>), <span class="ot">`upper'</span>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> trunc_weight</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="variance-estimation-for-iptw" class="level4">
+<h4 class="anchored" data-anchor-id="variance-estimation-for-iptw">Variance Estimation for IPTW</h4>
+<p>Variance estimation for IPTW estimators can be challenging due to the complex structure of the weights. Common approaches include:</p>
+<ul>
+<li><strong>Robust (sandwich) standard errors:</strong> Often used when fitting weighted regression models.</li>
+<li><strong>Bootstrap:</strong> Resample individuals and re-estimate the treatment effect in each sample.</li>
+</ul>
+<p><strong>Box 4.15 (R): Weighted Regression with Robust SEs</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted regression</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y <span class="sc">~</span> A, <span class="at">data =</span> data, <span class="at">weights =</span> data<span class="sc">$</span>stab_weight)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(fit, <span class="at">vcov =</span> <span class="fu">vcovHC</span>(fit, <span class="at">type =</span> <span class="st">"HC0"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.15 (Stata): Weighted Regression with Robust SEs</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>* Weighted linear regression with <span class="kw">robust</span> (sandwich) standard errors</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> Y A [pw = stab_weight], <span class="kw">robust</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.16 (R): Bootstrap for IPTW</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(boot)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>boot_iptw <span class="ot">&lt;-</span> <span class="cf">function</span>(data, indices) {</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> data[indices, ]</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y <span class="sc">~</span> A, <span class="at">data =</span> d, <span class="at">weights =</span> d<span class="sc">$</span>stab_weight)</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coef</span>(fit)[<span class="st">"A"</span>]</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="fu">boot</span>(data, boot_iptw, <span class="at">R =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.16 (Stata): Bootstrap for IPTW</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>* Bootstrap standard errors <span class="kw">for</span> IPTW estimator</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="kw">capture</span> <span class="kw">program</span> <span class="kw">drop</span> boot_iptw</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="kw">program</span> <span class="kw">define</span> boot_iptw, rclass</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  * Re-estimate propensity <span class="kw">score</span> <span class="kw">in</span> <span class="kw">bootstrap</span> <span class="kw">sample</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">logit</span> A W1 W2</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">predict</span> ps_boot, pr</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  * Compute stabilized weights</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">summarize</span> A, <span class="kw">meanonly</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> pA = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">generate</span> wt = <span class="fu">cond</span>(A == 1, <span class="ot">`pA'</span> / ps_boot, (1 - <span class="ot">`pA'</span>) / (1 - ps_boot))</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>  * Weighted regression</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">regress</span> Y A [pw = wt]</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span> <span class="fu">scalar</span> ate = _b[A]</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  * Clean up</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">drop</span> ps_boot wt</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a><span class="kw">bootstrap</span> <span class="fu">r</span>(ate), reps(1000) <span class="dv">seed</span>(1234): boot_iptw</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="diagnostics-and-weight-distributions" class="level4">
+<h4 class="anchored" data-anchor-id="diagnostics-and-weight-distributions">Diagnostics and Weight Distributions</h4>
+<p>Before interpreting IPTW results, it is critical to check whether the weights have created a balanced pseudo-population. Diagnostic steps include:</p>
+<ul>
+<li><strong>Plotting the distribution of weights:</strong> Helps identify extreme weights.</li>
+<li><strong>Checking covariate balance after weighting:</strong> Using standardized mean differences.</li>
+<li><strong>Plotting Love plots or density plots of covariates:</strong> To assess balance visually.</li>
+</ul>
+<p><strong>Box 4.17 (R): Check Weights and Balance</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(data<span class="sc">$</span>stab_weight, <span class="at">breaks =</span> <span class="dv">30</span>, <span class="at">main =</span> <span class="st">"Stabilized Weights"</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cobalt)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="fu">bal.tab</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">weights =</span> data<span class="sc">$</span>stab_weight)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="fu">love.plot</span>(<span class="fu">bal.tab</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">weights =</span> data<span class="sc">$</span>stab_weight))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.17 (Stata): Check Weights and Balance</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>* Histogram <span class="kw">of</span> stabilized weights</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="kw">histogram</span> stab_weight, <span class="kw">frequency</span> <span class="bn">name</span>(weight_hist, <span class="kw">replace</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>* Assess covariate balance after IPTW <span class="kw">using</span> built-<span class="kw">in</span> teffects</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>teffects ipw (Y) (A W1 W2, <span class="kw">logit</span>), ate</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>tebalance <span class="kw">summarize</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Summary:</strong> IPTW is a powerful method for estimating causal effects using the propensity score. Careful diagnostics and attention to weight distribution are necessary to avoid instability and ensure valid inferences.</p>
+</section>
+</section>
+</section>
+<section id="sec-ps-practical" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="sec-ps-practical"><span class="header-section-number">4.4</span> Practical Considerations</h2>
+<section id="assessing-overlap-and-positivity" class="level3" data-number="4.4.1">
+<h3 data-number="4.4.1" class="anchored" data-anchor-id="assessing-overlap-and-positivity"><span class="header-section-number">4.4.1</span> Assessing Overlap and Positivity</h3>
+<p>A fundamental assumption in propensity score analysis is the assumption of positivity, also known as common support or overlap. This requires that for all combinations of covariates <span class="math inline">\(W\)</span>, the probability of receiving each treatment level is strictly between zero and one: <span class="math display">\[
+0 &lt; P(A = 1 \mid W) &lt; 1.
+\]</span> Violations of positivity occur when some individuals have near-deterministic treatment assignment based on their covariates. These individuals contribute little to causal identification and may introduce instability in estimates, particularly in weighting methods like IPTW. The overlap of the distribution of propensity scores between treatment groups gives a visual identification regarding the strength of confounding and whether it is acceptable.</p>
+<p><strong>Box 4.18 (R): Propensity Score Overlap</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> pscore, <span class="at">fill =</span> <span class="fu">factor</span>(A))) <span class="sc">+</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Propensity Score Overlap"</span>, <span class="at">fill =</span> <span class="st">"Treatment"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.18 (Stata): Propensity Score Overlap</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>* Density plot <span class="kw">of</span> propensity scores <span class="kw">by</span> treatment <span class="fu">group</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="kw">twoway</span> <span class="kw">kdensity</span> pscore <span class="kw">if</span> A == 0, lcolor(<span class="kw">red</span>) lpattern(solid) <span class="co">///</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>       || <span class="kw">kdensity</span> pscore <span class="kw">if</span> A == 1, lcolor(<span class="bn">blue</span>) lpattern(<span class="kw">dash</span>) <span class="co">///</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>       <span class="bn">legend</span>(<span class="kw">order</span>(1 <span class="st">"Control"</span> 2 <span class="st">"Treated"</span>)) <span class="co">///</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>       <span class="bn">title</span>(<span class="st">"Propensity Score Overlap"</span>) <span class="co">///</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>       <span class="bn">xtitle</span>(<span class="st">"Propensity Score"</span>) <span class="bn">ytitle</span>(<span class="st">"Density"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>When overlap is poor, trimming or restriction to regions of common support is sometimes used to improve robustness, albeit at the cost of generalizability.</p>
+</section>
+<section id="checking-covariate-balance" class="level3" data-number="4.4.2">
+<h3 data-number="4.4.2" class="anchored" data-anchor-id="checking-covariate-balance"><span class="header-section-number">4.4.2</span> Checking Covariate Balance</h3>
+<p>The primary role of the propensity score is to balance observed covariates between treatment groups. Balance diagnostics should be conducted after implementing any propensity score method—whether matching, weighting, or stratification. One commonly used measure is the standardized mean difference (SMD), defined as the difference in means between treated and control groups, divided by the pooled standard deviation.</p>
+<p>SMDs close to zero suggest good balance. A common rule of thumb is that absolute SMDs below 0.1 indicate acceptable balance. Visual tools, such as Love plots, provide a convenient way to display covariate balance before and after adjustment.</p>
+<p><strong>Box 4.19 (R): Covariate Balance with cobalt</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cobalt)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>ps_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">family =</span> binomial)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>pscore <span class="ot">&lt;-</span> ps_model<span class="sc">$</span>fitted.values</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="fu">bal.tab</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">weights =</span> data<span class="sc">$</span>stab_weight)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="fu">love.plot</span>(<span class="fu">bal.tab</span>(A <span class="sc">~</span> W1 <span class="sc">+</span> W2, <span class="at">data =</span> data, <span class="at">weights =</span> data<span class="sc">$</span>stab_weight))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.19 (Stata): Covariate Balance with cobalt</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>* Estimate propensity <span class="kw">score</span> and compute stabilized weights</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="kw">logit</span> A W1 W2</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> pscore, pr</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> A, <span class="kw">meanonly</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> pA = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> stab_w = <span class="fu">cond</span>(A == 1, <span class="ot">`pA'</span> / pscore, (1 - <span class="ot">`pA'</span>) / (1 - pscore))</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>* Covariate balance assessment after IPTW <span class="kw">using</span> teffects</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>teffects ipw (Y) (A W1 W2, <span class="kw">logit</span>), ate</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>* Love plot <span class="kw">of</span> standardized <span class="kw">mean</span> differences</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>tebalance plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If covariate balance is unsatisfactory, the propensity score model may need to be refined by adding interaction terms or nonlinear effects.</p>
+<p>When there are near violations of the positivity assumption, the unstabilised weights can have large values, forcing the variance to increase and exacerbate the uncertainty of the ATE estimation. Therefore, it is advisable to explore the distribution of the weights to evaluate the extent to which they balance the distribution of confounders across the levels of the treatment (i.e., equally distributed). As shown by <span class="citation" data-cites="Austin2009BalanceSamples">(<a href="../../references.html#ref-Austin2009BalanceSamples" role="doc-biblioref">Austin, 2009</a>)</span>, it is common to provide a table with the unweighted and weighted differences of the standardised means of the confounders by the levels of the treatment.</p>
+<p>As an example, suppose we have information on a set of covariates given in Table 4.1. Prior to weighting, there was some imbalance (absolute values of the standardised differences close to, or beyond, 0.10) on sex, education level and presence/extent of cancer between treatment groups. A variance ratio (i.e., the ratio of the standardised distribution of the confounders by the levels of the treatment) equal to 1 before and after weighting informs us that the distribution of the confounders across the levels of the treatments is the same (i.e., perfectly balanced). Note, the weighted variance ratio for the continuous variable age is 0.79, which is slightly further from 1 than the variance ratio for the original (unweighted) sample (i.e., 0.82); this slight change is possibly because the weighted mean for age might have greater sampling variance than the unweighted mean.</p>
+<div id="tbl-table:2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-table:2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.1: Distribution of the treatment before and after applying weights
+</figcaption>
+<div aria-describedby="tbl-table:2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Confounder</th>
+<th>Raw</th>
+<th>Weighted</th>
+<th></th>
+<th>Raw</th>
+<th>Weighted</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sex</td>
+<td>0.093</td>
+<td>0.000</td>
+<td></td>
+<td>0.977</td>
+<td>1.000</td>
+</tr>
+<tr class="even">
+<td>Age</td>
+<td>-0.061</td>
+<td>-0.004</td>
+<td></td>
+<td>0.817</td>
+<td>0.791</td>
+</tr>
+<tr class="odd">
+<td>Education</td>
+<td>0.091</td>
+<td>-0.002</td>
+<td></td>
+<td>1.015</td>
+<td>1.027</td>
+</tr>
+<tr class="even">
+<td>Race - Black</td>
+<td>-0.031</td>
+<td>0.002</td>
+<td></td>
+<td>0.944</td>
+<td>1.003</td>
+</tr>
+<tr class="odd">
+<td>Race - Other</td>
+<td>0.020</td>
+<td>0.001</td>
+<td></td>
+<td>1.078</td>
+<td>1.004</td>
+</tr>
+<tr class="even">
+<td>Cancer - Metastatic</td>
+<td>-0.069</td>
+<td>-0.000</td>
+<td></td>
+<td>0.780</td>
+<td>1.000</td>
+</tr>
+<tr class="odd">
+<td>Cancer - Localised</td>
+<td>-0.072</td>
+<td>0.000</td>
+<td></td>
+<td>0.879</td>
+<td>0.999</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Reference groups: race - white, cancer - none</p>
+<p>There is no definitive value at which the treatment is considered unbalanced; however, as a guideline, a variance ratio less than 0.5 indicates that the data is not balanced and the potential for the positivity violation must be explored (i.e., when <span class="math inline">\(P(A=a\mid C=c)\)</span>is near to zero or one). An additional strategy is to check the distribution of the weights: if there are very large weights this indicates the violation of the positivity assumption but, also, it can be due to parametric modelling misspecification. Again there is no clear consensus but, when there are very large weights, researchers often set the weights to a less extreme value. <span class="citation" data-cites="Sturmer2010TreatmentStudy">(<a href="../../references.html#ref-Sturmer2010TreatmentStudy" role="doc-biblioref">Stürmer et al., 2010</a>)</span> does this by trimming or removing the data at the extremes of the distribution of the weights (e.g., the<span class="math inline">\(5^{th}\)</span>and<span class="math inline">\(95^{th}\)</span>percentiles). Trimming the weights reduces variance (i.e., omitting the largest weights and making the positivity assumption more plausible), but at the expense of introducing bias <span class="citation" data-cites="Cole2008">(<a href="../../references.html#ref-Cole2008" role="doc-biblioref">Cole &amp; Hernán, 2008</a>)</span>. However, another alternative without dropping observations is truncation, whereby all the values of the weights, larger than a user-specified maximum value or percentile (e.g.,<span class="math inline">\(1^{st}\)</span>and<span class="math inline">\(99^{th}\)</span>or<span class="math inline">\(5{th}\)</span>and<span class="math inline">\(95^{th}\)</span>), are replaced by that threshold value <span class="citation" data-cites="Cole2008 Xiao2013ComparisonModels">(<a href="../../references.html#ref-Cole2008" role="doc-biblioref">Cole &amp; Hernán, 2008</a>; <a href="../../references.html#ref-Xiao2013ComparisonModels" role="doc-biblioref">Xiao et al., 2013</a>)</span>. In extreme cases, when the weights are extremely large, changing the estimand could be another solution (e.g., estimating the ATE in a subset of the sample, among only those treated for example, representing the average treatment effect among the treated -ATT-).</p>
+</section>
+<section id="sensitivity-to-propensity-score-model-choice" class="level3" data-number="4.4.3">
+<h3 data-number="4.4.3" class="anchored" data-anchor-id="sensitivity-to-propensity-score-model-choice"><span class="header-section-number">4.4.3</span> Sensitivity to Propensity Score Model Choice</h3>
+<p>Since propensity scores are typically estimated from a model, their validity depends on correct model specification. For binary exposures, logistic regression is the most common choice, but its parametric nature can lead to bias if important nonlinearities or interactions are omitted. One way to assess sensitivity is to compare covariate balance and treatment effect estimates under alternative model specifications.</p>
+<p>Flexible, data-adaptive methods such as generalized additive models, random forests, or ensemble learners like Super Learner may improve propensity score estimation by reducing model misspecification. However, they also require careful diagnostics to ensure that the resulting weights or matches still achieve balance.</p>
+<p><strong>Box 4.20 (R): Super Learner for PS Estimation</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SuperLearner)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> data[, <span class="fu">c</span>(<span class="st">"W1"</span>, <span class="st">"W2"</span>)]</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> data<span class="sc">$</span>A</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>sl_model <span class="ot">&lt;-</span> <span class="fu">SuperLearner</span>(<span class="at">Y =</span> Y, <span class="at">X =</span> X, <span class="at">family =</span> <span class="fu">binomial</span>(),</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>                         <span class="at">SL.library =</span> <span class="fu">c</span>(<span class="st">"SL.glm"</span>, <span class="st">"SL.randomForest"</span>))</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>pscore_sl <span class="ot">&lt;-</span> sl_model<span class="sc">$</span>SL.predict</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 4.20 (Stata): Super Learner for PS Estimation</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>* Flexible PS estimation <span class="kw">using</span> lasso <span class="kw">logistic</span> regression (Stata 16+)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>* Lasso automatically selects important covariates and interactions</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="kw">logit</span> A W1 W2, lasso</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> ps_lasso, pr</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>* Compare with standard <span class="kw">logistic</span> regression</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="kw">logit</span> A W1 W2</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="kw">predict</span> ps_logit, pr</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> ps_lasso ps_logit</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>* Alternatively, <span class="kw">use</span> random forest (user-written: <span class="kw">ssc</span> install rforest)</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>* rforest A W1 W2</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>* <span class="kw">predict</span> ps_rf, pr</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Ultimately, sensitivity analyses should be performed to evaluate the robustness of conclusions to different modeling choices.</p>
+</section>
+<section id="choosing-among-propensity-score-methods" class="level3" data-number="4.4.4">
+<h3 data-number="4.4.4" class="anchored" data-anchor-id="choosing-among-propensity-score-methods"><span class="header-section-number">4.4.4</span> Choosing Among Propensity Score Methods</h3>
+<p>Several methods are available for using the propensity score, including matching, stratification, IPTW, and covariate adjustment. The choice among them should be guided by the research question, sample size, distribution of covariates, and practical considerations such as overlap and computational resources.</p>
+<p>Matching is often favored for its transparency and intuitive appeal and is particularly effective when the sample size is moderate and sufficient overlap exists. Stratification is easy to implement and understand, though it may not remove all residual confounding. IPTW is powerful for estimating marginal effects but requires careful management of extreme weights. Covariate adjustment is less commonly used on its own due to concerns about model misspecification but may serve as a useful component in doubly robust methods.</p>
+<p>Each method has advantages and limitations. It is often useful to implement multiple approaches and compare results as part of a sensitivity analysis. No method is universally superior, and the credibility of the analysis ultimately depends on careful diagnostics and a deep understanding of the data and context.</p>
+</section>
+</section>
+<section id="sec-ps-summary" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="sec-ps-summary"><span class="header-section-number">4.5</span> Summary and Comparison</h2>
+<p>This chapter has outlined a suite of methods built upon the propensity score, including matching, stratification, inverse probability of treatment weighting (IPTW), covariate adjustment, and doubly robust estimators. These methods all aim to reduce bias due to measured confounding by balancing covariates between treatment groups. In this final section, we reflect on how these approaches compare with outcome-based methods such as the g-formula, identify situations in which propensity score methods are most appropriate, and summarize their relative strengths and weaknesses.</p>
+<section id="comparison-with-the-g-formula" class="level3" data-number="4.5.1">
+<h3 data-number="4.5.1" class="anchored" data-anchor-id="comparison-with-the-g-formula"><span class="header-section-number">4.5.1</span> Comparison with the G-formula</h3>
+<p>The g-formula, or outcome regression, relies on modeling the outcome as a function of treatment and confounders. This approach directly estimates the expected potential outcomes under each treatment and averages them over the population. In contrast, propensity score methods focus on balancing the distribution of confounders by modeling treatment assignment and use this to indirectly adjust outcome comparisons.</p>
+<p>In terms of assumptions, both the g-formula and propensity score methods require unconfoundedness (i.e., no unmeasured confounding) and positivity. However, the g-formula relies more heavily on correctly specifying the outcome model, while propensity score methods transfer this modeling burden to the treatment assignment mechanism. In theory, if both models are correctly specified, the g-formula may be more efficient, especially when effect modification is limited. In practice, the choice often depends on which model is easier to specify accurately given the data and subject-matter knowledge.</p>
+<p>Propensity score methods are especially useful when the outcome is rare or difficult to model directly. They are also appealing when investigators prefer to separate design from analysis, as matching and stratification can be implemented without using outcome data. This pre-analysis design step can help reduce bias due to model overfitting or selective model specification.</p>
+</section>
+<section id="when-to-use-propensity-score-methods" class="level3" data-number="4.5.2">
+<h3 data-number="4.5.2" class="anchored" data-anchor-id="when-to-use-propensity-score-methods"><span class="header-section-number">4.5.2</span> When to Use Propensity Score Methods</h3>
+<p>Propensity score methods are most beneficial in observational studies where treatment is not randomly assigned and confounding is suspected. These methods are especially appropriate when the number of covariates is large, or when the outcome is not well understood. They are also helpful when researchers want to avoid strong parametric assumptions about the outcome.</p>
+<p>Matching is particularly appealing when a clear comparison group is desired and transparency is a priority. Stratification works well when the propensity score distribution overlaps substantially between groups. IPTW is a good choice for estimating marginal effects, but it requires close attention to positivity and extreme weights. Doubly robust methods, such as AIPTW, are advantageous when there is uncertainty about which model (outcome or treatment) is correctly specified, as they offer consistent estimates if either is valid.</p>
+<p>These methods should not be used mechanically. They require thoughtful implementation, including careful model specification, extensive diagnostics, and often sensitivity analyses. When used appropriately, they can greatly reduce bias due to confounding and enhance the credibility of causal claims.</p>
+</section>
+<section id="strengths-and-limitations" class="level3" data-number="4.5.3">
+<h3 data-number="4.5.3" class="anchored" data-anchor-id="strengths-and-limitations"><span class="header-section-number">4.5.3</span> Strengths and Limitations</h3>
+<p>The major strength of propensity score methods is their ability to achieve covariate balance in high-dimensional settings without modeling the outcome. This makes them attractive when outcome data are noisy or limited. Many implementations, particularly matching and weighting, also offer intuitive interpretations and can be made transparent to non-technical audiences.</p>
+<p>However, these methods have limitations. All propensity score methods depend on the strong assumption that all confounders have been measured. If key confounders are omitted, none of the methods can recover an unbiased causal effect. Moreover, methods like IPTW are sensitive to violations of positivity and can become unstable in the presence of extreme weights. Matching discards data and can reduce precision, while stratification may not fully eliminate residual confounding.</p>
+<p>Finally, while propensity score methods reduce reliance on modeling the outcome, they do not eliminate the need for modeling altogether. The estimated propensity score is a model-based quantity, and poor specification can lead to imbalance and bias. The emergence of machine learning methods offers opportunities to improve propensity score estimation, but it also introduces challenges related to interpretability and diagnostics.</p>
+<p>In summary, propensity score methods offer a flexible and powerful approach to estimating causal effects in observational studies. When implemented carefully and in the right context, they serve as valuable tools in the causal inference toolkit and provide a strong complement to outcome-based methods such as the g-formula.</p>
+</section>
+</section>
+<section id="conclusion" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">4.6</span> Conclusion</h2>
+<p>Propensity score methods separate the design stage (modelling treatment assignment) from the analysis stage (estimating treatment effects), offering practical advantages in terms of transparency and diagnostic assessment. Matching excels at creating well-balanced comparison groups but discards data. IPTW uses all observations but is sensitive to extreme weights. Stratification and regression adjustment on the propensity score offer intermediate options. The choice among them depends on sample size, overlap in propensity score distributions, and the analyst’s tolerance for bias-variance trade-offs.</p>
+<p>Key takeaways from this chapter: - Propensity scores reduce the dimensionality of confounding to a single scalar summary. - Matching, stratification, IPTW, and regression on the propensity score each have distinct strengths and limitations. - Covariate balance diagnostics (standardized differences, love plots) are essential before proceeding to outcome analysis. - Positivity violations — when certain covariate patterns are almost always treated or never treated — must be assessed and addressed. - Flexible machine learning methods can improve propensity score estimation but require careful validation.</p>
+</section>
+<section id="glossary" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="glossary"><span class="header-section-number">4.7</span> Glossary</h2>
+<dl>
+<dt><strong>ATE</strong></dt>
+<dd>
+Average Treatment Effect — the average causal effect of treatment in the population.
+</dd>
+<dt><strong>ATT</strong></dt>
+<dd>
+Average Treatment Effect on the Treated — the average causal effect among those who received treatment.
+</dd>
+<dt><strong>IPTW</strong></dt>
+<dd>
+Inverse Probability of Treatment Weighting — a method that reweights observations by the inverse of the propensity score to create a pseudo-population with balanced covariates.
+</dd>
+<dt><strong>Matching</strong></dt>
+<dd>
+A method that pairs treated and control units with similar propensity scores to estimate causal effects.
+</dd>
+<dt><strong>Positivity</strong></dt>
+<dd>
+The assumption that every individual has a non-zero probability of receiving each treatment level given their covariates.
+</dd>
+<dt><strong>Propensity score</strong></dt>
+<dd>
+The probability of receiving treatment given observed covariates, <span class="math inline">\(e(X) = \mathbb{P}(A=1 \mid X)\)</span>.
+</dd>
+<dt><strong>SMD</strong></dt>
+<dd>
+Standardized Mean Difference — a measure of covariate balance between treatment groups.
+</dd>
+<dt><strong>Stratification</strong></dt>
+<dd>
+Dividing the sample into strata based on the propensity score and estimating treatment effects within each stratum.
+</dd>
+<dt><strong>TMLE</strong></dt>
+<dd>
+Targeted Maximum Likelihood Estimation — a doubly-robust, semiparametric efficient estimator introduced in Chapter 5. ```
+</dd>
+</dl>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
+<div id="ref-Austin2009BalanceSamples" class="csl-entry" role="listitem">
+Austin, P. C. (2009). Balance diagnostics for comparing the distribution of baseline covariates between treatment groups in propensity-score matched samples. <em>Statistics in Medicine</em>, <em>28</em>(25), 3083–3107. <a href="https://doi.org/10.1002/sim.3697">https://doi.org/10.1002/sim.3697</a>
+</div>
+<div id="ref-Cole2008" class="csl-entry" role="listitem">
+Cole, S. R., &amp; Hernán, M. A. (2008). <em>Constructing inverse probability weights for marginal structural models</em> (No. 6; Vol. 168, pp. 656–664). Oxford Academic. <a href="https://doi.org/10.1093/aje/kwn164">https://doi.org/10.1093/aje/kwn164</a>
+</div>
+<div id="ref-Horvitz1952" class="csl-entry" role="listitem">
+Horvitz, D. G., &amp; Thompson, D. J. (1952). A generalization of sampling without replacement from a finite universe. <em>Journal of the American Statistical Association</em>, <em>47</em>(260), 663. <a href="https://doi.org/10.2307/2280784">https://doi.org/10.2307/2280784</a>
+</div>
+<div id="ref-Robins1986" class="csl-entry" role="listitem">
+Robins, J. (1986). A new approach to causal inference in mortality studies with a sustained exposure period—application to control of the healthy worker survivor effect. <em>Mathematical Modelling</em>, <em>7</em>(9), 1393–1512. https://doi.org/<a href="https://doi.org/10.1016/0270-0255(86)90088-6">https://doi.org/10.1016/0270-0255(86)90088-6</a>
+</div>
+<div id="ref-Rosenbaum1983" class="csl-entry" role="listitem">
+Rosenbaum, P. R., &amp; Rubin, D. B. (1983). The central role of the propensity score in observational studies for causal effects. <em>Biometrika</em>, <em>70</em>(1), 41–55.
+</div>
+<div id="ref-Sturmer2010TreatmentStudy" class="csl-entry" role="listitem">
+Stürmer, T., Rothman, K. J., Avorn, J., &amp; Glynn, R. J. (2010). Treatment effects in the presence of unmeasured confounding: Dealing with observations in the tails of the propensity score distribution-a simulation study. <em>American Journal of Epidemiology</em>, <em>172</em>(7), 843–854. <a href="https://doi.org/10.1093/aje/kwq198">https://doi.org/10.1093/aje/kwq198</a>
+</div>
+<div id="ref-Xiao2013ComparisonModels" class="csl-entry" role="listitem">
+Xiao, Y., Moodie, E. E. M., &amp; Abrahamowicz, M. (2013). Comparison of approaches to weight truncation for marginal structural cox models. <em>Epidemiologic Methods</em>, <em>2</em>(1), 1–20. <a href="https://doi.org/10.1515/em-2012-0006">https://doi.org/10.1515/em-2012-0006</a>
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/chapter3/index.html" class="pagination-link" aria-label="G-formula">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">G-formula</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/chapter5/index.html" class="pagination-link" aria-label="Double-robust estimators">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Double-robust estimators</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Computational Causal Inference for Applied Researchers, M.A.&nbsp;Luque-Fernandez &amp; M.J. Smith</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/migariane/Causal-Inference-Book/edit/main/chapters/chapter4/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/blob/main/chapters/chapter4/index.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>© 2026 Universidad de Granada</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

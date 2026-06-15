@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="This book introduces the concepts of causal inference from a beginner’s perspective and leads the interested reader to numerous approaches to answer counterfactual questions using computational methods in R and Stata.">
+
+<title>1&nbsp; Introduction – Computational Causal Inference for Applied Researchers</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/chapter2/index.html" rel="next">
+<link href="../../index.html" rel="prev">
+<link href="../../figures/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-327a23648f728c563436848380818549.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<script>
+MathJax = {
+  tex: {
+    macros: {
+      btheta: "\\boldsymbol{\\theta}",
+      bbeta: "\\boldsymbol{\\beta}",
+      bmu: "\\boldsymbol{\\mu}",
+      bSigma: "\\boldsymbol{\\Sigma}",
+      bx: "\\mathbf{x}",
+      bX: "\\mathbf{X}",
+      by: "\\mathbf{y}",
+      bY: "\\mathbf{Y}",
+      bU: "\\mathbf{U}",
+      E: "\\mathbb{E}",
+      Var: ["\\operatorname{Var}"],
+      Cov: ["\\operatorname{Cov}"],
+      Corr: ["\\operatorname{Corr}"],
+      iid: "\\stackrel{\\text{i.i.d.}}{\\sim}",
+      tendD: "\\stackrel{\\mathcal{D}}{\\longrightarrow}",
+      reals: "\\mathbb{R}",
+      PP: "\\mathbb{P}",
+      P: "\\mathbb{P}",
+      I: "\\mathbb{I}",
+      A: "\\mathbb{A}",
+      SE: ["\\operatorname{SE}"],
+      SD: ["\\operatorname{SD}"],
+      MSE: ["\\operatorname{MSE}"],
+      argmax: ["\\operatorname{argmax}"],
+      argmin: ["\\operatorname{argmin}"],
+      logit: ["\\operatorname{logit}"],
+      expit: ["\\operatorname{expit}"],
+      odds: ["\\operatorname{odds}"],
+      Pr: ["\\operatorname{Pr}"],
+      indep: "\\perp\\!\\!\\!\\perp"
+    }
+  }
+};
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/chapter1/index.html">Foundations</a></li><li class="breadcrumb-item"><a href="../../chapters/chapter1/index.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Computational Causal Inference for Applied Researchers</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/migariane/Causal-Inference-Book" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="../../Computational-Causal-Inference-for-Applied-Researchers.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
+              <i class="bi bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter1/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter2/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Regression adjustment</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">G-Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter3/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">G-formula</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter4/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Methods Based on the Propensity Score</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Advanced Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter5/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Double-robust estimators</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter6/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Inference for Longitudinal Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter7/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Sensitivity Analysis &amp; Discussion</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter8/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter9/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Discussion</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#causal-inference" id="toc-causal-inference" class="nav-link active" data-scroll-target="#causal-inference"><span class="header-section-number">1.1</span> Causal inference</a></li>
+  <li><a href="#causal-inference-roadmap" id="toc-causal-inference-roadmap" class="nav-link" data-scroll-target="#causal-inference-roadmap"><span class="header-section-number">1.2</span> Causal inference roadmap</a></li>
+  <li><a href="#sec-causalDAGs" id="toc-sec-causalDAGs" class="nav-link" data-scroll-target="#sec-causalDAGs"><span class="header-section-number">1.3</span> Causal diagrams</a>
+  <ul class="collapse">
+  <li><a href="#directed-acyclic-graphs" id="toc-directed-acyclic-graphs" class="nav-link" data-scroll-target="#directed-acyclic-graphs"><span class="header-section-number">1.3.1</span> Directed Acyclic Graphs</a></li>
+  <li><a href="#impact-of-colliders" id="toc-impact-of-colliders" class="nav-link" data-scroll-target="#impact-of-colliders"><span class="header-section-number">1.3.2</span> Impact of colliders</a></li>
+  </ul></li>
+  <li><a href="#sec-POframework" id="toc-sec-POframework" class="nav-link" data-scroll-target="#sec-POframework"><span class="header-section-number">1.4</span> Counterfactual (potential outcomes) framework</a></li>
+  <li><a href="#sec-identifiabilityassumptions" id="toc-sec-identifiabilityassumptions" class="nav-link" data-scroll-target="#sec-identifiabilityassumptions"><span class="header-section-number">1.5</span> Identifiability assumptions</a></li>
+  <li><a href="#sec-estimands" id="toc-sec-estimands" class="nav-link" data-scroll-target="#sec-estimands"><span class="header-section-number">1.6</span> Estimands</a>
+  <ul class="collapse">
+  <li><a href="#choice-of-causal-estimand" id="toc-choice-of-causal-estimand" class="nav-link" data-scroll-target="#choice-of-causal-estimand"><span class="header-section-number">1.6.1</span> Choice of causal estimand</a></li>
+  <li><a href="#choice-of-statistical-estimand" id="toc-choice-of-statistical-estimand" class="nav-link" data-scroll-target="#choice-of-statistical-estimand"><span class="header-section-number">1.6.2</span> Choice of statistical estimand</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">1.7</span> Conclusion</a></li>
+  <li><a href="#glossary" id="toc-glossary" class="nav-link" data-scroll-target="#glossary"><span class="header-section-number">1.8</span> Glossary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/migariane/Causal-Inference-Book/edit/main/chapters/chapter1/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/blob/main/chapters/chapter1/index.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/chapter1/index.html">Foundations</a></li><li class="breadcrumb-item"><a href="../../chapters/chapter1/index.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-intro" class="quarto-section-identifier"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The first chapter provides a brief introduction to causal inference and its links to public health, economics, and society.</p>
+<section id="causal-inference" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="causal-inference"><span class="header-section-number">1.1</span> Causal inference</h2>
+<p>Causal inference is the process of determining whether a variable causes a change in another variable. It involves identifying causal relationships between variables based on data and statistical analysis. Causal inference is important because it allows us to understand how the world works and make informed decisions based on that understanding. For example, in medicine, we use causal inference to determine whether a particular treatment is effective and to identify potential side effects. In public policy, we use causal inference to assess the impact of interventions on social outcomes, such as crime rates, educational attainment, and economic growth.</p>
+<p>However, determining causality is not always straightforward. Correlation between two variables does not necessarily imply causation, and there may be other factors, known as confounding variables, that are responsible for the observed relationship. Causal inference methods attempt to control for confounding variables and identify the true causal relationship between variables.</p>
+<p>To make causal inferences, we need to go beyond mere associations between variables and determine whether a change in one variable actually causes a change in the other variable. This involves controlling for confounding factors and using methods such as randomized controlled trials (RCT), natural experiments, and observational studies to isolate the causal effect. For example, suppose we are interested in determining whether a new drug is effective in reducing blood pressure. A randomized controlled trial might be conducted, where a group of patients are randomly assigned to receive either the new drug or a placebo. By controlling for other factors that could affect blood pressure, such as diet and exercise, and randomly assigning patients to groups, we can attribute any differences in blood pressure between the two groups to the drug and infer a causal relationship. In an RCT, participants are randomly assigned to either a treatment group (where they receive the intervention being studied) or a control group (where they do not receive the intervention). This random assignment helps to balance out potential confounding factors between the two groups, making it more likely that any observed differences between the groups are due to the treatment.</p>
+<p>In observational studies, this randomisation process is often not possible because it might be unethical or unfeasible to allocate individuals to certain treatments (or exposures, policies, etc.) i.e., smoking. Since, in observational studies, individuals cannot be randomly assigned to a treatment group, statistical methods are required to control for confounding and to infer causal effects.</p>
+<p>Causal inference is important for applied researchers because it allows them to make informed decisions and draw meaningful conclusions about the world. By understanding the true causal relationships between variables, applied researchers can develop effective interventions, evaluate the impact of policies and treatments, and gain a deeper understanding of how different factors interact to produce outcomes. For example, consider a public health researcher who is interested in understanding the relationship between air pollution and respiratory illness. Without causal inference, the researcher might observe a correlation between higher levels of air pollution and higher rates of respiratory illness, but would not be able to determine whether air pollution actually causes respiratory illness. By using causal inference methods the researcher can attempt to control for confounding factors and isolate the causal effect of air pollution on respiratory illness. This information can be used to develop targeted interventions to reduce air pollution and improve public health outcomes.</p>
+<p>Causal inference is also important for evaluating the effectiveness of medicine, policies, economics, societal changes, and other contexts. By understanding the true causal relationships between variables, researchers can determine whether a particular policy is effective, and identify factors that may be limiting its effectiveness. This information can be used to make more informed decisions about resource allocation and program design.</p>
+<p>Overall, causal inference is an essential tool for applied researchers in a wide range of fields, from public health to economics to education. By understanding the true causal relationships between variables, researchers can make more informed decisions and develop more effective interventions, leading to improved outcomes for individuals and communities.</p>
+</section>
+<section id="causal-inference-roadmap" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="causal-inference-roadmap"><span class="header-section-number">1.2</span> Causal inference roadmap</h2>
+<p>Constructing a causal analysis in a structured manner is necessary to obtain unbiased effect estimates and robust conclusions for real-world evidence. The <em>Causal Roadmap</em> (<a href="#fig-CIroadmap" class="quarto-xref">Figure&nbsp;<span>1.1</span></a>) offers a framework that can be adapted to the vast majority of studies to generate real-world evidence. The Causal Roadmap begins with defining the causal question of interest, stating whether the data and assumptions can be used to answer the question of interest, performing suitable statistical analyses, and assessing whether alternative conclusions could be obtained under alternate assumptions. The rest of this section describes each step in more detail.</p>
+<div id="fig-CIroadmap" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-CIroadmap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/CI Roadmap.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-CIroadmap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1.1: Causal Inference Roadmap as detailed in <span class="citation" data-cites="Dang2023">(<a href="../../references.html#ref-Dang2023" role="doc-biblioref"><span class="nocase">Dang et al.</span>, 2023</a>)</span>.
+</figcaption>
+</figure>
+</div>
+<p><strong>Step 1: Causal question, model, and estimand</strong></p>
+<p>First, a causal question is defined. The question encapsulates the population of interest (eligibility criteria), the treatment (or exposure), the follow-up period (time from starting-point to end-point), the outcome of interest, and the causal estimand. The causal estimand is a description of the statistical estimate that answers the question (e.g., causal risk difference, causal relative risk, causal odds ratio).</p>
+<p>The causal model is a graphical tool that helps to identify the causal pathways between the exposure and the outcome. The causal model is commonly shown using a directed acyclic graph (DAG): detailed explanation of causal models is in <a href="#sec-causalDAGs" class="quarto-xref"><span>Section 1.3</span></a> Briefly, a diagram for the causal model shows what we know and, importantly, what we do not know about how the data is generated in the real world. The diagram is created using background knowledge, advice from experts, and assumptions about other possible variables.</p>
+<p>It is important at this stage to go back to the causal question, we must critique whether the causal model is able to answer the causal question. The causal model could have identified a variable that has been overlooked and, if so, the causal question needs to be adapted: we call this process “redefining the causal question”.</p>
+<p><strong>Step 2: Consider the observed data</strong></p>
+<p>The causal model from Step 1 illustrates our knowledge of how the exposure causes the outcome and provides the necessary information that we need to answer the causal question. The observed data, on the other hand, can differ from the causal model. The difference can occur in the way the observed data was measured. For example, research has shown that obesity is strongly associated with cardiovascular disease. One way to measure obesity is by using body mass index (i.e., <span class="math inline">\(weight(kg)/height (m^{2})\)</span>). However, body mass index (BMI) cannot distinguish between body fat and muscle mass, thus the BMI will be overestimated amongst people with lots of muscle mass and will be underestimated amongst people with very little muscle mass. Alternatively, obesity might be a variable that confounds the association between treatment and risk of mortality, but if obesity is not measured (thus not recorded in the data), we are unable to adjust for obesity. In such cases, we must go back to Step 1 to redefine the question of interest.</p>
+<p><strong>Step 3: Identifiability assumptions</strong></p>
+<p>If the observed data is sufficient to answer the causal question, we must first make certain assumptions. The main assumptions. also known as (AKA) as identifiability assumptions, are conditional exchangeability, consistency, no interference, and positivity. Identifiability in causal inference refers to the fact that the main assumptions are necessary before one can infer a causal effect, they are discussed in more detail in <a href="#sec-identifiabilityassumptions" class="quarto-xref"><span>Section 1.5</span></a> The identifiability assumptions provide a way of writing the causal question (a hypothetical two-world causal contrast in terms of potential outcomes <a href="#sec-POframework" class="quarto-xref">see&nbsp;<span>1.4</span></a>) in terms of a model for the observed data.</p>
+<p><strong>Step 4: Define the statistical estimand</strong></p>
+<p>If the identifiability assumptions are deemed plausible, we can move on to defining the statistical estimand. The statistical estimand is an algebraic definition of the causal question but in terms of the observed data. For example, the average treatment effect (ATE) measured by the risk difference is given by <span class="math display">\[
+ATE \quad = \quad E_{w} (P[Y=1 \mid A=1, \textbf{W}] - P[Y=1 \mid A=0, \textbf{W}])
+\]</span> and is the expected difference (causal risk difference) in the outcome (Y) between two exposure groups (A) conditioned on the set of variables that confound the exposure-outcome relationship (<strong>W</strong>). More details on estimands and measures of association are given in <a href="#sec-estimands" class="quarto-xref"><span>Section 1.6</span></a></p>
+<p><strong>Step 5: Statistical model and estimator</strong></p>
+<p>The statistical model defines the set of possible data distributions between the outcome, exposure, and covariates. We must consider the functional form of the variables and their relationships to one another (e.g., non-linear terms, time-varying effects, interactions [effect modification], etc.). With the rise in quality and availability of machine-learning methods, the statistical model is at less risk of misspecification: a common source of bias.</p>
+<p>Once the statistical model has been defined, the next step is to choose the estimator. In large part, this book focuses on the various statistical estimators that can be used, along with the suitability to certain data. The choice of the statistical estimator is determined by the performance of the estimator in terms of bias, 95% confidence interval (CI) coverage, type I error rate, and precision.</p>
+<p><strong>Step 6: Sensitivity analysis</strong></p>
+<p>Once the statistical estimator provides a quantitative value for our causal question, we must go back to the identifiability assumptions and ask how our result would change if the assumptions were violated. For example, if we were not able to measure a potentially important variable, then our result is potentially biased. We would need to assess whether the unmeasured variable is a strong confounder of the relationship between the treatment and the outcome. This topic of sensitivity analysis is revisited in <a href="../chapter8/index.html" class="quarto-xref"><span>Chapter 8</span></a></p>
+<p><strong>Step 7: Alternative study designs</strong></p>
+<p>We might often find that multiple study designs are feasible to answer the causal question. The researcher will then need to consider which study design is feasible, and ethical, whether results will be obtained in time for a policy-related decision, and other statistical properties (e.g., power, correct type I and II error rates, bias, coverage, precision, etc.). We do not go into alternative study designs in this book, we refer the interested reader to <span class="citation" data-cites="Dang2023">(<a href="../../references.html#ref-Dang2023" role="doc-biblioref"><span class="nocase">Dang et al.</span>, 2023</a>)</span> for more details.</p>
+</section>
+<section id="sec-causalDAGs" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="sec-causalDAGs"><span class="header-section-number">1.3</span> Causal diagrams</h2>
+<p>Introduce causal diagrams, which are graphical representations of causal relationships. Explain how they can be used to identify confounding variables and to determine which variables should be controlled for in an analysis.</p>
+<section id="directed-acyclic-graphs" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1" class="anchored" data-anchor-id="directed-acyclic-graphs"><span class="header-section-number">1.3.1</span> Directed Acyclic Graphs</h3>
+<p>The distribution of the observed data can be shown as a graphical representation (<a href="#fig-DAG" class="quarto-xref">Figure&nbsp;<span>1.2</span></a>): these diagrams are known as direct acyclic graphs (DAG). When constructing DAGs, subject-matter knowledge must be used to ensure the conditional exchangeability assumption holds.</p>
+<div id="fig-DAG" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DAG-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/DAG.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DAG-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1.2: Sufficient set of variables to control for confounding. <strong>Y</strong>: outcome, <strong>A</strong>: treatment, <strong>W</strong>: confounders.
+</figcaption>
+</figure>
+</div>
+<div id="fig-DAG1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DAG1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/Figure1.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DAG1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1.3: Three types of DAGs: causal fork (confounding), inverted fork (collider), and chain (mediation). Adapted from Luque-Fernandez et al.
+</figcaption>
+</figure>
+</div>
+<p>This causal diagram makes several assumptions: all variables that confound the exposure-outcome relationship are included in <strong>W</strong>, there are no intermediate variables, and there is no residual confounding. Therefore, the set of covariates included in <strong>W</strong> suffices to assume the conditional mean independence to estimate the ATE. To more formally illustrate DAGs, we first define some terminology along with examples using the DAG in <a href="#fig-DAG1" class="quarto-xref">Figure&nbsp;<span>1.3</span></a></p>
+<ol type="1">
+<li><strong>Path</strong>: A path is any series of nodes from <span class="math inline">\(W_{k}\)</span>to<span class="math inline">\(W_{l}\)</span> connected by an edge in any direction (i.e., the edge can be “<span class="math inline">\(\rightarrow\)</span>” or “<span class="math inline">\(\leftarrow\)</span>”). For example, <span class="math inline">\(W_{3} \rightarrow W_{4} \leftarrow W_{2} \rightarrow A \leftarrow W_{5}\)</span>is one of the paths from<span class="math inline">\(W_{3}\)</span>to<span class="math inline">\(W_{5}\)</span>.</li>
+<li><strong>Direct path</strong>: A direct path is a path between nodes that involves only forward edges. For example, <span class="math inline">\(W_{3} \rightarrow W_{4} \rightarrow W_{1} \rightarrow A \rightarrow Y\)</span>, is a direct path between <span class="math inline">\(W_{3}\)</span>and<span class="math inline">\(Y\)</span> since it contains only forwards edges (i.e., “<span class="math inline">\(\rightarrow\)</span>”).</li>
+<li><strong>Parent</strong> and <strong>child</strong>: <span class="math inline">\(W_{k}\)</span>is a <em>parent</em> of<span class="math inline">\(W_{l}\)</span>, and <span class="math inline">\(W_{l}\)</span>is a <em>child</em> of<span class="math inline">\(W_{k}\)</span>, if <span class="math inline">\(W_{k} \rightarrow W_{l}\)</span>. In <a href="#fig-DAG1" class="quarto-xref">Figure&nbsp;<span>1.3</span></a>, <span class="math inline">\(W_{3}\)</span>is a parent of<span class="math inline">\(W_{4}\)</span>, and <span class="math inline">\(W_{4}\)</span>is a child of<span class="math inline">\(W_{3}\)</span>.</li>
+<li><strong>Ancestor</strong> and <strong>Descendant</strong>: <span class="math inline">\(W_{k}\)</span>is an <em>ancestor</em> of<span class="math inline">\(W_{l}\)</span>, and <span class="math inline">\(W_{l}\)</span>is a <em>descendant</em> of<span class="math inline">\(W_{k}\)</span>, if there is a direct path from <span class="math inline">\(W_{k}\)</span>to<span class="math inline">\(W_{l}\)</span>. In <a href="#fig-DAG1" class="quarto-xref">Figure&nbsp;<span>1.3</span></a>, <span class="math inline">\(W_{3}\)</span>is an ancestor of<span class="math inline">\(W_{1}\)</span>, thus <span class="math inline">\(W_{1}\)</span>is a descendant of<span class="math inline">\(W_{3}\)</span>.</li>
+<li><strong>Collider</strong>: A node <span class="math inline">\(W_{k}\)</span>is a collider between<span class="math inline">\(W_{k-1}\)</span>and<span class="math inline">\(W_{l}\)</span>if it receives both edges (i.e.,<span class="math inline">\(W_{k-1} \rightarrow W_{k} \leftarrow W_{l}\)</span>). For example, <span class="math inline">\(W_{4}\)</span>is a collider along the path<span class="math inline">\(W_{3} \rightarrow W_{4} \leftarrow W_{2}\)</span>.</li>
+<li><strong>Instrumental variable</strong>: A node is an instrumental variable if it satisfies these assumptions:
+<ol type="1">
+<li>The node is correlated with <span class="math inline">\(A\)</span>,</li>
+<li>the node is not correlated with <span class="math inline">\(Y\)</span>, and</li>
+<li>the node is not correlated with a confounder that affects <span class="math inline">\(Y\)</span>. In <a href="#fig-DAG1" class="quarto-xref">Figure&nbsp;<span>1.3</span></a>, <span class="math inline">\(W_{5}\)</span> is an instrumental variable since it satisfies all three assumptions.</li>
+</ol></li>
+<li><strong>Conditional instrumental variable</strong>: A node is a conditional instrumental variable if it satisfies 6(a) and 6(b), conditioning on nodes that are confounders of <span class="math inline">\(A \rightarrow Y\)</span>. In <a href="#fig-DAG1" class="quarto-xref">Figure&nbsp;<span>1.3</span></a>, <span class="math inline">\(W_{4}\)</span>is an instrumental variable conditional on<span class="math inline">\(W_{1}\)</span>, <span class="math inline">\(W_{2}\)</span>and<span class="math inline">\(W_{3}\)</span>.</li>
+</ol>
+<p>In <a href="#fig-DAG1" class="quarto-xref">Figure&nbsp;<span>1.3</span></a>, one would need to condition on <span class="math inline">\(W_{1}\)</span>, <span class="math inline">\(W_{2}\)</span>, and <span class="math inline">\(W_{3}\)</span>to sufficiently control for confounding. Without conditioning on these variables, the crude association between<span class="math inline">\(A \rightarrow Y\)</span> is biased (i.e., different from the true causal effect).</p>
+<p>A collider for a certain pair of variables (e.g., outcome and exposure) is a third variable that is caused by both of them. In DAG terminology, a collider is the variable in the middle of an inverted fork (i.e.&nbsp;variable C in A → C ← Y).<span class="citation" data-cites="pearl95seq pearl09causality">(<a href="../../references.html#ref-pearl09causality" role="doc-biblioref">Pearl, 2009</a>; <a href="../../references.html#ref-pearl95seq" role="doc-biblioref">Pearl &amp; Robins, 1995</a>)</span> Using regression to control for a collider, or stratifying the analysis concerning a collider, can introduce a spurious association between its causes, which can potentially introduce non-causal associations between the exposure and the outcome. This has been used to explain why the medical literature contains many paradoxical findings, where established risk factors appear protective for the outcome.<span class="citation" data-cites="LuqueParadox2016 Hernandez-Diaz_2006 Banack2013 Witccomb2009">(<a href="../../references.html#ref-Witccomb2009" role="doc-biblioref">Brian W. Whitcomb, 2009</a>; <a href="../../references.html#ref-Banack2013" role="doc-biblioref">Hailey R. Banack, 2013</a>; <a href="../../references.html#ref-LuqueParadox2016" role="doc-biblioref">Miguel Angel Luque-Fernandez, 2016</a>; <a href="../../references.html#ref-Hernandez-Diaz_2006" role="doc-biblioref">S. Hernandez-Diaz, 2006</a>)</span> For instance, numerous studies have reported a paradoxical protective effect of maternal cigarette smoking during pregnancy on pre-eclampsia, which has been named the pre-eclampsia smoking paradox. This paradox is due to gestational age at delivery, which is a collider between smoking (exposure) and pre-eclampsia (outcome).<span class="citation" data-cites="LuqueParadox2016">(<a href="../../references.html#ref-LuqueParadox2016" role="doc-biblioref">Miguel Angel Luque-Fernandez, 2016</a>)</span> However, the magnitude of the resulting bias will depend on the associations between the collider and the two parent variables.</p>
+<p><strong>A note on backdoor paths</strong></p>
+<p>To ensure conditional exchangeability holds, variables along the <em>path</em> from <span class="math inline">\(A\)</span>to<span class="math inline">\(Y\)</span>must be conditioned on. This is known as Pearl’s backdoor criterion.<span class="citation" data-cites="Pearl94probab">(<a href="../../references.html#ref-Pearl94probab" role="doc-biblioref">Judea, 1994</a>)</span> In <a href="#fig-DAG1" class="quarto-xref">Figure&nbsp;<span>1.3</span></a>, conditioning on only<span class="math inline">\(W_{1}\)</span>, <span class="math inline">\(W_{2}\)</span>, and <span class="math inline">\(W_{3}\)</span>was sufficient to control for confounding. There are no other <em>paths</em> through<span class="math inline">\(W_{4}\)</span>(or<span class="math inline">\(W_{5}\)</span>) that does not already control for <span class="math inline">\(W_{1}\)</span>, <span class="math inline">\(W_{2}\)</span>, or <span class="math inline">\(W_{3}\)</span>. In other words, if one wanted to navigate from <span class="math inline">\(W_{4}\)</span>to<span class="math inline">\(Y\)</span>, one would have to go through either <span class="math inline">\(W_{1}\)</span>, <span class="math inline">\(W_{2}\)</span>, or <span class="math inline">\(W_{3}\)</span>, which are already controlled for.</p>
+</section>
+<section id="impact-of-colliders" class="level3" data-number="1.3.2">
+<h3 data-number="1.3.2" class="anchored" data-anchor-id="impact-of-colliders"><span class="header-section-number">1.3.2</span> Impact of colliders</h3>
+<p>To illustrate the induced association of conditioning on a collider, three variables are defined A (unrelated to B), B (unrelated to A), and C (collider, a child of A and B). The association between these variables are shown in <a href="#fig-DAG4" class="quarto-xref">Figure&nbsp;<span>1.4</span></a>.</p>
+<div id="fig-DAG4" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DAG4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/Figure2.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DAG4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1.4: Collider bias illustration: A and B are marginally independent but become associated when conditioning on their common effect C.
+</figcaption>
+</figure>
+</div>
+<p>We now simulate some data for A, B and C and tabulate the data in Tables <a href="#tbl-ColliderAB" class="quarto-xref">Table&nbsp;<span>1.1</span></a>, <a href="#tbl-ColliderAC" class="quarto-xref">Table&nbsp;<span>1.2</span></a>, and <a href="#tbl-ColliderBC" class="quarto-xref">Table&nbsp;<span>1.3</span></a></p>
+<p>In <a href="#tbl-ColliderAB" class="quarto-xref">Table&nbsp;<span>1.1</span></a>, there is an equal number of those with A=1 amongst levels of B. In the DAG above, A does not cause B, so the estimate of the causal effect (i.e., odds ratio) should be 1.00.</p>
+<div id="tbl-ColliderAB" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-ColliderAB-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1.1
+</figcaption>
+<div aria-describedby="tbl-ColliderAB-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>B=1</th>
+<th>B=0</th>
+<th><strong>Total</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>A=1</strong></td>
+<td>20</td>
+<td>20</td>
+<td>40</td>
+</tr>
+<tr class="even">
+<td><strong>A=0</strong></td>
+<td>80</td>
+<td>80</td>
+<td>160</td>
+</tr>
+<tr class="odd">
+<td><strong>Total</strong></td>
+<td>100</td>
+<td>100</td>
+<td>200</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>In <a href="#tbl-ColliderAC" class="quarto-xref">Table&nbsp;<span>1.2</span></a>, those with C=1 are less likely to have A=1 (n=15) compared to those with C=0 (n=25). In the DAG above, A is associated with C, so the estimate of the causal effect (i.e., odds ratio) from <a href="#tbl-ColliderAC" class="quarto-xref">Table&nbsp;<span>1.2</span></a> is 1.47.</p>
+<div id="tbl-ColliderAC" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-ColliderAC-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1.2
+</figcaption>
+<div aria-describedby="tbl-ColliderAC-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>C=1</th>
+<th>C=0</th>
+<th><strong>Total</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>A=1</strong></td>
+<td>15</td>
+<td>25</td>
+<td>40</td>
+</tr>
+<tr class="even">
+<td><strong>A=0</strong></td>
+<td>75</td>
+<td>85</td>
+<td>160</td>
+</tr>
+<tr class="odd">
+<td><strong>Total</strong></td>
+<td>90</td>
+<td>110</td>
+<td>200</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>In <a href="#tbl-ColliderBC" class="quarto-xref">Table&nbsp;<span>1.3</span></a>, those with C=1 are much less likely to have B=1 (n=30) compared to those with C=0 (n=70). In the DAG above, B is associated with C, so the estimate of the causal effect (i.e., odds ratio) from <a href="#tbl-ColliderBC" class="quarto-xref">Table&nbsp;<span>1.3</span></a> is 3.50.</p>
+<div id="tbl-ColliderBC" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-ColliderBC-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1.3
+</figcaption>
+<div aria-describedby="tbl-ColliderBC-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>C=1</th>
+<th>C=0</th>
+<th><strong>Total</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>B=1</strong></td>
+<td>30</td>
+<td>70</td>
+<td>100</td>
+</tr>
+<tr class="even">
+<td><strong>B=0</strong></td>
+<td>60</td>
+<td>40</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td><strong>Total</strong></td>
+<td>90</td>
+<td>110</td>
+<td>200</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>A marginal association between A and B has an odds ratio of 1.00 <a href="#tbl-ColliderAB" class="quarto-xref">Table&nbsp;<span>1.1</span></a> This is a marginal association because we do not condition on the collider. The marginal associations between A and C, and B and C, are also explored to assess whether conditioning on the collider could potentially bias the association between A and B. From the above, it is clear that the associations (odds ratios) between A and C (and B and C) are very different from 1.00. Suggesting that conditioning on the collider (C) will induce a bias. To illustrate this, we now condition on the collider. If the collider did not induce bias, we should expect an odds ratio of the association between A and B to be 1.00 for both values of C (i.e., where C is 0 or 1).</p>
+<p><strong>Conditional associations</strong></p>
+<p>Table Table 1.1 shows the tabulation of the association between A and B within levels of C. The association between A and B, conditional on C = 1, has an odds ratio (OR) of: <span class="math display">\[
+\text{OR}_{C=1} = \frac{(21/9)}{(54/6)} = 0.26
+\]</span> The association between A and B, conditional on C = 0, has an odds ratio of: <span class="math display">\[
+\text{OR}_{C=0} = \frac{(59/11)}{(26/14)} = 2.89
+\]</span> : Collider data {#tbl-ColliderABC}</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th>C=1: B=1</th>
+<th>C=1: B=0</th>
+<th>C=0: B=1</th>
+<th>C=0: B=0</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>A=1</strong></td>
+<td>9</td>
+<td>6</td>
+<td>11</td>
+<td>14</td>
+<td>40</td>
+</tr>
+<tr class="even">
+<td><strong>A=0</strong></td>
+<td>21</td>
+<td>54</td>
+<td>59</td>
+<td>26</td>
+<td>160</td>
+</tr>
+<tr class="odd">
+<td><strong>Total</strong></td>
+<td>30</td>
+<td>60</td>
+<td>70</td>
+<td>40</td>
+<td>200</td>
+</tr>
+</tbody>
+</table>
+<p>Thus, since each of the odds ratios for the association between A and B within levels of C do not equate to 1.00, conditioning on the collider will induce bias in the association between A and B. Conditioning on a descendent (or child) of a collider induces the same problem as conditioning on the collider itself. However, conditioning on an ancestor (or parent) of a collider does not induce bias. This is because the information about the collider that is contained in the ancestor is independent of A and B.</p>
+</section>
+</section>
+<section id="sec-POframework" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="sec-POframework"><span class="header-section-number">1.4</span> Counterfactual (potential outcomes) framework</h2>
+<p>We first introduce the language of the <em>Potential Outcomes Framework</em> also known as (a.k.a) Neyman-Rubin Potential Outcomes framework.<span class="citation" data-cites="Rubin2007">(<a href="../../references.html#ref-Rubin2007" role="doc-biblioref">Rubin, 2007</a>)</span> To illustrate the framework we use an empirical example based on intensive care medicine.<span class="citation" data-cites="Connors1996">(<a href="../../references.html#ref-Connors1996" role="doc-biblioref">Connors et al., 1996</a>)</span> The study, set in intensive care units of five United States teaching hospitals between 1989 and 1994, evaluated the effectiveness of right heart catheterisation (RHC) on short-term mortality (30 days) of 5,735 critically ill adult patients (2,184 received a RHC and 3,551 did not received it) receiving care for 1 of 9 prespecified disease categories. In this illustration, let Y, the outcome, denote the vital status of the patient in an intensive care unit (ICU) at 30 days after admission. Let A denote the exposure variable for whether or not the patient received RHC during their stay at the ICU. Let (<strong><em>W</em></strong>) include the set of confounders, with C denoting a binary confounder.</p>
+<p>In this RHC study, each patient has two potentially observed outcomes (i.e., <span class="math inline">\(Y^{a}\)</span>), where the first is <span class="math inline">\(Y(1)\)</span>if they received RHC, and the second is<span class="math inline">\(Y(0)\)</span>if they did not receive RHC <span class="citation" data-cites="Rubin1974">(<a href="../../references.html#ref-Rubin1974" role="doc-biblioref">Rubin, 1974</a>)</span>. We say “potentially observed” because only one of these two outcomes can ever be observed since each patient only receives one of the treatments. As an example from <a href="#tbl-POtable" class="quarto-xref">Table&nbsp;<span>1.4</span></a>, Patient 1 has two potential outcomes: firstly,<span class="math inline">\(Y(0) = 1\)</span>says that if this patient did not receive RHC then they would have died within 30 days, and secondly,<span class="math inline">\(Y(1) = 0\)</span> says that if they had received RHC then they would not have died within 30 days. l,</p>
+<div id="tbl-POtable" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-POtable-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1.4: Potential outcomes framework: C = Binary confounder, A = Binary treatment, Y = Binary outcome, Y(0) = Potential outcome for A=0, Y(1) = Potential outcome for A=1
+</figcaption>
+<div aria-describedby="tbl-POtable-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Patient</th>
+<th>Y</th>
+<th>A</th>
+<th>C</th>
+<th><span class="math inline">\(Y(0)\)</span></th>
+<th><span class="math inline">\(Y(1)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>A common estimand in causal inference is the average treatment effect (ATE). The ATE is a function of the underlying distribution of the counterfactual outcomes, which can be estimated non-parametrically or parametrically.<span class="citation" data-cites="Robins1986">(<a href="../../references.html#ref-Robins1986" role="doc-biblioref">J. Robins, 1986</a>)</span> The ATE is defined by an average of the difference of two random variables (i.e., the potential outcomes <span class="math inline">\(Y^{1}\)</span>and<span class="math inline">\(Y^{0}\)</span>). <span class="citation" data-cites="Rubin2007 Gutman2015">(<a href="../../references.html#ref-Gutman2015" role="doc-biblioref">Gutman &amp; Rubin, 2015</a>; <a href="../../references.html#ref-Rubin2007" role="doc-biblioref">Rubin, 2007</a>)</span> The ATE in the example above can be estimated as the contrast between the <em>potential outcomes</em> under different treatment levels (i.e., the difference between <span class="math inline">\(E[Y^{1}] - E[Y^{0}]\)</span>).<span class="citation" data-cites="Rubin2011">(<a href="../../references.html#ref-Rubin2011" role="doc-biblioref">Rubin, 2005</a>)</span></p>
+<p>Potential outcomes are so named because they are outcomes that could potentially be observed had the patient been assigned <span class="math inline">\(A=a\)</span>. However, in observational studies, only one outcome is observed for each individual. To estimate causal effects, we must make certain assumptions to identify potential outcomes from the observed data, then estimate the estimand.<span class="citation" data-cites="Robins1986">(<a href="../../references.html#ref-Robins1986" role="doc-biblioref">J. Robins, 1986</a>)</span> The necessary assumptions are outlined in the next section.</p>
+</section>
+<section id="sec-identifiabilityassumptions" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="sec-identifiabilityassumptions"><span class="header-section-number">1.5</span> Identifiability assumptions</h2>
+<p><strong>Conditional exchangeability and identification</strong></p>
+<p>The first assumption is <em>conditional exchangeability</em>. In randomised studies, conditional (and marginal) exchangeability holds because the treated individuals, had they not been treated, would have had the same average potential outcomes as the untreated, and vice versa. This cannot be guaranteed in observational studies, but it can be assumed to hold if the unmeasured risk factors of the outcome are equally distributed between the treated and the untreated groups, conditional on the measured confounders. Thus, using the language of the potential outcomes, the conditional exchangeability assumption (a.k.a conditional independence, unconfoundedness or ignorability) is: <span class="math display">\[
+Y^{a} \amalg A\mid \textbf{W} \; \forall \; a \in \{0, 1\},
+\]</span> This states that, conditional on the set of observed confounders <strong>W</strong>, the actual exposure level <span class="math inline">\(A\)</span>is independent of each of the potential outcomes. Thus, the conditional mean independence is given<span class="math inline">\(E[Y^{a} \mid A=1, \textbf{W}=w] = E[Y^{a} \mid A=0, \textbf{W}=w] = E[Y^{a} \mid \textbf{W}=w] \; \forall \, a \in{0,1}.\)</span></p>
+<p><strong>Positivity</strong></p>
+<p>Positivity holds if the conditional probability of being treated or exposed (and similarly for being untreated) is greater than zero. Therefore, if P(<strong>W</strong>=w) &gt; 0, then <span class="math display">\[
+P(A=a\mid \textbf{W}=w) &gt; 0 \; \forall \; \textbf{W} \in \textbf{w}, a \in \{0, 1\}.
+\]</span> When this assumption is violated, it is typically because the target population is poorly defined (i.e, attempting to estimate the effect of a treatment on people who would never receive it).</p>
+<p><strong>Counterfactual consistency</strong></p>
+<p>Counterfactual consistency holds if the observed outcome for all treated individuals equals their outcome had they been treated, and likewise for untreated individuals. For example, in <a href="#tbl-POtable" class="quarto-xref">Table&nbsp;<span>1.4</span></a>, Patient 1’s observed outcome equals their potential outcome had they not been treated (<span class="math inline">\(Y = Y^{a} = 1\)</span>), Patient 2’s observed outcome equals their potential outcome had they been treated (<span class="math inline">\(Y = Y^{1} = 1\)</span>). The consistency assumption means that the definition of the treatment, and outcome, is consistent for each patient. Analytically, consistency is represented by: <span class="math display">\[
+Y = A Y^{1} + (1-A)Y^{0},
+\]</span> <strong>Non-interference</strong></p>
+<p>Aside from exchangeability, positivity, and consistency, there are other notable assumptions. It is further assumed that there is <em>no interference</em>. This is commonly called <em>Stable Unit Treatment Value Assumption</em> (SUTVA). This assumption is closely related to the consistency assumption, in that non-interference (or SUTVA) states that there is only one version of the exposure and that a patient’s potential outcome is not influenced by the treatment of another patient.<span class="citation" data-cites="Schomaker2020RegressionCausality">(<a href="../../references.html#ref-Schomaker2020RegressionCausality" role="doc-biblioref">Schomaker, 2020</a>)</span></p>
+</section>
+<section id="sec-estimands" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="sec-estimands"><span class="header-section-number">1.6</span> Estimands</h2>
+<p>Commonly, an observational study aims to answer a scientific question that characterises the effect of an exposure or treatment on an outcome. This question is translated to an <em>estimand</em> for which an <em>estimate</em> will provide a relevant answer to the exposure-outcome relationship. Statistical methods are the tools used to obtain an estimate from the data. Within the causal framework, these statistical methods are called <em>estimators</em>. They are mathematical functions that use the observed values of the observations in the sample (i.e., a function of the random variables) and generate the quantitative value for the estimand. The estimators are represented by algebraic equations that explicitly describe a function of the realised observations.</p>
+<p>An estimand is a quantity of interest in a causal analysis that represents the specific causal effect that a researcher aims to estimate. The average treatment effect (ATE) is an example of an estimand. The ATE is defined as the average difference in the outcome variable between a group of individuals who received a treatment and a group of individuals who did not receive the treatment. It represents the average causal effect of the treatment on an outcome of interest in a population.</p>
+<p>The ATE is algebraically defined as <span class="math display">\[
+\text{ATE} \, = \, E[Y = 1 \mid A=1] - E[Y = 1 \mid A=0].
+\]</span> This is currently in terms of unobserved potential outcomes. For example, we can only observe what happens when an individual is treated or untreated, but not both. To estimate the ATE from our data, we can apply the identifiability assumptions (<a href="#sec-identifiabilityassumptions" class="quarto-xref"><span>Section 1.5</span></a>) and derive the ATE in terms of observable data. Note that <span class="math inline">\(Y^{a}\)</span>is the potential outcome of an individual, with measured confounders<span class="math inline">\(\textbf{W}\)</span>, had they received treatment <span class="math inline">\(A=a\)</span></p>
+<p>First, by the law of total probability <span class="math display">\[
+P[Y^{a}=1] \, = \, \sum_{w} P[Y^{a}=1 \,|\, \textbf{W}=w]\,P(\textbf{W}=w)\]</span> By conditional exchangeability <span class="math display">\[
+P[Y^{a}=1] \, = \, \sum_{w} P[Y^{a}=1 \,|\,A=a,\textbf{W}=w]\,P(\textbf{W}=w)\]</span> This is possible since we are assuming that within levels of <span class="math inline">\(\textbf{W}\)</span>, the predictors of the outcome are equally distributed between the treated and non-treated groups. That is, we have achieved what would happen if patients were randomised to each treatment group. If we also assume consistency <span class="math display">\[
+P[Y^{a}=1] \, = \, \sum_{w} P[Y=1 \,|\,A=a,\textbf{W}=w]\,P(W=w)\]</span> Thus, under these assumptions, the statistical estimand for the ATE is defined as <span class="math display">\[
+\sum_{w} P[Y=1 \,|\,A=1,\textbf{W}=w]\,Pr(W=w) \,-\, \sum_{w} P[Y=1 \,|\,A=0,\textbf{W}=w]\,P(\textbf{W}=w).
+\]</span> Many estimands could be estimated. One common alternative to the ATE is the average treatment effect among the treated (ATT): <span class="math display">\[
+\text{ATT}\,=\,E[Y^{1} \mid A=1] - E[Y^{0} \mid A=1]
+\]</span> Applying the assumptions above, the statistical estimand for the ATT is <span class="math display">\[
+\sum_{w} P[Y=1 \,|\,A=1,\textbf{W}=w]\,P(\textbf{W}=w \mid A=1) \,-\, \sum_{w} P[Y=1 \,|\,A=0,\textbf{W}=w]\,P(\textbf{W}=w \mid A=1).
+\]</span> In the above, for both the ATE and ATT, we have transitioned from a setting where we have unobserved potential outcomes to a setting where we can estimate our causal estimand using the distribution of the observed data <span class="citation" data-cites="Robins1999">(<a href="../../references.html#ref-Robins1999" role="doc-biblioref">J. M. Robins, 1999</a>)</span>. Conditional exchangeability requires all confounders to be measured and accounted for in the analysis.</p>
+<p>There are many different types of estimands that can be used in causal inference, and the choice of estimand depends on the research question and study design. There are many other estimands used for causal analysis. The conditional average treatment effect (CATE) represents the causal effect of a treatment on the outcome for specific subgroups of individuals, rather than the average effect over the entire population. Average causal effect of the untreated (ACEU) represents the average causal effect of not receiving the treatment on the outcome.</p>
+<section id="choice-of-causal-estimand" class="level3" data-number="1.6.1">
+<h3 data-number="1.6.1" class="anchored" data-anchor-id="choice-of-causal-estimand"><span class="header-section-number">1.6.1</span> Choice of causal estimand</h3>
+<p>How does one choose a suitable causal estimand? In randomised controlled trials (RCT) there is no choice. The ATE, ATT, and ATU are all equivalent in RCTs because, due to randomisation, the distribution of baseline characteristics will be similar between the treatment groups. However, in quasi-experimental and observational studies these estimands will differ because the distribution of baseline characteristics are likely to differ between treatment groups.</p>
+<p>A good starting point when choosing the estimand is to ask “for whom should the treatment effect be estimated?”. A causal estimand asks what would happen if the treatment were to be given to, or withheld from, a particular population. <span class="citation" data-cites="Greifer2023">(<a href="../../references.html#ref-Greifer2023" role="doc-biblioref">Greifer &amp; Stuart, 2023</a>)</span> provide an in-depth discussion of the choice of estimands, which we paraphrase here.</p>
+<p><strong>Average Treatment Effect (ATE)</strong></p>
+<p>The ATE asks how the outcome would differ between a setting where the treatment was given to all patients and a setting where the treatment was withheld from all patients. The ATE is useful when two differing treatments could be given to the population but it is unclear which of the two would be more beneficial. The ATE could also be used for assessing whether a policy could be unilaterally implemented, that is applied to some of the population but not all.</p>
+<p><strong>Average Treatment Effect in the Treated (ATT)</strong></p>
+<p>The ATT asks how the outcome of treated patients would change if they had not received the treatment. The ATT is the effect of withholding the treatment from those who would have received it. This estimand is useful when a decision needs to be made on an intervention that occurs in a particular population. For example, a decision needs to be made on whether to continue a treatment amongst those who are currently being treated, or a decision on whether preventing a harmful exposure would improve health outcomes amongst those who are currently exposed.</p>
+<p><strong>Average Treatment Effect in the Untreated (ATU)</strong></p>
+<p>The ATU is asks how would the outcome of untreated patients change if they had received the treatment? The ATU is the effect of expanding the treatment to those who do not receive it. This estimand is useful when a decision needs to be made on whether a treatment that is not given to a group of patients should continue to not be given to these patients. For example, consider a treatment that reduces the risk of cancer amongst those who are at high risk, but it is not known whether the treatment reduces the risk of cancer amongst those with low risk (and do not currently receive the treatment). The question is whether one should continue withholding the treatment or whether the low-risk patients would benefit from receiving the treatment.</p>
+</section>
+<section id="choice-of-statistical-estimand" class="level3" data-number="1.6.2">
+<h3 data-number="1.6.2" class="anchored" data-anchor-id="choice-of-statistical-estimand"><span class="header-section-number">1.6.2</span> Choice of statistical estimand</h3>
+<p>The causal estimand is written in terms of potential outcome notation. It relies on being able to observe two hypothetical potential outcomes and we are not able to observed both of them in the real world. The statistical estimand, however, can be written in terms of the observed data if the identifiability assumptions are plausible.</p>
+<p>There are numerous statistical estimands to choose from; some of the more common statistical estimands are:</p>
+<p><strong>Causal risk difference</strong> <span class="math display">\[
+\operatorname{P}\{Y^{1}=1\}-\operatorname{P}\{Y^{0}=1\}
+\]</span> <strong>Causal risk ratio</strong> <span class="math display">\[
+\frac{\operatorname{P}\{Y^{1}=1\}}{\operatorname{P}\{Y^{0}=1\}}
+\]</span> <strong>Causal log-odds ratio</strong> <span class="math display">\[
+\log \left[\frac{\operatorname{P}\{Y^{1}=1\}}{1-\operatorname{P}\{Y^{1}=1\}}\right] - \log \left[\frac{\operatorname{P}\{Y^{0}=1\}}{1-\operatorname{P}\{Y^{0}=1\}}\right]
+\]</span> The choice for the measure of association depends on the form of the exposure and the outcome, but also on what might be easier to interpret in the context of the study.</p>
+<section id="a-note-on-estimands-estimators-and-estimates" class="level4">
+<h4 class="anchored" data-anchor-id="a-note-on-estimands-estimators-and-estimates">A note on estimands, estimators, and estimates</h4>
+<p>Estimands represent the target of estimation in causal analysis and should not be confused with estimators, which are statistical methods (or algorithms) that are used to estimate the value of an estimand. Estimators are used to compute a numerical estimate of the causal effect of interest based on the available data.</p>
+<p>An easy way to distinguish between these is to think of estimands as the name of a cake you would like to bake, think of estimators as the method (or recipe) you will use to make that cake, and the estimate is the cake that comes out of the oven.</p>
+<p>There are many different types of estimators used in causal inference, including regression-based methods, propensity score methods, instrumental variables, and machine learning algorithms. The choice of estimator depends on the selected estimand and the study design, and can impact the results of a causal analysis.</p>
+</section>
+</section>
+</section>
+<section id="conclusion" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">1.7</span> Conclusion</h2>
+<p>Often, medical research is interested in estimating cause and effect relationships. These relationships are first considered through hypothetical research questions, such as “what would happen if our patients were given a different treatment?”, “how effective is this health policy?”, or “what would have happened if the patients were not exposed to some harmful substance?”. These questions are hypothetical scenarios because we only ever observe what happens when individuals are exposed or unexposed, but not both.</p>
+<p>In randomised studies, causal effects can be estimated because individuals are randomly allocated to a treatment. A suitable randomisation process minimises the possibility of confounding. In epidemiological studies, this randomisation process is often unethical or infeasible. For example, if we were to investigate the effect of long-term tobacco smoking on the chances of developing lung cancer, it would be unethical to assign individuals to smoke tobacco. Instead, we can use statistical methods within a causal framework, whilst making certain assumptions, to estimate the cause-and-effect relationship.</p>
+<p>The statistical methods used within the causal framework differ from other statistical methods with respect to their formality. The causal inference roadmap specifies the required criteria to estimate causal effects.<span class="citation" data-cites="Petersen_2014">(<a href="../../references.html#ref-Petersen_2014" role="doc-biblioref">Petersen &amp; Laan, 2014</a>)</span></p>
+<p>In this book we show how a range of causal inference methods can be applied to estimate a cause-and-effect relationship. We emphasise that these methods should only be used after the necessary steps have been satisfied in the causal inference roadmap (i.e., research question, assumptions, data generating distributions, etc.).</p>
+<p>As practical epidemiologists and biostatisticians, we focus on the use of applied statistics. Thus, we aim to disseminate computational knowledge for executing and utilizing the various causal inference methods discussed in this book. This text offers practical code examples in R, Stata, and Python for users who wish to explore further.</p>
+</section>
+<section id="glossary" class="level2" data-number="1.8">
+<h2 data-number="1.8" class="anchored" data-anchor-id="glossary"><span class="header-section-number">1.8</span> Glossary</h2>
+<dl>
+<dt><strong>ATE</strong></dt>
+<dd>
+Average Treatment Effect
+</dd>
+<dt><strong>ATT</strong></dt>
+<dd>
+Average Treatment Effect among the treated
+</dd>
+<dt><strong>ATU</strong></dt>
+<dd>
+Average Treatment Effect among the non treated
+</dd>
+<dt><strong>DAG</strong></dt>
+<dd>
+Directed Acyclic Graph
+</dd>
+<dt><strong>RCT</strong></dt>
+<dd>
+Randomized Controlled Trial
+</dd>
+<dt><strong>TMLE</strong></dt>
+<dd>
+Targeted Maximum Likelihood Estimation $
+</dd>
+</dl>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
+<div id="ref-Witccomb2009" class="csl-entry" role="listitem">
+Brian W. Whitcomb, N. J. P., Enrique F. Schisterman. (2009). Quantification of collider‐stratification bias and the birthweight paradox. <em>Paediatric and Perinatal Epidemiology</em>, <em>23</em>(5), 394–402. <a href="https://doi.org/10.1111/j.1365-3016.2009.01053.x">https://doi.org/10.1111/j.1365-3016.2009.01053.x</a>
+</div>
+<div id="ref-Connors1996" class="csl-entry" role="listitem">
+Connors, A. F., Speroff, T., Dawson, N. V., Thomas, C., Harrell, F. E., Wagner, D., Desbiens, N., Goldman, L., Wu, A. W., Califf, R. M., Fulkerson, W. J., Vidaillet, H., Broste, S., Bellamy, P., Lynn, J., &amp; Knaus, W. A. (1996). The effectiveness of right heart catheterization in the initial care of critically ill patients. <em>Journal of the American Medical Association</em>, <em>276</em>(11), 889–897. <a href="https://doi.org/10.1001/jama.276.11.889">https://doi.org/10.1001/jama.276.11.889</a>
+</div>
+<div id="ref-Dang2023" class="csl-entry" role="listitem">
+<span class="nocase">Dang, L. E., Gruber, S., Lee, H., Dahabreh, I. J., Stuart, E. A., Williamson, B. D., Wyss, R., Díaz, I., Ghosh, D., Kıcıman, E., &amp; al., et</span>. (2023). A causal roadmap for generating high-quality real-world evidence. <em>Journal of Clinical and Translational Science</em>, <em>7</em>(1), e212. <a href="https://doi.org/10.1017/cts.2023.635">https://doi.org/10.1017/cts.2023.635</a>
+</div>
+<div id="ref-Greifer2023" class="csl-entry" role="listitem">
+Greifer, N., &amp; Stuart, E. A. (2023). Choosing the causal estimand for propensity score analysis of observational studies. <em>arXiv</em>. <a href="https://arxiv.org/abs/2106.10577">https://arxiv.org/abs/2106.10577</a>
+</div>
+<div id="ref-Gutman2015" class="csl-entry" role="listitem">
+Gutman, R., &amp; Rubin, D. B. (2015). Estimation of causal effects of binary treatments in unconfounded studies. <em>Stat Med</em>, <em>34</em>(26), 3381–3398.
+</div>
+<div id="ref-Banack2013" class="csl-entry" role="listitem">
+Hailey R. Banack, J. S. K. (2013). The <span>“obesity paradox”</span> explained. <em>Epidemiology</em>, <em>24</em>(3), 461–462. <a href="https://doi.org/10.1097/ede.0b013e31828c776c">https://doi.org/10.1097/ede.0b013e31828c776c</a>
+</div>
+<div id="ref-Pearl94probab" class="csl-entry" role="listitem">
+Judea, P. (1994). A probabilistic calculus of actions. <em>Proceedings of UAI-94</em>, 454–462.
+</div>
+<div id="ref-LuqueParadox2016" class="csl-entry" role="listitem">
+Miguel Angel Luque-Fernandez, U. V., Helga Zoega. (2016). Deconstructing the smoking-preeclampsia paradox through a counterfactual framework. <em>European Journal of Epidemiology</em>, <em>31</em>(6), 613–623. <a href="https://doi.org/10.1007/s10654-016-0139-5">https://doi.org/10.1007/s10654-016-0139-5</a>
+</div>
+<div id="ref-pearl09causality" class="csl-entry" role="listitem">
+Pearl, J. (2009). <em>Causality: Models, reasoning, and inference</em>. Cambridge University Press.
+</div>
+<div id="ref-pearl95seq" class="csl-entry" role="listitem">
+Pearl, J., &amp; Robins, J. M. (1995). Probabilistic evaluation of sequential plans from causal models with hidden variables. <em>Uncertainty in Artificial Intelligence</em>, <em>11</em>, 444–453.
+</div>
+<div id="ref-Petersen_2014" class="csl-entry" role="listitem">
+Petersen, M. L., &amp; Laan, M. J. van der. (2014). Causal models and learning from data. <em>Epidemiology</em>, <em>25</em>(3), 418–426. <a href="https://doi.org/10.1097/ede.0000000000000078">https://doi.org/10.1097/ede.0000000000000078</a>
+</div>
+<div id="ref-Robins1986" class="csl-entry" role="listitem">
+Robins, J. (1986). A new approach to causal inference in mortality studies with a sustained exposure period—application to control of the healthy worker survivor effect. <em>Mathematical Modelling</em>, <em>7</em>(9), 1393–1512. https://doi.org/<a href="https://doi.org/10.1016/0270-0255(86)90088-6">https://doi.org/10.1016/0270-0255(86)90088-6</a>
+</div>
+<div id="ref-Robins1999" class="csl-entry" role="listitem">
+Robins, J. M. (1999). Association, causation, and marginal structural models. <em>Synthese</em>, <em>121</em>(1/2), 151–179. <a href="https://doi.org/10.2307/20118224">https://doi.org/10.2307/20118224</a>
+</div>
+<div id="ref-Rubin1974" class="csl-entry" role="listitem">
+Rubin, D. B. (1974). Estimating causal effects of treatments in randomized and nonrandomized studies. <em>Journal of Educational Psychology</em>, <em>66</em>(5), 688.
+</div>
+<div id="ref-Rubin2011" class="csl-entry" role="listitem">
+Rubin, D. B. (2005). Causal inference using potential outcomes. <em>Journal of the American Statistical Association</em>, <em>100</em>(469), 322–331. <a href="http://dx.doi.org/10.1198/016214504000001880">http://dx.doi.org/10.1198/016214504000001880</a>
+</div>
+<div id="ref-Rubin2007" class="csl-entry" role="listitem">
+Rubin, D. B. (2007). The design versus the analysis of observational studies for causal effects: Parallels with the design of randomized trials. <em>Stat Med</em>, <em>26</em>(1), 20–36.
+</div>
+<div id="ref-Hernandez-Diaz_2006" class="csl-entry" role="listitem">
+S. Hernandez-Diaz, M. A. H., E. F. Schisterman. (2006). The birth weight "paradox" uncovered? <em>American Journal of Epidemiology</em>, <em>164</em>(11), 1115–1120. <a href="https://doi.org/10.1093/aje/kwj275">https://doi.org/10.1093/aje/kwj275</a>
+</div>
+<div id="ref-Schomaker2020RegressionCausality" class="csl-entry" role="listitem">
+Schomaker, M. (2020). Regression and causality. <em>arXiv:2006.11754</em>. <a href="http://arxiv.org/abs/2006.11754">http://arxiv.org/abs/2006.11754</a>
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../index.html" class="pagination-link" aria-label="Preface">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/chapter2/index.html" class="pagination-link" aria-label="Regression adjustment">
+        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Regression adjustment</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Computational Causal Inference for Applied Researchers, M.A.&nbsp;Luque-Fernandez &amp; M.J. Smith</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/migariane/Causal-Inference-Book/edit/main/chapters/chapter1/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/blob/main/chapters/chapter1/index.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>© 2026 Universidad de Granada</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
