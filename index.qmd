@@ -8,6 +8,28 @@ In this book, we show the computational implementation of different causal infer
 
 The code can be accessed at [github.com/migariane/TutorialCausalInferenceEstimators](https://github.com/migariane/TutorialCausalInferenceEstimators).
 
+## How to cite this book {.unnumbered}
+
+If you use this book in your research or teaching, please cite it using the following reference:
+
+> Luque-Fernandez, M. A., & Smith, M. J. (2026). *Computational Causal Inference for Applied Researchers: A Practical Guide for Epidemiologists and Biostatisticians*. Universidad de Granada. https://doi.org/10.5281/zenodo.20677995
+
+```bibtex
+@book{luque-fernandez2026causal,
+  title     = {Computational Causal Inference for Applied Researchers:
+               A Practical Guide for Epidemiologists and Biostatisticians},
+  author    = {Luque-Fernandez, Miguel Angel and Smith, Matthew J.},
+  year      = {2026},
+  publisher = {Universidad de Granada},
+  doi       = {10.5281/zenodo.20677995},
+  url       = {https://migariane.github.io/Causal-Inference-Book}
+}
+```
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20677995.svg)](https://doi.org/10.5281/zenodo.20677995)
+
+The book is permanently archived on Zenodo. Each release receives a versioned DOI; the badge above resolves to the latest version. For reproducibility, cite the specific DOI of the version you used.
+
 ## Who this book is for {.unnumbered}
 
 This book is targeted towards epidemiologists, statisticians, psychologists, economists, sociologists, political scientists, and computer scientists — anyone interested in learning and applying causal inference methods to real-world data.

@@ -4,7 +4,30 @@
 
 **Authors:** Miguel Angel Luque-Fernandez & Matthew J. Smith
 
-A Quarto book introducing causal inference from a beginner's perspective, leading to advanced computational methods using **R** and **Stata**.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20677995.svg)](https://doi.org/10.5281/zenodo.20677995)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A Quarto book introducing causal inference from a beginner's perspective, leading to advanced computational methods using **R** and **Stata**. Available online at **[migariane.github.io/Causal-Inference-Book](https://migariane.github.io/Causal-Inference-Book/)**.
+
+## How to cite
+
+If you use this book in your research or teaching, please cite it as:
+
+> Luque-Fernandez, M. A., & Smith, M. J. (2026). *Computational Causal Inference for Applied Researchers: A Practical Guide for Epidemiologists and Biostatisticians*. Universidad de Granada. https://doi.org/10.5281/zenodo.20677995
+
+```bibtex
+@book{luque-fernandez2026causal,
+  title     = {Computational Causal Inference for Applied Researchers:
+               A Practical Guide for Epidemiologists and Biostatisticians},
+  author    = {Luque-Fernandez, Miguel Angel and Smith, Matthew J.},
+  year      = {2026},
+  publisher = {Universidad de Granada},
+  doi       = {10.5281/zenodo.20677995},
+  url       = {https://migariane.github.io/Causal-Inference-Book}
+}
+```
+
+The book is permanently archived on [Zenodo](https://zenodo.org/). Each release receives a versioned DOI; please cite the specific DOI of the version you used.
 
 ## Chapters
 
