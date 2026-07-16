@@ -86,7 +86,6 @@ Here is a basic implementation of the regression + IPW estimator:
 
 **Box 5.1:** IPTW with regression adjustment (IPTW-RA)
 
-::: {.panel-tabset}
 ### R
 ```r
 # Simulate data
@@ -140,7 +139,6 @@ generate double dr = A * (Y - m1hat) / ehat - ///
                      m1hat - m0hat
 summarize dr
 ```
-:::
 
 ### When It Is Used in Practice
 
@@ -217,7 +215,6 @@ The second component in @eq-aiptw reflects the residuals of the outcome regressi
 
 **Box 5.2:** AIPTW with linear models
 
-::: {.panel-tabset}
 ### R
 ```r
 # Estimate propensity scores
@@ -254,7 +251,6 @@ generate double term0 = (1 - A) * (Y - mu0) / (1 - ps) + mu0
 generate double ate = term1 - term0
 summarize ate
 ```
-:::
 
 ### Intuition and Advantages
 
@@ -309,7 +305,6 @@ As an example, suppose we are interested in estimating the effect of $A$ (a bina
 
 **Box 5.3:** Loading and preparing RHC data for TMLE
 
-::: {.panel-tabset}
 ### R
 ```r
 library(readr)
@@ -349,7 +344,6 @@ global Y death_d30                       // Outcome: 30-day mortality
 global A rhc                             // Treatment: RHC
 global W i.sex c.age c.edu i.race i.ca   // Confounders
 ```
-:::
 
 #### Step 1: Predict the initial outcome
 
@@ -362,7 +356,6 @@ $$
 
 **Box 5.4:** Step 1: Initial prediction of the outcome (G-computation)
 
-::: {.panel-tabset}
 ### R
 ```r
 # Step 1
@@ -382,7 +375,6 @@ predict double Q1W_0, mu
 replace A = aa
 drop aa
 ```
-:::
 
 To predict the potential outcomes, we first need to specify two variables, one where everyone receives the treatment ($A=1$) and another where everyone does not receive the treatment ($A=0$). Taking predictions of the outcome for each observation using these two variables provides us with the potential outcomes $Y(1)$ and $Y(0)$.
 $$
@@ -392,7 +384,6 @@ Q^{0}(A=0,\mathbf{W}) \quad = \quad E[Y|A=0,\mathbf{W}] \quad = \quad expit( \wi
 
 **Box 5.5:** Predicting potential outcomes under treatment and control
 
-::: {.panel-tabset}
 ### R
 ```r
 # Predict Q for A, A=1, and A=0
@@ -408,7 +399,6 @@ gen logQAW = log(QAW / (1 - QAW))
 gen logQ1W = log(Q1W / (1 - Q1W))
 gen logQ0W = log(Q0W / (1 - Q0W))
 ```
-:::
 
 Notice that the potential outcome for $A=1$ will be equivalent to the observed outcome ($E(Y|A=1,\mathbf{W}$). This is part of the consistency assumption.
 
@@ -439,7 +429,6 @@ $$
 
 **Box 5.6:** Step 2: Estimation of the propensity score
 
-::: {.panel-tabset}
 ### R
 ```r
 # Step 2 estimation of the propensity score (ps)
@@ -457,7 +446,6 @@ predict gw, mu
 gen double H1W = A / gw
 gen double H0W = (1 - A) / (1 - gw)
 ```
-:::
 
 #### Step 3: Calculate the fluctuation parameter
 
@@ -470,7 +458,6 @@ When $A=1$, the right hand side will be $\frac{1}{\widehat{g}(A=1,\mathbf{W})}$.
 
 **Box 5.7:** Step 3: Computing the clever covariate H(A,W)
 
-::: {.panel-tabset}
 ### R
 ```r
 # Step 3 computation of H and estimation of epsilon
@@ -487,7 +474,6 @@ mat a = e(b)
 gen eps1 = a[1,1]
 gen eps2 = a[1,2]
 ```
-:::
 
 The **fluctuation parameter** ($\epsilon$) is a small adjustment applied to the initial outcome model ($Q^{0}(A,\mathbf{W})$) to correct residual bias and ensure that the updated model ($Q^{1}$) aligns with the EIC. It does this by incorporating information from the clever covariate ($H(A,\mathbf{W})$) and the observed outcomes ($Y$). The fluctuation parameter is estimated by solving an estimating equation, specifically a score equation derived from the EIC. The estimating equation ensures that the updated outcome model satisfies the EIC's property:
 $$
@@ -521,7 +507,6 @@ If we take the fluctuation model above, you will see that its form is very simil
 
 **Box 5.8:** Step 3b: Estimating epsilon via logistic regression with offset
 
-::: {.panel-tabset}
 ### R
 ```r
 epsilon <- coef(glm(data2$Y ~ -1 + HAW + offset(QAW), family = "binomial"))
@@ -534,7 +519,6 @@ epsilon <- coef(glm(data2$Y ~ -1 + HAW + offset(QAW), family = "binomial"))
 display eps1
 display eps2
 ```
-:::
 
 #### Step 4: Update the initial outcome
 
@@ -549,7 +533,6 @@ From this model, we can obtain three variables:
 
 **Box 5.9:** Step 4: Updating initial outcome predictions (targeting step)
 
-::: {.panel-tabset}
 ### R
 ```r
 # Step 4 update from Q0 to Q1 ATE
@@ -563,7 +546,6 @@ Q0W_1 <- plogis(Q0W + epsilon * H0W)
 gen double Q1W_1 = exp(eps1 / gw + logQ1W) / (1 + exp(eps1 / gw + logQ1W))
 gen double Q0W_1 = exp(eps2 / (1 - gw) + logQ0W) / (1 + exp(eps2 / (1 - gw) + logQ0W))
 ```
-:::
 
 #### Step 5: Compute the estimand of interest
 
@@ -573,7 +555,6 @@ $$
 
 **Box 5.10:** Step 5: Computing the targeted ATE estimate
 
-::: {.panel-tabset}
 ### R
 ```r
 # Step 5 targeted estimate of the ATE
@@ -589,7 +570,6 @@ global ATE = r(mean)
 display "ATE: " %05.4f $ATE
 drop ATE
 ```
-:::
 
 #### Step 6: Calculate the standard errors for confidence intervals and p-values
 
@@ -605,7 +585,6 @@ where $\widehat{Var}(\widehat{EIC})$ represents the sample variance of the EIC.
 
 **Box 5.11:** Step 6: Computing the efficient influence curve for standard errors
 
-::: {.panel-tabset}
 ### R
 ```r
 # Step 6 statistical inference
@@ -631,7 +610,6 @@ gen IF = d1 - d0
 qui sum IF
 gen varIF = r(Var) / r(N)
 ```
-:::
 
 95% confidence intervals are calculated in the conventional way:
 $$
@@ -639,7 +617,6 @@ $$
 
 **Box 5.12:** Step 6b: Computing 95% Wald confidence intervals
 
-::: {.panel-tabset}
 ### R
 ```r
 LCI <- ATE - 1.96*sqrt(varEIC)
@@ -653,7 +630,6 @@ global LCI = $ATE - 1.96*sqrt(varIF)
 global UCI = $ATE + 1.96*sqrt(varIF)
 display "ATE:" %05.4f $ATE _col(15) "95%CI: " %05.4f $LCI "," %05.4f $UCI
 ```
-:::
 
 We obtain an estimate of 0.0837, corresponding to a risk difference of 8.37% (95% CI: 5.85 - 10.90). This is interpreted as "the risk of death at 30 days is 8.37% higher if everyone was treated with RHC compared to if no one was treated with RHC". Note that our interpretation is a comparison of two hypothetical worlds.
 
@@ -679,7 +655,6 @@ The TMLE procedure can be automated using dedicated software packages. Below we 
 
 **Box 5.13:** Installing and using the eltmle Stata package
 
-::: {.panel-tabset}
 ### Stata
 ```stata
 * Install eltmle (if not already installed)
@@ -692,24 +667,20 @@ eltmle Y A W, tmle
 * Check covariate balance after TMLE weighting
 eltmle Y A W, tmle bal
 ```
-:::
 
 **Box 5.14:** Cross-validated TMLE with eltmle (cveltmle)
 
-::: {.panel-tabset}
 ### Stata
 ```stata
 * Cross-validated TMLE for improved small-sample performance
 * Use cveltmle without the standard tmle option
 eltmle Y A W, cveltmle
 ```
-:::
 
 **R implementation.** The `tmle` package uses Super Learner (see @sec-SuperLearner), which is a library of machine learning algorithms for defining the outcome (Q.SL.library) and exposure (g.SL.library) models. This requires us to first define the seed (set.seed(1)). We then create a data set called *w* that contains the set of confounders, which are used to define the parameters for the exposure model. Finally, we run the 'tmle' function to conduct TMLE. Since we are using a large data set, this will take a couple of minutes to run.
 
 **Box 5.15:** TMLE using the tmle R package with Super Learner
 
-::: {.panel-tabset}
 ### R
 ```r
 set.seed(1)
@@ -723,7 +694,6 @@ fittmle <- tmle(data$Y, data$A, W=w, family="binomial", Q.SL.library = c("SL.glm
 
 fittmle
 ```
-:::
 
 From the 'tmle' function, we obtain an estimate for the ATE of 0.0848 (ATE: 8.48%, 95% CI: 5.97, 10.99). This is very close to the estimate we obtained by hand, suggesting that the functional form of the outcome and exposure models that we defined by hand are close to those that are defined within the SuperLearner (see @sec-SuperLearner).
 
@@ -1026,7 +996,6 @@ The CV-TMLE algorithm proceeds as follows:
 
 **Box 5.16:** Cross-validated TMLE with eltmle (cveltmle)
 
-::: {.panel-tabset}
 ### Stata
 ```stata
 * Cross-validated TMLE for improved small-sample performance
@@ -1056,7 +1025,6 @@ likelihood <- tmle_spec$make_initial_likelihood(tmle_task, learner)
 tmle_fit <- tmle_spec$tmle_update(tmle_task, likelihood)
 summary(tmle_fit)
 ```
-:::
 
 Alternatively, the `ltmle` package can also be used to perform CV-TMLE when working with longitudinal or time-to-event data, although the interface is more prescriptive.
 

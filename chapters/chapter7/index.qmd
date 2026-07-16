@@ -42,7 +42,6 @@ Consider a simulated example where a treatment $A$affects a continuous mediator$
 
 **Box 7.1:** Simulating data for mediation example
 
-::: {.panel-tabset}
 ### R
 ```r
 set.seed(123)
@@ -63,7 +62,6 @@ gen A = runiform() < 0.5
 gen M = 0.5*A + rnormal()
 gen Y = 0.3*A + 0.6*M + rnormal()
 ```
-:::
 
 
 #### Running Mediation Analysis in R
@@ -72,7 +70,6 @@ We can use the `mediation` package in R to estimate the average causal mediation
 
 **Box 7.2:** Estimating ACME, ADE, and total effect with the mediation package
 
-::: {.panel-tabset}
 ### R
 ```r
 library(mediation)
@@ -100,7 +97,6 @@ regress Y A M
 * Run mediation analysis
 medeff (regress M A) (regress Y A M), treat(A) mediator(M) sims(1000)
 ```
-:::
 
 
 This will return estimates of:
@@ -290,7 +286,6 @@ Assume a data-generating process where both the mediator and outcome are continu
 
 **Box 7.3:** Simulating data for parametric g-computation
 
-::: {.panel-tabset}
 ### R
 ```r
 set.seed(123)
@@ -312,14 +307,12 @@ gen A = runiform() < 0.5
 gen M = 0.5*A + 0.3*X + rnormal()
 gen Y = 0.6*M + 0.3*A + 0.2*X + rnormal()
 ```
-:::
 
 
 We fit the mediator and outcome models, then simulate counterfactuals:
 
 **Box 7.4:** Parametric g-computation estimation of NIE, NDE, and TE
 
-::: {.panel-tabset}
 ### R
 ```r
 # Fit mediator and outcome models
@@ -383,7 +376,6 @@ display "NIE: " `NIE'
 display "NDE: " `NDE'
 display "TE:  " `TE'
 ```
-:::
 
 
 This approach provides a flexible, transparent way to estimate causal mediation effects under parametric assumptions.
@@ -411,7 +403,6 @@ then there is evidence of mediation.
 
 **Box 7.5:** Baron and Kenny steps for mediation analysis
 
-::: {.panel-tabset}
 ### R
 ```r
 # Step 1
@@ -445,7 +436,6 @@ display "Indirect effect (alpha1 * beta2): " indirect_eff
 display "Direct effect: " direct_eff
 display "Total effect: " total_eff
 ```
-:::
 
 
 The indirect effect can be approximated as $\alpha_1 \cdot \beta_2$, and the direct effect as $\beta_1$.
@@ -464,7 +454,6 @@ The `mediation` package (Tingley et al., 2014) estimates average causal mediatio
 
 **Box 7.6:** Counterfactual-based mediation with covariates
 
-::: {.panel-tabset}
 ### R
 ```r
 library(mediation)
@@ -494,7 +483,6 @@ estimates store out_model
 medeff (regress M A X) (regress Y A M X), ///
     treat(A) mediator(M) sims(1000)
 ```
-:::
 
 
 The output includes:
@@ -541,7 +529,6 @@ The `medflex` package provides tools for estimating interventional effects.
 
 **Box 7.7:** Interventional effects estimation with medflex
 
-::: {.panel-tabset}
 ### R
 ```r
 library(medflex)
@@ -566,7 +553,6 @@ medeff (regress M A X) (regress Y A M X), ///
 * parametric mediation with interaction terms:
 * paramed Y, treat(A) mediator(M) covariates(X) boot(1000)
 ```
-:::
 
 
 This returns estimates of the interventional direct and indirect effects, along with standard errors and confidence intervals.
@@ -592,7 +578,6 @@ Suppose $L$ is an intermediate confounder (e.g., post-treatment health status). 
 
 **Box 7.8:** IPTW for mediation with intermediate confounding
 
-::: {.panel-tabset}
 ### R
 ```r
 # Estimate propensity for M conditional on A and L
@@ -616,7 +601,6 @@ gen med_weights = 1 / med_prob
 svyset [pw = med_weights]
 svy: regress Y A M X
 ```
-:::
 
 
 This approach helps isolate the indirect effect while adjusting for post-treatment confounding.
@@ -654,7 +638,6 @@ The data structure is in wide format, with columns such as: `A1, A2`, `M1, M2`, 
 
 **Box 7.9:** Longitudinal mediation analysis with medltmle
 
-::: {.panel-tabset}
 ### R
 ```r
 library(medltmle)
@@ -702,7 +685,6 @@ regress Y2 A2 M2 A1 M1 L2 L1 W1 W2, robust
 * Bootstrap inference for mediation can be implemented as:
 * bootstrap, reps(500): regress Y2 A2 M2 A1 M1 L2 L1 W1 W2
 ```
-:::
 
 
 The `summary()` output provides estimates of the longitudinal total effect (TE), natural direct effect (NDE), and natural indirect effect (NIE), each accounting for the cumulative dynamics of treatment, mediators, and confounders over time.
@@ -755,7 +737,6 @@ The `mediation` package includes a function `medsens()` to perform this kind of 
 
 **Box 7.10:** Sensitivity analysis with medsens
 
-::: {.panel-tabset}
 ### R
 ```r
 library(mediation)
@@ -793,7 +774,6 @@ medsens (regress M A X) (regress Y A M X), ///
 * Note: Stata's medsens does not produce a built-in plot;
 * results can be exported and plotted separately
 ```
-:::
 
 
 This generates a sensitivity plot showing how the estimated ACME (NIE) changes as a function of the sensitivity parameter $\rho$, which captures the strength of correlation between the error terms in the mediator and outcome models (i.e., residual confounding).
@@ -825,7 +805,6 @@ Here, $U$is unobserved and influences both$M$and$Y$, violating the assumption of
 
 **Box 7.11:** Simulating data with unmeasured mediator-outcome confounding
 
-::: {.panel-tabset}
 ### R
 ```r
 set.seed(42)
@@ -849,7 +828,6 @@ gen U = rnormal()
 gen M = 0.5*A + 0.5*U + 0.3*X + rnormal()
 gen Y = 0.3*A + 0.6*M + 0.6*U + 0.2*X + rnormal()
 ```
-:::
 
 
 #### Naive Estimation (Ignoring Unmeasured Confounding)
@@ -858,7 +836,6 @@ We fit the standard mediation models, omitting $U$:
 
 **Box 7.12:** Naive ACME estimation ignoring unmeasured confounder
 
-::: {.panel-tabset}
 ### R
 ```r
 # Mediator model
@@ -887,7 +864,6 @@ scalar beta2 = _b[M]
 scalar naive_acme = alpha1 * beta2
 display "Naive ACME: " naive_acme
 ```
-:::
 
 
 #### True Estimation (Adjusting for U)
@@ -896,7 +872,6 @@ We repeat the analysis including $U$ to recover the true ACME:
 
 **Box 7.13:** True ACME estimation adjusting for unmeasured confounder
 
-::: {.panel-tabset}
 ### R
 ```r
 # True mediator model
@@ -925,7 +900,6 @@ scalar beta2_true = _b[M]
 scalar true_acme = alpha1_true * beta2_true
 display "True ACME: " true_acme
 ```
-:::
 
 
 #### Results
@@ -962,7 +936,6 @@ We hypothesize the following causal pathways:
 
 **Box 7.14:** Simulating lifestyle intervention data
 
-::: {.panel-tabset}
 ### R
 ```r
 set.seed(101)
@@ -988,7 +961,6 @@ gen A = runiform() < 0.5
 gen M = 30 - 2*A - 0.1*age - 0.5*activity + rnormal()
 gen Y = 140 - 0.5*A + 0.6*M - 0.2*age - 1*activity + rnormal()
 ```
-:::
 
 
 #### Fitting Mediation Models
@@ -997,7 +969,6 @@ We now fit linear models for the mediator and the outcome, adjusting for covaria
 
 **Box 7.15:** Mediation analysis for lifestyle intervention
 
-::: {.panel-tabset}
 ### R
 ```r
 library(mediation)
@@ -1027,7 +998,6 @@ regress Y A M age activity
 medeff (regress M A age activity) (regress Y A M age activity), ///
     treat(A) mediator(M) sims(1000)
 ```
-:::
 
 
 The `summary()` output provides estimates of the average causal mediation effect (ACME), the average direct effect (ADE), and the total effect (TE), along with 95% confidence intervals based on bootstrapping.
@@ -1058,7 +1028,6 @@ To communicate mediation effects more clearly, we can visualize them using a sim
 
 **Box 7.16:** Visualizing direct and indirect effects
 
-::: {.panel-tabset}
 ### R
 ```r
 library(ggplot2)
@@ -1095,7 +1064,6 @@ graph bar Estimate, over(Effect) ///
     bar(1, fcolor(gs8) lcolor(black)) ///
     intensity(0.8)
 ```
-:::
 
 
 This plot visually separates the indirect and direct effects, helping non-technical audiences understand how much of the total effect operates through the mediator.
@@ -1129,7 +1097,6 @@ We recode the variable `type` into a binary treatment, where 1 indicates a profe
 
 **Box 7.17:** Mediation analysis with the Prestige dataset
 
-::: {.panel-tabset}
 ### R
 ```r
 library(carData)
@@ -1179,7 +1146,6 @@ medeff (regress education professional women) ///
        (regress income professional education women), ///
     treat(professional) mediator(education) sims(1000)
 ```
-:::
 
 
 #### Results
@@ -1199,7 +1165,6 @@ We can visualize the decomposition of the total effect into direct and indirect 
 
 **Box 7.18:** Visualizing profession effects
 
-::: {.panel-tabset}
 ### R
 ```r
 library(ggplot2)
@@ -1236,7 +1201,6 @@ graph bar Estimate, over(Effect) ///
     bar(1, fcolor(gs8) lcolor(black)) ///
     intensity(0.8)
 ```
-:::
 
 
 ## Conclusion
