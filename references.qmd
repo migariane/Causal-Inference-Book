@@ -1,4 +1,3 @@
 # References {.unnumbered}
 
-::: {#refs}
-:::
+All references cited in this book are listed at the end of each chapter.
