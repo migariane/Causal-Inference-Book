@@ -128,7 +128,7 @@ Understanding time-varying confounding is critical for correctly estimating caus
 
 ### G-computation and the G-formula for Longitudinal Data
 
-The g-formula, introduced by Robins (1986), provides a way to estimate causal effects from longitudinal data in the presence of time-varying confounding. In longitudinal studies, standard regression methods often fail to provide valid causal estimates when time-varying confounders are also affected by prior treatment. This situation arises commonly in practice, especially in observational studies where treatment decisions are made based on intermediate health status, which itself may be influenced by earlier treatments. The g-formula resolves this problem by using a model-based standardisation approach to compute counterfactual outcomes under hypothetical treatment interventions.
+The g-formula, introduced by Robins [@Robins1986; @Robins2000], provides a way to estimate causal effects from longitudinal data in the presence of time-varying confounding. In longitudinal studies, standard regression methods often fail to provide valid causal estimates when time-varying confounders are also affected by prior treatment. This situation arises commonly in practice, especially in observational studies where treatment decisions are made based on intermediate health status, which itself may be influenced by earlier treatments. The g-formula resolves this problem by using a model-based standardisation approach to compute counterfactual outcomes under hypothetical treatment interventions.
 
 #### Motivating Setting
 
@@ -281,11 +281,11 @@ While powerful, the g-formula is sensitive to model misspecification. Every comp
 
 #### Summary
 
-The longitudinal g-formula is a foundational method for estimating causal effects in the presence of time-varying confounding. It is well-suited for estimating population-level effects of hypothetical interventions in longitudinal data, especially when conventional regression methods are biased due to treatment-confounder feedback. Although computationally intensive and model-dependent, it serves as a conceptual and methodological precursor to more robust estimators like TMLE.
+The longitudinal g-formula is a foundational method for estimating causal effects in the presence of time-varying confounding [@Robins1986; @Daniel2018DoubleRobustness]. It is well-suited for estimating population-level effects of hypothetical interventions in longitudinal data, especially when conventional regression methods are biased due to treatment-confounder feedback. Although computationally intensive and model-dependent, it serves as a conceptual and methodological precursor to more robust estimators like TMLE.
 
 ### Marginal Structural Models
 
-Marginal Structural Models (MSMs) are a class of causal models designed to estimate the marginal effect of a time-varying treatment or exposure on an outcome in the presence of time-varying confounding. Unlike traditional regression models, which condition on time-varying confounders that may be affected by prior treatment, MSMs allow for valid causal inference by modeling the treatment-outcome relationship marginally -- that is, without conditioning on such intermediate variables.
+Marginal Structural Models (MSMs) are a class of causal models designed to estimate the marginal effect of a time-varying treatment or exposure on an outcome in the presence of time-varying confounding [@Robins2000; @Hernan2020]. Unlike traditional regression models, which condition on time-varying confounders that may be affected by prior treatment, MSMs allow for valid causal inference by modeling the treatment-outcome relationship marginally -- that is, without conditioning on such intermediate variables.
 
 In longitudinal settings, the central challenge arises when confounders are affected by prior treatment. Adjusting for these confounders in a standard regression model can introduce bias, because it blocks part of the causal pathway from treatment to outcome. MSMs overcome this problem by modeling the counterfactual mean outcomes under different treatment regimes, while using inverse probability weighting (IPW) to account for confounding.
 

@@ -1,12 +1,12 @@
 # Mediation Analysis {#sec-mediation}
 
-So far we have considered causal effects of a treatment on an outcome when a covariate is not on the causal pathway. Covariates that are on the causal pathway are termed "mediators". They are so named because a cause (e.g., the treatment) affects the mediator that, in turn, affects the outcome. In this chapter, we will (i) explore the role of mediators in causal analyses, (ii) describe statistical techniques for estimating causal effects in the presence of mediators, and (iii) understand how to interpret the various effect estimates.
+So far we have considered causal effects of a treatment on an outcome when a covariate is not on the causal pathway. Covariates that are on the causal pathway are termed "mediators". They are so named because a cause (e.g., the treatment) affects the mediator that, in turn, affects the outcome [@Baron1986; @VanderWeele2017]. In this chapter, we will (i) explore the role of mediators in causal analyses, (ii) describe statistical techniques for estimating causal effects in the presence of mediators, and (iii) understand how to interpret the various effect estimates.
 
 ## Introduction to Mediation
 
 ### Motivation and Overview
 
-In causal inference, we often seek not only to estimate the total effect of an exposure or treatment on an outcome but also to understand the mechanisms through which this effect operates. *Mediation analysis* allows us to decompose the total effect into components that correspond to different causal pathways. This is particularly important in biomedical, social, and behavioural sciences, where identifying how and why a treatment works can inform intervention design, policy decisions, and scientific understanding.
+In causal inference, we often seek not only to estimate the total effect of an exposure or treatment on an outcome but also to understand the mechanisms through which this effect operates. *Mediation analysis* allows us to decompose the total effect into components that correspond to different causal pathways [@Imai2010; @Pearl2001]. This is particularly important in biomedical, social, and behavioural sciences, where identifying how and why a treatment works can inform intervention design, policy decisions, and scientific understanding.
 
 For example, suppose a new drug improves patient outcomes. We may want to know whether the improvement occurs primarily by reducing inflammation, improving immune function, or some other biological process. Mediation analysis aims to quantify how much of the treatment's effect is explained by a specific intermediate variable---known as the *mediator*.
 
@@ -140,7 +140,7 @@ Consider the causal diagram in Figure 7.1 with exposure X, mediator M, and outco
 ![Mediation DAG showing total effect decomposition into direct and indirect paths](figures/fig-M1.png){#fig-M1}
 
 
-Early proponents of evaluating this model suggested using the "product of coefficients method" (also known as "product method") (Baron and Kenny, 1986). Let M and Y be continuous variables, consider the following regression models:
+Early proponents of evaluating this model suggested using the "product of coefficients method" (also known as "product method") [@Baron1986]. Let M and Y be continuous variables, consider the following regression models:
 $$
 E(M \mid X=x) = \beta_{0} + \beta_{1}x
 $$ {#eq-ContMed}

@@ -1,6 +1,6 @@
 # Discussion {#sec-discussion}
 
-This book has presented a computational introduction to causal inference for applied researchers, progressing from foundational concepts through to advanced methods for estimating causal effects in observational studies. We have covered classical approaches---regression adjustment, the g-formula, and propensity score methods---as well as modern doubly-robust estimators, longitudinal methods, mediation analysis, and sensitivity analysis. This final chapter reflects on the themes that emerge across the book, offers practical guidance for choosing among methods, and outlines directions for future development.
+This book has presented a computational introduction to causal inference for applied researchers, progressing from foundational concepts through to advanced methods for estimating causal effects in observational studies [@Hernan2020]. We have covered classical approaches---regression adjustment, the g-formula, and propensity score methods---as well as modern doubly-robust estimators, longitudinal methods, mediation analysis, and sensitivity analysis. This final chapter reflects on the themes that emerge across the book, offers practical guidance for choosing among methods, and outlines directions for future development.
 
 ## Summary of Methods and Their Relationships
 
@@ -53,7 +53,7 @@ We encourage readers to:
 
 ### Assumptions
 
-All causal inference methods from observational data rely on three core assumptions:
+All causal inference methods from observational data rely on three core assumptions [@Rubin1974; @Hernan2004]:
 
 1. **Exchangeability (no unmeasured confounding):** All confounders of the treatment-outcome relationship have been measured and correctly included in the analysis.
 2. **Positivity:** Every individual has a non-zero probability of receiving each treatment level, given their covariates.
