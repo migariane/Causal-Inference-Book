@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="This book introduces the concepts of causal inference from a beginner’s perspective and leads the interested reader to numerous approaches to answer counterfactual questions using computational methods in R and Stata.">
+
+<title>2&nbsp; Regression adjustment – Computational Causal Inference for Applied Researchers</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/chapter3/index.html" rel="next">
+<link href="../../chapters/chapter1/index.html" rel="prev">
+<link href="../../figures/logo.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-95edd58b3b27b9774827898c46d4f452.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<script>
+MathJax = {
+  tex: {
+    macros: {
+      btheta: "\\boldsymbol{\\theta}",
+      bbeta: "\\boldsymbol{\\beta}",
+      bmu: "\\boldsymbol{\\mu}",
+      bSigma: "\\boldsymbol{\\Sigma}",
+      bx: "\\mathbf{x}",
+      bX: "\\mathbf{X}",
+      by: "\\mathbf{y}",
+      bY: "\\mathbf{Y}",
+      bU: "\\mathbf{U}",
+      E: "\\mathbb{E}",
+      Var: ["\\operatorname{Var}"],
+      Cov: ["\\operatorname{Cov}"],
+      Corr: ["\\operatorname{Corr}"],
+      iid: "\\stackrel{\\text{i.i.d.}}{\\sim}",
+      tendD: "\\stackrel{\\mathcal{D}}{\\longrightarrow}",
+      reals: "\\mathbb{R}",
+      PP: "\\mathbb{P}",
+      P: "\\mathbb{P}",
+      I: "\\mathbb{I}",
+      A: "\\mathbb{A}",
+      SE: ["\\operatorname{SE}"],
+      SD: ["\\operatorname{SD}"],
+      MSE: ["\\operatorname{MSE}"],
+      argmax: ["\\operatorname{argmax}"],
+      argmin: ["\\operatorname{argmin}"],
+      logit: ["\\operatorname{logit}"],
+      expit: ["\\operatorname{expit}"],
+      odds: ["\\operatorname{odds}"],
+      Pr: ["\\operatorname{Pr}"],
+      indep: "\\perp\\!\\!\\!\\perp"
+    }
+  }
+};
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/chapter1/index.html">Foundations</a></li><li class="breadcrumb-item"><a href="../../chapters/chapter2/index.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Regression adjustment</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Computational Causal Inference for Applied Researchers</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/migariane/Causal-Inference-Book" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="../../Computational-Causal-Inference-for-Applied-Researchers.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
+              <i class="bi bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter1/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter2/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Regression adjustment</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">G-Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter3/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">G-formula</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter4/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Methods Based on the Propensity Score</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Advanced Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter5/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Double-robust estimators</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter6/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Causal Inference for Longitudinal Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter7/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Mediation Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Sensitivity Analysis &amp; Discussion</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter8/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/chapter9/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Discussion</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#regression-methods" id="toc-regression-methods" class="nav-link active" data-scroll-target="#regression-methods"><span class="header-section-number">2.1</span> Regression methods</a></li>
+  <li><a href="#confounding-and-collider-biases" id="toc-confounding-and-collider-biases" class="nav-link" data-scroll-target="#confounding-and-collider-biases"><span class="header-section-number">2.2</span> Confounding and collider biases</a></li>
+  <li><a href="#motivating-example" id="toc-motivating-example" class="nav-link" data-scroll-target="#motivating-example"><span class="header-section-number">2.3</span> Motivating example</a></li>
+  <li><a href="#monte-carlo-simulation" id="toc-monte-carlo-simulation" class="nav-link" data-scroll-target="#monte-carlo-simulation"><span class="header-section-number">2.4</span> Monte-Carlo simulation</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">2.5</span> Conclusion</a></li>
+  <li><a href="#glossary" id="toc-glossary" class="nav-link" data-scroll-target="#glossary"><span class="header-section-number">2.6</span> Glossary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/migariane/Causal-Inference-Book/edit/main/chapters/chapter2/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/blob/main/chapters/chapter2/index.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/chapter1/index.html">Foundations</a></li><li class="breadcrumb-item"><a href="../../chapters/chapter2/index.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Regression adjustment</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-regression" class="quarto-section-identifier"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Regression adjustment</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Regression adjustment is a powerful statistical tool that allows one to control for confounding in complex settings where other methods, such as matching or stratification, do not work. This chapter will introduce the concept of confounding and the regression adjustment method to control for it.</p>
+<p>Note: This chapter contains a lot of content from <a href="https://academic.oup.com/ije/article/48/2/640/5248195?login=false">this paper</a>.<span class="citation" data-cites="doi:10.2105/AJPH.2018.304916_f08f">(<a href="#ref-doi:10.2105/AJPH.2018.304916_f08f" role="doc-biblioref">Luque-Fernandez et al., 2019</a>)</span></p>
+<section id="regression-methods" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="regression-methods"><span class="header-section-number">2.1</span> Regression methods</h2>
+<p>Confounding bias in epidemiological studies occurs when there are shared causes for both treatment or exposure, henceforth (A) and outcome, henceforth (Y) that can fully or partially explain the observed association between A and Y. To control for confounding randomization is classically used in experimental settings before the study design. However, when these tools fail or in observational studies it is critical to address confounding during the analysis stage. Classically, stratification serves as a well-recognized analytical technique to manage confounding. This approach involves evaluating the association of interest within separate groups that display similar characteristics with respect to the confounders. The principle of stratification is simple: It removes the variability of confounding elements within each group, ensuring these do not impact the treatment outcome relationship.</p>
+<p>However, despite being highly effective, stratification’s application becomes limited when faced with numerous confounding variables, as it results in overly small groupings that hinder practical comparisons due to insufficient data for precise estimation (i.e., sparsity due to increasing dimensionality on the data).</p>
+<p>Regression methods for adjusting confounding variables incorporate details about interventions and prognostic factors into a regression formula within a modeling context: <span class="math display">\[
+y_{ij} = \beta_{0j} + \beta_{1j}x_{i1} + \beta_{2j}x_{i2} + \cdots + \beta_{pj}x_{ip} + \epsilon_{ij},
+\]</span> where:</p>
+<ul>
+<li><span class="math inline">\(y_{ij}\)</span>: represents the i-the observation of the j-th dependent variable.</li>
+<li><span class="math inline">\(\beta_{0j}\)</span>: is the intercept for the j-th dependent variable.</li>
+<li><span class="math inline">\(\beta_{kj}\)</span>: is the regression coefficient for the k-th predictor variable (xk) on the j-th dependent variable.</li>
+<li><span class="math inline">\(x_{ik}\)</span>: represents the i-th observation of the k-th predictor variable.</li>
+<li>p: This is the total number of predictor variables.</li>
+<li><span class="math inline">\(\epsilon_{ij}\)</span>: represents the error term for the i-th observation of the j-th dependent variable.</li>
+</ul>
+<p>Regression models are often fit within the generalized linear modeling framework. In a generalized linear model (GLM), the <strong>link</strong> function describes the relationship between Y, and A, adjusted for the set of confounders. It converts probabilities of Y into a continuous measure, enabling the modeling of relationships within a linear regression framework, offering all the advantages of including the outcome predictors in the model as quantitative variables without categorization, and the ability to assess trends with ordinal-scale confounders.</p>
+<p>Common link functions include: i) the Identity link for linear regression models with continuous, normally distributed responses; ii) the Logit link for binary outcomes, like disease presence; iii) the Probit link, transforming binary responses to a standard normal distribution; iv) the Log link for positively skewed responses, such as counts or proportions; and v) the Inverse link for continuous, positively skewed responses. For binary outcomes, to assess the model coefficient for the adjusted A effect, the odds ratio [OR] is used as a useful estimand. Other estimands that regression models can also calculate are the risk ratio [RR] and the absolute risk or risk difference [RD].</p>
+<p>The interpretation of the regression coefficients is straightforward. A regression coefficient indicates how the outcome changes with a change in the treatment or exposure of interest, holding the other model predictors constant. This is a conditional estimate effect. It is important to highlight that in simple linear models, this is equivalent to the marginal effect, i.e., the overall treatment effect. However, when interaction terms are added between A and some confounders, models become more complex. In such cases, the coefficient for A might only represent its effect within a reference group, i.e., a conditional effect and not the overall effect. When moving away from linear models, the connection between conditional effects and overall marginal effects can deteriorate considerably. It might seem natural to assume that dividing a population into various subgroups and then estimating the effect within each subgroup would produce an overall marginal effect that is simply a weighted combination of these subgroup-specific effects. However, this relationship holds only for certain causal measures—specifically those that are collapsible, such as RD and RR. In contrast, ORs exhibit non-collapsibility (see Chapter 3 for more details on collapsibility), which means that the marginal odds ratio might be either larger or smaller than any of the conditional ORs derived from subgroups in the regression model.<span class="citation" data-cites="Withcomb2021">(<a href="#ref-Withcomb2021" role="doc-biblioref">Brian W Whitcomb, 2021</a>)</span></p>
+</section>
+<section id="confounding-and-collider-biases" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="confounding-and-collider-biases"><span class="header-section-number">2.2</span> Confounding and collider biases</h2>
+<p>A confounder can fully or partially explain the observed association between exposure (A) and outcome (Y). This bias i.e., “confounding bias”, makes for example the effect measure from a binary treatment (A) on the binary outcome (Y) i.e., the raw OR, to diverge from its true causal effect, i.e., the true marginal causal OR. The expression “association is not causation” illustrates clearly the importance of accounting for confounding bias.</p>
+<p>Regression models can be a viable approach for confounding adjustment; however, it requires assuming no effect modification. Alternatively, the generalization of standardization, via the <strong>G-Formula</strong><span class="citation" data-cites="robins86new">(<a href="#ref-robins86new" role="doc-biblioref">Robins, 1986</a>)</span>, could be used to improve adjustment, minimize residual confounding, and allow for causal interpretation without randomization (see Chapter four). Moreover, in certain cases, the introduction of a specific type of confounder known as a “collider” into a regression model can result in bias in the regression coefficient estimates for the treatment effect (A), even though it could potentially enhance the model’s overall goodness of fit.</p>
+<p>Direct Acyclic Graphs (DAGs), which are informed by expertise in the subject area, play a crucial role in identifying such colliders. Identifying whether a confounder is a collider requires careful consideration of the true unobserved data-generating process and the interrelationships among variables within a given context.<span class="citation" data-cites="Pearce2014">(<a href="#ref-Pearce2014" role="doc-biblioref">N. Pearce, 2014</a>)</span></p>
+<p>In general, incorporating a collider into a regression model is discouraged if the goal is to estimate causal effects, as it can introduce bias. However, if the model is aimed at prediction, including colliders might be beneficial if it decreases prediction error.</p>
+<p>To illustrate both concepts, we use a linear regression modeling framework to adjust for confounding in a set of boxes containing R software commented code. We introduce three scenarios to illustrate the differences in adjusting for confounders or colliders <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a>. In <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel A), the causal effect of <span class="math inline">\(A\)</span> on <span class="math inline">\(Y\)</span> is confounded by <span class="math inline">\(W\)</span>. In <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel B), the causal effect of <span class="math inline">\(A\)</span> on <span class="math inline">\(Y\)</span> is not confounded but adjusting for the collider <span class="math inline">\(C\)</span> induces a bias. Lastly, in <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel C), there are no confounders but conditioning on the collider <span class="math inline">\(C\)</span> opens a back-door path through <span class="math inline">\(W1\)</span> and <span class="math inline">\(W2\)</span>.</p>
+<div id="fig-DAG2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DAG2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/Fig.2.1.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DAG2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.1: DAGs showing confounding (Panel A), collider bias (Panel B), and M-bias (Panel C)
+</figcaption>
+</figure>
+</div>
+<p>Data consistent with the directed acyclic graph (DAG) depicted in <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> was generated (Box 2.1), following a process akin to that described by <span class="citation" data-cites="Luque-Fernandez2018">(<a href="#ref-Luque-Fernandez2018" role="doc-biblioref">Luque-Fernandez et al., 2018</a>)</span>: The confounder, represented by <strong><span class="math inline">\(W\)</span></strong> in <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a>, was simulated as a standard normal random variable, characterized by a mean of 0 (<span class="math inline">\(\mu=0\)</span>) and a variance of 1 (<span class="math inline">\(\sigma^{2}=1\)</span>). The generation of the exposure, <span class="math inline">\(A\)</span>, was contingent upon the value of <span class="math inline">\(W\)</span>, incorporating an error term with a standard normal distribution. Subsequently, the outcome, <span class="math inline">\(Y\)</span>, was generated as a function of both <span class="math inline">\(A\)</span> and <span class="math inline">\(W\)</span>, with an additional error term also drawn from a standard normal distribution. These assumptions establish linear relationships between the variables and a simulated causal effect of <span class="math inline">\(A\)</span> on <span class="math inline">\(Y\)</span> with a coefficient of 0.3. Linear regression models, both unadjusted (fit1) and adjusted for <span class="math inline">\(W\)</span> (fit2), were then employed to estimate associations between <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>. <strong>Box 2.1 (R):</strong> Generate data consistent with <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel A)</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(visreg) <span class="co"># load package to visualize regression output</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)<span class="co"># load package to visualize regression output</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork) <span class="co"># https://patchwork.data-imaginist.com/</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">1000</span> <span class="co"># sample size</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">777</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>W <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(N) <span class="co"># confounder</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> W <span class="sc">+</span> <span class="fu">rnorm</span>(N) <span class="co"># exposure</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> <span class="fl">0.3</span> <span class="sc">*</span> A <span class="sc">+</span> <span class="fl">0.4</span> <span class="sc">*</span> W <span class="sc">+</span> <span class="fu">rnorm</span>(N) <span class="co"># outcome</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>fit1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y <span class="sc">~</span> A) <span class="co"># crude model</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>fit2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(Y <span class="sc">~</span> A <span class="sc">+</span> W) <span class="co"># adjusted model</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize crude and adjusted models</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>a <span class="ot">=</span> <span class="fu">visreg</span> (fit1 , <span class="st">"A"</span> , <span class="at">gg =</span> <span class="cn">TRUE</span> , <span class="at">line =</span> <span class="fu">list</span> ( <span class="at">col =</span> <span class="st">"blue"</span>) ,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">points =</span> <span class="fu">list</span> ( <span class="at">size =</span> <span class="dv">2</span> , <span class="at">pch =</span> <span class="dv">1</span> , <span class="at">col =</span> <span class="st">"black"</span>) ) <span class="sc">+</span> <span class="fu">theme_classic</span> ()</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>b <span class="ot">=</span> <span class="fu">visreg</span> (fit2 , <span class="st">"A"</span> , <span class="at">gg =</span> <span class="cn">TRUE</span> , <span class="at">line =</span> <span class="fu">list</span> ( <span class="at">col =</span> <span class="st">"blue"</span>) ,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">points =</span> <span class="fu">list</span> (<span class="at">size =</span> <span class="dv">2</span> , <span class="at">pch =</span> <span class="dv">1</span> , <span class="at">col =</span> <span class="st">"black"</span>) ) <span class="sc">+</span> <span class="fu">theme_classic</span> ()</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>patchwork <span class="ot">&lt;-</span> a <span class="sc">+</span> b <span class="sc">+</span> <span class="fu">plot_layout</span> (<span class="at">guides =</span> <span class="st">"collect"</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>patchwork <span class="sc">+</span> <span class="fu">plot_annotation</span>(</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">tag_levels =</span> <span class="st">'A'</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">'Regression adjustment: Confounding bias'</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">'A: lm (Y ~ A); B: lm (Y ~ A + W)'</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">'Disclaimer: In-house'</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 2.1 (Stata):</strong> Stata code for data generation and confounding adjustment</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>* Stata code: Generate <span class="kw">data</span> consistent with DAG panel A</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">clear</span> <span class="ot">all</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="dv">seed</span> 777</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="kw">obs</span> 1000</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>* Generate confounder, exposure, and outcome</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> W = rnormal()</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> A = 0.5 * W + rnormal()</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> Y = 0.3 * A + 0.4 * W + rnormal()</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>* Crude <span class="kw">model</span> (unadjusted <span class="kw">for</span> confounder)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> Y A</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>* Adjusted <span class="kw">model</span> (controlling <span class="kw">for</span> confounder W)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> Y A W</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>* Visualize <span class="kw">using</span> marginal predictions</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">regress</span> Y A</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>margins, <span class="fu">at</span>(A = (-3(0.5)3))</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>marginsplot, <span class="bn">name</span>(crude, <span class="kw">replace</span>) <span class="bn">title</span>(<span class="st">"Crude: Y ~ A"</span>) <span class="co">///</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="bn">ytitle</span>(<span class="st">"Linear prediction"</span>) <span class="bn">xtitle</span>(<span class="st">"A"</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">regress</span> Y A W</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>margins, <span class="fu">at</span>(A = (-3(0.5)3))</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>marginsplot, <span class="bn">name</span>(adjusted, <span class="kw">replace</span>) <span class="bn">title</span>(<span class="st">"Adjusted: Y ~ A + W"</span>) <span class="co">///</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="bn">ytitle</span>(<span class="st">"Linear prediction"</span>) <span class="bn">xtitle</span>(<span class="st">"A"</span>)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>* Combine graphs</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="bn">combine</span> crude adjusted, <span class="bn">name</span>(combined, <span class="kw">replace</span>) <span class="co">///</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="bn">title</span>(<span class="st">"Regression adjustment: Confounding bias"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The first regression analysis, without conditioning on W, illustrates this bias. The estimated coefficient for <span class="math inline">\(A\)</span> (0.472) exhibits an upward bias compared to the true causal effect (0.3) specified in the simulation. In contrast, the second regression adds <span class="math inline">\(W\)</span> as a covariate, effectively closing the open back-door path. This approach yields a more accurate estimate of the causal effect (0.289), closer to the true value. The remaining residual difference of 0.011 can be attributed to sampling variability.</p>
+<p><a href="#fig-confounding" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-confounding</span></a> shows the confounding bias based on the slope from the linear adjustment contrasting A without adjustment for W versus B with adjustment for W.</p>
+<div id="fig-confounding" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-confounding-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/Fig.2.2.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-confounding-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.2: Regression adjustment: univariate (A), bivariate adjustement (B) models fit for the linear association between Y and A.
+</figcaption>
+</figure>
+</div>
+<p><a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> highlights the key role of <span class="math inline">\(W\)</span> as a confounder in this causal structure. Its unique position without parent nodes indicates that it is not influenced by any other variable in the DAG. Consequently, <span class="math inline">\(W\)</span> is generated independently within the model. However, both <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span> share a common parent in <span class="math inline">\(W\)</span>, creating an open back-door path between them. This path explains the potential for confounding bias.</p>
+<p>In contrast to <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel A), where the causal arrows originate from node <span class="math inline">\(W\)</span>, <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel B) presents a different causal structure with arrows directed toward node <span class="math inline">\(C\)</span> from both <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>. Conditioning on <span class="math inline">\(C\)</span> in this scenario, through methods such as regression or stratification, introduces collider bias. This arises because node <span class="math inline">\(C\)</span> acts as a collider on the path <span class="math inline">\(A \rightarrow C \leftarrow Y\)</span>, where two causal pathways converge.</p>
+<p>To illustrate this concept, consider a scenario where the wetness of the ground (<span class="math inline">\(C\)</span>) is solely influenced by rain (<span class="math inline">\(A\)</span>) and an automatic sprinkler (<span class="math inline">\(Y\)</span>) set on a timer. In this case, knowing that the ground is wet (conditioning on <span class="math inline">\(C\)</span>) while simultaneously observing that it did not rain (negating path <span class="math inline">\(A \rightarrow C\)</span>) implies that the sprinkler must be on (positive effect on <span class="math inline">\(C\)</span> via path <span class="math inline">\(Y \rightarrow C\)</span>). Failing to account for the collider <span class="math inline">\(C\)</span> in the analysis might lead to the erroneous conclusion that rain negatively influences sprinkler usage, despite pre-existing knowledge of their independence.<span class="citation" data-cites="pearl09causality">(<a href="#ref-pearl09causality" role="doc-biblioref">Pearl, 2009</a>)</span></p>
+<p>Violation of the ignorability assumption due to collider conditioning: conditioning on a collider variable, such as <span class="math inline">\(C\)</span> in <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel B), can induce a spurious association between the exposure (<span class="math inline">\(A\)</span>) and the potential outcomes (<span class="math inline">\(Y(a)\)</span>). This undermines the conditional ignorability assumption (<span class="math inline">\(Y(a)\perp A \mid W, C\)</span>), which requires the exposure to be independent of the potential outcomes given the conditioning set (see Chapter One).</p>
+<p><a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel B) illustrates this concept. Conditioning on <span class="math inline">\(C\)</span> opens the back-door path (<span class="math inline">\(A \rightarrow C \leftarrow Y\)</span>) previously blocked by the collider itself. This opens a channel for the effect of <span class="math inline">\(A\)</span> on <span class="math inline">\(Y\)</span> to indirectly influence the observed association between <span class="math inline">\(A\)</span> and <span class="math inline">\(Y(a)\)</span>. As a result, the observed association becomes a mixture of both the causal effect of <span class="math inline">\(A\)</span> on <span class="math inline">\(Y\)</span> and the spurious association induced by the back-door path. This confounds the interpretation of the association, as it is no longer solely attributable to the direct causal effect of <span class="math inline">\(A\)</span> on <span class="math inline">\(Y\)</span>. Therefore, conditioning on a collider can lead to spurious associations, hindering the identification of true causal relationships from observational data.</p>
+<p><a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel C) gives another, more complex collider structure usually known as M-bias, in which the collider (<span class="math inline">\(C\)</span>) is the effect of a common cause (<span class="math inline">\(W1\)</span>) of the exposure (<span class="math inline">\(A\)</span>) and a common cause (<span class="math inline">\(W2\)</span>) of the outcome (<span class="math inline">\(Y\)</span>). There is only one back-door path, and it is already blocked by the collider (<span class="math inline">\(C\)</span>); thus we do not need to control for anything. This is the difference between confounders and colliders: a path will be open if one does not adjust for confounders but blocked if adjustment is made. For colliders, it is the other way around. However, some could consider <span class="math inline">\(C\)</span> to be a classical confounder as it is associated with both <span class="math inline">\(A\)</span>, via (<span class="math inline">\(A \leftarrow W1 \rightarrow C\)</span>), and with <span class="math inline">\(Y\)</span>, via a path that does not go through <span class="math inline">\(A\)</span> (<span class="math inline">\(C \leftarrow W2 \rightarrow Y\)</span>), and it is not in the causal pathway between <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>. However, controlling for <span class="math inline">\(C\)</span> will introduce a collider bias. If one were to use the traditional characteristics used to identify confounders (i.e., a third variable [<span class="math inline">\(W\)</span>] associated with both the exposure [<span class="math inline">\(A\)</span>] and the outcome [<span class="math inline">\(Y\)</span>] that is not on the causal pathway between <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>), then one could confuse a collider with a confounder.</p>
+<p><a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel C) presents a more intricate collider structure exhibiting M-bias, where the collider, <span class="math inline">\(C\)</span>, is influenced by both <span class="math inline">\(W1\)</span>, a common cause with exposure <span class="math inline">\(A\)</span>, and <span class="math inline">\(W2\)</span>, a common cause with outcome <span class="math inline">\(Y\)</span>. Notably, a single back-door path exists, but collider <span class="math inline">\(C\)</span> already blocks it, eliminating the need for adjustment. This highlights a fundamental distinction between confounders and colliders: while adjusting for confounders reveals potential causal effects by unblocking paths, adjusting for colliders like <span class="math inline">\(C\)</span> inadvertently introduces bias by opening blocked paths, leading to the M-bias phenomenon.</p>
+<p>However, some may misinterpret <span class="math inline">\(C\)</span> as a traditional confounder. It is indeed associated with both <span class="math inline">\(A\)</span> (via <span class="math inline">\(W1\)</span>) and <span class="math inline">\(Y\)</span> (via <span class="math inline">\(W2\)</span>), and it lies outside the direct causal pathway between <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>. Despite these characteristics, controlling for <span class="math inline">\(C\)</span> would induce collider bias, highlighting the critical distinction between association and causation. Therefore, relying solely on the conventional properties of confounders (association with both exposure and outcome, off-pathway location) can lead to misidentification and spurious inferences when dealing with colliders like <span class="math inline">\(C\)</span>. This underscores the importance of carefully considering the underlying causal structure and potential collider bias before implementing adjustment strategies.</p>
+<p>Building upon the simulated scenario depicted in <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel B), we replicate the data generation process through a simplified linear mechanism outlined in Box 2.2. Initially, we draw variable <span class="math inline">\(A\)</span> from a standard normal distribution conditioned on the confounder <span class="math inline">\(W\)</span>. Subsequently, we generate outcome <span class="math inline">\(Y\)</span> as the sum of the effect of <span class="math inline">\(A\)</span>, the confounder <span class="math inline">\(W\)</span>, and an error term. Similarly, variable <span class="math inline">\(C\)</span> is generated as a function of both <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>, incorporating additional error. This revised configuration, as illustrated in <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel B), establishes both <span class="math inline">\(A\)</span> (exposure) and <span class="math inline">\(Y\)</span> (outcome) as parents of <span class="math inline">\(C\)</span> (collider), creating a common effect situation. We then proceed to analyze the data by fitting two models: an adjusted model for <span class="math inline">\(W\)</span> excluding the collider (fit3) and a model that incorporates the collider (fit4), also referred to as the collider model). Notably, the true causal coefficient of exposure <span class="math inline">\(A\)</span> is established as 0.3, with the collider <span class="math inline">\(C\)</span> demonstrating coefficients of 1.0 for both its association with exposure <span class="math inline">\(A\)</span> and outcome <span class="math inline">\(Y\)</span>. <strong>Box 2.2 (R):</strong> Generate data consistent with <a href="#fig-DAG2" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG2</span></a> (panel B)</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">1000</span> <span class="co"># sample size</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span> (<span class="dv">777</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>W <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(N) <span class="co"># confounder</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> W <span class="sc">+</span> <span class="fu">rnorm</span>(N) <span class="co"># exposure</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span>  <span class="fl">0.3</span> <span class="sc">*</span> A <span class="sc">+</span> <span class="sc">+</span> <span class="fl">0.4</span> <span class="sc">*</span> W <span class="sc">+</span> <span class="fu">rnorm</span>(N) <span class="co"># outcome</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>C <span class="ot">&lt;-</span>  <span class="dv">1</span> <span class="sc">*</span> A <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> Y <span class="sc">+</span> <span class="fu">rnorm</span>(N) <span class="co"># collider</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>fit3 <span class="ot">&lt;-</span> <span class="fu">lm</span> (Y <span class="sc">~</span> A <span class="sc">+</span> W) <span class="co"># adjusted model for confounder</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>fit4 <span class="ot">&lt;-</span> <span class="fu">lm</span> (Y <span class="sc">~</span> A <span class="sc">+</span> C) <span class="co"># adjusted model for collider</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize adjusted models</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">&lt;-</span> <span class="fu">visreg</span> (fit3 , <span class="st">"A"</span> , <span class="at">gg =</span> <span class="cn">TRUE</span> , <span class="at">line =</span> <span class="fu">list</span> ( <span class="at">col =</span> <span class="st">"blue"</span>) ,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">points =</span> <span class="fu">list</span> (<span class="at">size =</span> <span class="dv">2</span> , <span class="at">pch =</span> <span class="dv">1</span> , <span class="at">col =</span> <span class="st">"black"</span>) ) <span class="sc">+</span> <span class="fu">theme_classic</span> () <span class="sc">+</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_cartesian</span> (<span class="at">ylim =</span> <span class="fu">c</span> ( <span class="sc">-</span><span class="dv">4</span> , <span class="dv">4</span>))</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">visreg</span> (fit4 , <span class="st">"A"</span> , <span class="at">gg =</span> <span class="cn">TRUE</span> , <span class="at">line =</span> <span class="fu">list</span> ( <span class="at">col =</span> <span class="st">"red"</span>) ,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">points =</span> <span class="fu">list</span> (<span class="at">size =</span> <span class="dv">2</span> , <span class="at">pch =</span> <span class="dv">1</span> , <span class="at">col =</span> <span class="st">"black"</span>) ) <span class="sc">+</span> <span class="fu">theme_classic</span> () <span class="sc">+</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_cartesian</span> (<span class="at">ylim =</span> <span class="fu">c</span> ( <span class="sc">-</span><span class="dv">4</span> , <span class="dv">4</span>))</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>patchwork <span class="ot">&lt;-</span> g1 <span class="sc">+</span> g2 <span class="sc">+</span> <span class="fu">plot_layout</span> (<span class="at">guides =</span> <span class="st">"collect"</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>patchwork <span class="sc">+</span> <span class="fu">plot_annotation</span>(</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">tag_levels =</span> <span class="st">'A'</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">'Regression adjustment: Collider bias'</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">'A: lm (Y ~ A + W); B: lm (Y ~ A + C)'</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">'Disclaimer: In-house'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 2.2 (Stata):</strong> Stata code for data generation and collider bias illustration</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>* Stata code: Generate <span class="kw">data</span> consistent with DAG panel B (collider)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">clear</span> <span class="ot">all</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="dv">seed</span> 777</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="kw">obs</span> 1000</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> W = rnormal()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> A = 0.5 * W + rnormal()</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> Y = 0.3 * A + 0.4 * W + rnormal()</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> C = 1 * A + 1 * Y + rnormal()   <span class="co">/* C is a collider */</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>* Model adjusted <span class="kw">for</span> confounder W (correct estimate)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> Y A W</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>* Model adjusted <span class="kw">for</span> collider C (biased estimate)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> Y A C</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>* Visualize adjusted predictions</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">regress</span> Y A W</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>margins, <span class="fu">at</span>(A = (-3(0.5)3))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>marginsplot, <span class="bn">name</span>(g1, <span class="kw">replace</span>) <span class="bn">title</span>(<span class="st">"Adjusted for W: Y ~ A + W"</span>) <span class="co">///</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="bn">ytitle</span>(<span class="st">"Linear prediction"</span>) <span class="bn">xtitle</span>(<span class="st">"A"</span>) <span class="kw">ylabel</span>(-4(2)4)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">regress</span> Y A C</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>margins, <span class="fu">at</span>(A = (-3(0.5)3))</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>marginsplot, <span class="bn">name</span>(g2, <span class="kw">replace</span>) <span class="bn">title</span>(<span class="st">"Adjusted for C (collider): Y ~ A + C"</span>) <span class="co">///</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="bn">ytitle</span>(<span class="st">"Linear prediction"</span>) <span class="bn">xtitle</span>(<span class="st">"A"</span>) <span class="kw">ylabel</span>(-4(2)4)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>* Combine graphs</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="bn">combine</span> g1 g2, <span class="bn">name</span>(combined, <span class="kw">replace</span>) <span class="co">///</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="bn">title</span>(<span class="st">"Regression adjustment: Collider bias"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>In contrast to the previous section, ignoring the collider variable <span class="math inline">\(C\)</span> in the regression model resulted in an estimate of the true coefficient for <span class="math inline">\(A\)</span> (0.3) that was remarkably close, at 0.298. However, adjusting for <span class="math inline">\(C\)</span> introduced a substantial bias, leading to an estimate of -0.3 as depicted in <a href="#fig-collider" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-collider</span></a>. While the model incorporating the collider (fit4) performs competitively from a predictive standpoint, as evidenced by its lower Akaike Information Criterion (AIC), it paradoxically alters the direction of the association between <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span>. This phenomenon, where conditioning on the collider introduces bias while ignoring it does not, arises when both <span class="math inline">\(A\)</span> and <span class="math inline">\(Y\)</span> are positively correlated with the collider. Thus, in this specific case, including the collider in the regression model introduces a bias while excluding it does not.</p>
+<div id="fig-collider" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-collider-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/Fig.2.3.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-collider-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.3: Regression adjustment: confounding bias (A), collider bias (B) models fit for the linear association between Y and A.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="motivating-example" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="motivating-example"><span class="header-section-number">2.3</span> Motivating example</h2>
+<p>To illustrate the impact of conditioning on a collider variable, we simulated a dataset with 1,000 observations focusing on the relationship between dietary sodium intake, age, and systolic blood pressure (SBP). The example is fully available and reproducible at the GitHub repository: <a href="https://github.com/migariane/ColliderApp" class="uri">https://github.com/migariane/ColliderApp</a>, and there is also an online available ShinyApp at: <a href="https://watzile.shinyapps.io/EpiCollider/" class="uri">https://watzile.shinyapps.io/EpiCollider/</a></p>
+<p>Hypertension affects nearly one-third of the American population, with over half exhibiting uncontrolled hypertension. Extensive evidence confirms a positive association between cumulative daily sodium intake (grams) exceeding recommended levels and elevated SBP (mmHg). Moreover, advancing age brings about anatomical and physiological changes in the kidneys, compromising their ability to regulate extracellular fluid volume and composition. Notably, these changes include diminished glomerular filtration rate and an impaired capacity to maintain water and sodium homeostasis in response to external factors. Additionally, age-related structural modifications in the arteries contribute to the observed association between age and SBP.</p>
+<p>The strong association between age and both high SBP and impaired sodium homeostasis poses a challenge for assessing the true relationship between sodium intake (SOD) and SBP. Age acts as a potential confounder in this scenario, residing on the causal pathway between SOD and SBP as illustrated in <a href="#fig-DAG3" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG3</span></a>. This implies that controlling for age solely based on its association with both the exposure (SOD) and the outcome (SBP) could introduce bias into the estimated effect of SOD on SBP.</p>
+<p>Further complicating the analysis is the role of proteinuria (PRO). High levels of 24-hour urinary protein excretion are observed in response to both sustained high SBP and increased dietary sodium intake, as shown in <a href="#fig-DAG3" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG3</span></a>. This places proteinuria in the position of a potential collider variable. Controlling for proteinuria in the presence of unmeasured common causes with both SOD and SBP (represented by the arrow converging on PRO in <a href="#fig-DAG3" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG3</span></a>) could introduce collider bias, potentially underestimating or overestimating the true effect of SOD on SBP. Therefore, researchers conducting such analyses should carefully consider the potential for both confounding and collider bias. Controlling for age remains crucial when its influence on SBP pathways is understood and adequately represented in the model. However, if the underlying physiological mechanisms are incompletely understood, or if proteinuria is mistakenly conceptualized as a confounder, controlling for it could lead to biased estimates.</p>
+<div id="fig-DAG3" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-DAG3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/Fig.2.4.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-DAG3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.4: DAG for the sodium intake, systolic blood pressure, and proteinuria example
+</figcaption>
+</figure>
+</div>
+<p>This section focuses on simulating data to illustrate the paradoxical effect of 24-hour dietary sodium intake (grams) on systolic blood pressure (SBP) after conditioning on a potential collider, urinary proteinuria. The simulated data will be based on the structural relationships depicted in the DAG presented in <a href="#fig-DAG3" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG3</span></a> (see Box 2.3 for details).</p>
+<p>Box 2.3 provides a function to simulate data for this example. The true causal effect of sodium intake on systolic blood pressure (SBP) is represented by a beta coefficient of 1.05, as shown in the formula for SBP: systolic blood pressure <span class="math inline">\(=\beta_{1} \cdot sodium + \beta_{2} \cdot age + \epsilon\)</span>, where <span class="math inline">\(\beta_{1} = 1.05\)</span>, <span class="math inline">\(\beta_{2} = 2.0\)</span>, and <span class="math inline">\(\epsilon\)</span> denotes a standard normally distributed error term. Additionally, the coefficients for the association of proteinuria (PRO) with SBP and sodium intake are 2.0 and 2.8, respectively, as specified in the formula for PRO: PRO <span class="math inline">\(= \beta_{1} \cdot SBP + \beta_{2} \cdot Sodium + \epsilon\)</span>, where <span class="math inline">\(\beta_{1} = 2.0\)</span>, <span class="math inline">\(\beta_{2} = 2.8\)</span>, and <span class="math inline">\(\epsilon\)</span> represents a standard normally distributed error term. <strong>Box 2.3 (R):</strong> Data generation consistent with <a href="#fig-DAG3" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-DAG3</span></a></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>generateData <span class="ot">&lt;-</span> <span class="cf">function</span>(n, seed){</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set.seed</span>(seed)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    Age_years <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="dv">65</span>, <span class="dv">5</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    Sodium_gr <span class="ot">&lt;-</span> Age_years <span class="sc">/</span> <span class="dv">18</span> <span class="sc">+</span> <span class="fu">rnorm</span>(n)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    sbp_in_mmHg <span class="ot">&lt;-</span> <span class="fl">1.05</span> <span class="sc">*</span> Sodium_gr <span class="sc">+</span> <span class="fl">2.00</span> <span class="sc">*</span> Age_years <span class="sc">+</span> <span class="fu">rnorm</span>(n)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    hypertension <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(sbp_in_mmHg <span class="sc">&gt;</span> <span class="dv">140</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    Proteinuria_in_mg <span class="ot">&lt;-</span> <span class="fl">2.00</span><span class="sc">*</span>sbp_in_mmHg <span class="sc">+</span> <span class="fl">2.80</span><span class="sc">*</span>Sodium_gr <span class="sc">+</span> <span class="fu">rnorm</span>(n)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(sbp_in_mmHg, hypertension, Sodium_gr, Age_years, Proteinuria_in_mg)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>ObsData <span class="ot">&lt;-</span> <span class="fu">generateData</span>(<span class="at">n =</span> <span class="dv">1000</span>, <span class="at">seed =</span> <span class="dv">777</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 2.3 (Stata):</strong> Stata code for data generation of the sodium/SBP example</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>* Stata code: Data generation consistent with DAG <span class="kw">for</span> sodium/SBP example</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">clear</span> <span class="ot">all</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="dv">seed</span> 777</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="kw">obs</span> 1000</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>* Generate variables based <span class="kw">on</span> the DAG structure</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> Age_years = rnormal(65, 5)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> Sodium_gr = Age_years / 18 + rnormal()</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> sbp_in_mmHg = 1.05 * Sodium_gr + 2.00 * Age_years + rnormal()</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> hypertension = (sbp_in_mmHg &gt; 140)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> Proteinuria_in_mg = 2.00 * sbp_in_mmHg + 2.80 * Sodium_gr + rnormal()</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>* Label variables <span class="kw">for</span> clarity</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> Age_years <span class="st">"Age in years"</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> Sodium_gr <span class="st">"Sodium intake (grams)"</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> sbp_in_mmHg <span class="st">"Systolic blood pressure (mmHg)"</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> hypertension <span class="st">"Hypertension indicator (SBP&gt;140)"</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="kw">label</span> <span class="kw">variable</span> Proteinuria_in_mg <span class="st">"Proteinuria (mg)"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Three linear regression models were employed (Box 2.4) to explore the association between sodium intake and systolic blood pressure (SBP):</p>
+<ol type="1">
+<li>Unadjusted model: This basic model examined the crude relationship between sodium intake and SBP.</li>
+<li>Model adjusted for age: Recognizing age as a potential confounder, this model controlled for its influence on the association.</li>
+<li>Model adjusted for age and proteinuria: Expanding upon the previous model, proteinuria was included as a potential collider variable due to its possible influence on both sodium intake and SBP.</li>
+</ol>
+<p>The algebraic specifications of these models are presented below. Additionally, Box 2.4 provides R code for model fitting and visualization.</p>
+<p>Model 1: <span class="math display">\[
+\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \epsilon
+\]</span> Model 2: <span class="math display">\[
+\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \beta2 \cdot Age + \epsilon
+\]</span> Model 3: <span class="math display">\[
+\text{SBP} \quad = \quad \beta0 + \beta1 \cdot Sodium + \beta2 \cdot Age + \beta3 \cdot Proteinuria + \epsilon
+\]</span><strong>Box 2.4 (R):</strong> Linear regression models in R</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom) <span class="co"># load packages to visualize regression model's output</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(visreg)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Models Fit</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>fit1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(sbp_in_mmHg <span class="sc">~</span> Sodium_gr, <span class="at">data =</span> ObsData); <span class="fu">tidy</span>(fit0)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>fit2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(sbp_in_mmHg <span class="sc">~</span> Sodium_gr <span class="sc">+</span> Age_years, <span class="at">data =</span> ObsData); <span class="fu">tidy</span>(fit2)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>fit3 <span class="ot">&lt;-</span> <span class="fu">lm</span>(sbp_in_mmHg <span class="sc">~</span> Sodium_gr <span class="sc">+</span> Age_years <span class="sc">+</span> Proteinuria, <span class="at">data =</span> ObsData); <span class="fu">tidy</span>(fit3)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Models visualization</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>))</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">visreg</span>(fit1, <span class="at">ylab =</span> <span class="st">'SBP in mmHg'</span>, <span class="at">line =</span> <span class="fu">list</span>(<span class="at">col =</span> <span class="st">'blue'</span>),</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">points =</span> <span class="fu">list</span>(<span class="at">cex =</span> <span class="fl">1.5</span>, <span class="at">pch =</span> <span class="dv">1</span>), <span class="at">jitter =</span> <span class="dv">10</span>, <span class="at">bty =</span> <span class="st">'n'</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="fu">visreg</span>(fit2, <span class="at">ylab =</span> <span class="st">'SBP in mmHg'</span>, <span class="at">line =</span> <span class="fu">list</span>(<span class="at">col =</span> <span class="st">'blue'</span>),</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">points =</span> <span class="fu">list</span>(<span class="at">cex =</span> <span class="fl">1.5</span>, <span class="at">pch =</span> <span class="dv">1</span>), <span class="at">jitter =</span> <span class="dv">10</span>, <span class="at">bty =</span> <span class="st">'n'</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="fu">visreg</span>(fit3, <span class="at">ylab =</span> <span class="st">'SBP in mmHg'</span>, <span class="at">line =</span> <span class="fu">list</span>(<span class="at">col =</span> <span class="st">'red'</span>),</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">points =</span> <span class="fu">list</span>(<span class="at">cex =</span> <span class="fl">1.5</span>, <span class="at">pch =</span> <span class="dv">1</span>), <span class="at">jitter =</span> <span class="dv">10</span>, <span class="at">bty =</span> <span class="st">'n'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 2.4 (Stata):</strong> Stata code for linear regression models</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>* Stata code: Linear regression models <span class="kw">for</span> sodium/SBP example</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>* Model 1: Unadjusted (crude association)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> sbp_in_mmHg Sodium_gr</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>* Model 2: Adjusted <span class="kw">for</span> age (confounder)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> sbp_in_mmHg Sodium_gr Age_years</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>* Model 3: Adjusted <span class="kw">for</span> age and proteinuria (collider)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="kw">regress</span> sbp_in_mmHg Sodium_gr Age_years Proteinuria_in_mg</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>* Visualize <span class="kw">using</span> marginal predictions with confidence intervals</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>* Model 1</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">regress</span> sbp_in_mmHg Sodium_gr</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>margins, <span class="fu">at</span>(Sodium_gr = (3(1)8))</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>marginsplot, <span class="bn">name</span>(fit1_stata, <span class="kw">replace</span>) <span class="bn">title</span>(<span class="st">"Model 1: Unadjusted"</span>) <span class="co">///</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="bn">ytitle</span>(<span class="st">"SBP in mmHg"</span>) <span class="bn">xtitle</span>(<span class="st">"Sodium (grams)"</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>* Model 2</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">regress</span> sbp_in_mmHg Sodium_gr Age_years</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>margins, <span class="fu">at</span>(Sodium_gr = (3(1)8))</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>marginsplot, <span class="bn">name</span>(fit2_stata, <span class="kw">replace</span>) <span class="bn">title</span>(<span class="st">"Model 2: Adjusted for Age"</span>) <span class="co">///</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="bn">ytitle</span>(<span class="st">"SBP in mmHg"</span>) <span class="bn">xtitle</span>(<span class="st">"Sodium (grams)"</span>)</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>* Model 3</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="kw">quietly</span> <span class="kw">regress</span> sbp_in_mmHg Sodium_gr Age_years Proteinuria_in_mg</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>margins, <span class="fu">at</span>(Sodium_gr = (3(1)8))</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>marginsplot, <span class="bn">name</span>(fit3_stata, <span class="kw">replace</span>) <span class="bn">title</span>(<span class="st">"Model 3: + Proteinuria"</span>) <span class="co">///</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="bn">ytitle</span>(<span class="st">"SBP in mmHg"</span>) <span class="bn">xtitle</span>(<span class="st">"Sodium (grams)"</span>)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>* Combine plots</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="bn">combine</span> fit1_stata fit2_stata fit3_stata, <span class="bn">rows</span>(1) <span class="bn">name</span>(combined, <span class="kw">replace</span>) <span class="co">///</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    <span class="bn">title</span>(<span class="st">"Linear regression: Sodium and SBP"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>To further investigate the association between sodium intake and hypertension, defined as a binary outcome (systolic blood pressure $<span class="math inline">\(140 mmHg = 1,\)</span>&lt;$ 140 mmHg = 0), we employed three logistic regression models. The first model served as a baseline, excluding any adjustments. The second model incorporated age as a potential confounder, while the third additionally adjusted for proteinuria, identified as a collider variable due to its potential influence on both sodium intake and hypertension. Notably, these models mirrored the specifications previously described, with the exception of the binary outcome variable (hypertension). Box 2.5 demonstrates the R code for fitting and visualizing these models as a forest plot. <strong>Box 2.5 (R):</strong> Logistic regression models for hypertension outcome</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Models fit on multiplicative scale</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">library</span>(dplyr)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">library</span>(forestplot)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    fit3 <span class="ot">&lt;-</span> <span class="fu">glm</span>(hypertension <span class="sc">~</span> Sodium_gr, <span class="at">family=</span><span class="fu">binomial</span>(<span class="at">link=</span><span class="st">'logit'</span>), <span class="at">data=</span>ObsData)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    or <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(fit3<span class="sc">$</span>coef)[<span class="dv">2</span>], <span class="dv">3</span>) <span class="co"># conditional odds ratio from logistic model</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    ci95 <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">confint</span>(fit3))[<span class="sc">-</span><span class="dv">1</span>,] <span class="co"># 95% CI of odds ratio</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    fit4 <span class="ot">&lt;-</span> <span class="fu">glm</span>(hypertension <span class="sc">~</span> Sodium_gr <span class="sc">+</span> Age_years, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">'logit'</span>), <span class="at">data =</span> ObsData)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    or <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(fit4<span class="sc">$</span>coef)[<span class="dv">2</span>], <span class="dv">3</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    ci95 <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">confint</span>(fit4))[<span class="dv">2</span>,]</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    fit5 <span class="ot">&lt;-</span> <span class="fu">glm</span>(hypertension <span class="sc">~</span> Sodium_gr <span class="sc">+</span> Age_years <span class="sc">+</span> Proteinuria_in_mg, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">'logit'</span>), <span class="at">data =</span> ObsData)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    or <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(fit5<span class="sc">$</span>coef)[<span class="dv">2</span>], <span class="dv">3</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    ci95 <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">confint</span>(fit5))[<span class="dv">2</span>,]</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Forest plot (see supplementary material for accessing the complete code)</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    fp <span class="ot">&lt;-</span> <span class="fu">rbind</span>(result1, result2, result3); fp <span class="sc">%&gt;%</span> <span class="fu">or_graph</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 2.5 (Stata):</strong> Stata code for logistic regression models</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>* Stata code: Logistic regression models <span class="kw">for</span> hypertension (multiplicative <span class="kw">scale</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>* Model 1: Unadjusted</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">logistic</span> hypertension Sodium_gr</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>* Display odds <span class="kw">ratio</span> with 95% CI</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>* Alternatively, <span class="kw">use</span> <span class="kw">logit</span> <span class="kw">for</span> coefficients:</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>* <span class="kw">logit</span> hypertension Sodium_gr</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>* Model 2: Adjusted <span class="kw">for</span> age (confounder)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="kw">logistic</span> hypertension Sodium_gr Age_years</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>* Model 3: Adjusted <span class="kw">for</span> age and proteinuria (collider)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="kw">logistic</span> hypertension Sodium_gr Age_years Proteinuria_in_mg</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>* To <span class="kw">store</span> odds ratios <span class="kw">for</span> a forest plot, <span class="kw">use</span> <span class="kw">estimates</span> <span class="kw">store</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>* Model 1</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="kw">logistic</span> hypertension Sodium_gr</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="kw">estimates</span> <span class="kw">store</span> m1</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>* Model 2</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="kw">logistic</span> hypertension Sodium_gr Age_years</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="kw">estimates</span> <span class="kw">store</span> m2</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>* Model 3</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="kw">logistic</span> hypertension Sodium_gr Age_years Proteinuria_in_mg</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="kw">estimates</span> <span class="kw">store</span> m3</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>* Forest plot <span class="kw">using</span> coefplot (user-written; install with: <span class="kw">ssc</span> install coefplot)</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>* coefplot (m1, <span class="kw">drop</span>(<span class="dt">_cons</span>) <span class="kw">label</span>(<span class="st">"Unadjusted"</span>)) <span class="co">///</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>*         (m2, <span class="kw">drop</span>(<span class="dt">_cons</span>) <span class="kw">label</span>(<span class="st">"+ Age"</span>)) <span class="co">///</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>*         (m3, <span class="kw">drop</span>(<span class="dt">_cons</span>) <span class="kw">label</span>(<span class="st">"+ Proteinuria"</span>)), <span class="co">///</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>*         <span class="bn">xline</span>(1) <span class="kw">eform</span> <span class="bn">title</span>(<span class="st">"Forest plot: Sodium and Hypertension"</span>) <span class="co">///</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>*         <span class="bn">xtitle</span>(<span class="st">"Odds Ratio (95% CI)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Effect of conditioning on a collider</strong></p>
+<p><a href="#fig-collider-effect" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-collider-effect</span></a> depicts the estimated effect of sodium intake on systolic blood pressure (SBP) after conditioning on a collider variable, along with corresponding 95% confidence intervals. The adjusted regression line represents the predicted SBP conditional on the median value of age (<a href="#fig-collider-effect" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-collider-effect</span></a> panel B) or both age and proteinuria (<a href="#fig-collider-effect" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-collider-effect</span></a> panel C). Notably, unlike the unadjusted and bivariate models in <a href="#fig-collider-effect" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-collider-effect</span></a> (panels A and B, respectively), the collider-adjusted model in <a href="#fig-collider-effect" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-collider-effect</span></a> (panel C) reveals a negative association between sodium intake and SBP. Here, a one-unit increase in sodium intake is associated with a predicted decrease of 0.9 mmHg in SBP.</p>
+<div id="fig-collider-effect" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-collider-effect-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/Fig.2.5.png" class="img-fluid quarto-figure quarto-figure-center figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-collider-effect-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.5: Collider effect for the illustration: univariate (A), bivariate (B) and multivariate (C) models fit for the linear association between systolic blood pressure and 24-h sodium dietary intake, adjusted for age acting as a confounder and proteinuria acting as a collider, n=1000.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="monte-carlo-simulation" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="monte-carlo-simulation"><span class="header-section-number">2.4</span> Monte-Carlo simulation</h2>
+<p>The code employed for conducting Monte-Carlo simulations on the additive scale, utilizing the same parameters as outlined in Box 2.3, is presented in Box 2.6. Within the linear model, the simulated causal effect of 24-hour sodium intake on SBP was 1.05 mmHg. The coefficients corresponding to the associations between proteinuria (PRO) and SBP, as well as PRO and sodium intake, were 2.0 and 2.8, respectively. Upon completion of 1000 simulation iterations, the estimated additive effect of 24-hour sodium intake on SBP was determined to be -0.91 mmHg. This indicates a decrease of -0.91 units in SBP for every unit increase in sodium intake. Notably, conditioning on proteinuria, a collider variable, introduced a relative bias of 13.3%. <strong>Box 2.6 (R):</strong> Monte Carlo simulations</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Monte Carlo Simulations</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    R<span class="ot">&lt;-</span><span class="dv">1000</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    true <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, R)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    collider <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, R)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    se <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, R)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set.seed</span>(<span class="dv">050472</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(r <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span> R) {</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (r<span class="sc">%%</span><span class="dv">10</span> <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">cat</span>(<span class="fu">paste</span>(<span class="st">'This is simulation run number'</span>, r, <span class="st">'</span><span class="sc">\n</span><span class="st">'</span>))</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to generate data</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    generateData <span class="ot">&lt;-</span> <span class="cf">function</span>(n){</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    Age_years <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="dv">65</span>, <span class="dv">5</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    Sodium_gr <span class="ot">&lt;-</span> Age_years <span class="sc">/</span> <span class="dv">18</span> <span class="sc">+</span> <span class="fu">rnorm</span>(n)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    sbp_in_mmHg <span class="ot">&lt;-</span> <span class="fl">1.05</span> <span class="sc">*</span> Sodium_gr <span class="sc">+</span> <span class="fl">2.00</span> <span class="sc">*</span> Age_years <span class="sc">+</span> <span class="fu">rnorm</span>(n)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    Proteinuria_in_mg <span class="ot">&lt;-</span> <span class="fl">2.00</span> <span class="sc">*</span> sbp_in_mmHg <span class="sc">+</span> <span class="fl">2.80</span> <span class="sc">*</span> Sodium_gr <span class="sc">+</span> <span class="fu">rnorm</span>(n)</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(sbp_in_mmHg, Sodium_gr, Age_years, Proteinuria_in_mg)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    ObsData <span class="ot">&lt;-</span> <span class="fu">generateData</span>(<span class="at">n=</span><span class="dv">10000</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="co"># True effect</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    true[r] <span class="ot">&lt;-</span> <span class="fu">summary</span>(<span class="fu">lm</span>(sbp_in_mmHg <span class="sc">~</span> Sodium_gr <span class="sc">+</span> Age_years, <span class="at">data =</span> ObsData))<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>]</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Collider effect</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    collider[r] <span class="ot">&lt;-</span> <span class="fu">summary</span>(<span class="fu">lm</span>(sbp_in_mmHg <span class="sc">~</span> Sodium_gr <span class="sc">+</span> Age_years <span class="sc">+</span> Proteinuria_in_mg, <span class="at">data =</span> ObsData))<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>]</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    se[r] <span class="ot">&lt;-</span> <span class="fu">summary</span>(<span class="fu">lm</span>(sbp_in_mmHg <span class="sc">~</span> Sodium_gr <span class="sc">+</span> Age_years <span class="sc">+</span> Proteinuria_in_mg, <span class="at">data =</span> ObsData))<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>]</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate of sodium true effect</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(true)</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate of sodium biased effect in the model including the collider</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>(collider)</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co"># simulated standard error/confidence interval of outcome regression</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    lci <span class="ot">&lt;-</span> (<span class="fu">mean</span>(collider) <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">mean</span>(se)); <span class="fu">mean</span>(lci)</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>    uci <span class="ot">&lt;-</span> (<span class="fu">mean</span>(collider) <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">mean</span>(se)); <span class="fu">mean</span>(uci)</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Bias</span></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>    Bias <span class="ot">&lt;-</span> (true <span class="sc">-</span> <span class="fu">abs</span>(collider)); <span class="fu">mean</span>(Bias)</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a><span class="co"># % Bias</span></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>    relBias <span class="ot">&lt;-</span> ((true <span class="sc">-</span> <span class="fu">abs</span>(collider)) <span class="sc">/</span> true); <span class="fu">mean</span>(relBias) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot bias</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot</span>(relBias)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Box 2.6 (Stata):</strong> Stata code for Monte Carlo simulations</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode stata code-with-copy"><code class="sourceCode stata"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>* Stata code: Monte Carlo simulations <span class="kw">of</span> collider bias</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">clear</span> <span class="ot">all</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span> <span class="dv">seed</span> 050472</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>* Define a <span class="kw">program</span> to <span class="kw">generate</span> one simulated dataset and compute <span class="kw">estimates</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="kw">capture</span> <span class="kw">program</span> <span class="kw">drop</span> sim_collider_sbp</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="kw">program</span> <span class="kw">define</span> sim_collider_sbp, rclass</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">syntax</span> [, n(integer 10000)]</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">drop</span> <span class="dt">_all</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">set</span> <span class="kw">obs</span> <span class="ot">`n'</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    * Generate <span class="kw">data</span> consistent with DAG</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">generate</span> Age_years = rnormal(65, 5)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">generate</span> Sodium_gr = Age_years / 18 + rnormal()</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">generate</span> sbp_in_mmHg = 1.05 * Sodium_gr + 2.00 * Age_years + rnormal()</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">generate</span> Proteinuria_in_mg = 2.00 * sbp_in_mmHg + 2.80 * Sodium_gr + rnormal()</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    * True effect (adjusted <span class="kw">for</span> confounder, excluding collider)</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">regress</span> sbp_in_mmHg Sodium_gr Age_years</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="fu">scalar</span> true_eff = _b[Sodium_gr]</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    * Collider effect (adjusted <span class="kw">for</span> confounder AND collider)</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">regress</span> sbp_in_mmHg Sodium_gr Age_years Proteinuria_in_mg</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="fu">scalar</span> collider_eff = _b[Sodium_gr]</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> <span class="fu">scalar</span> se = _se[Sodium_gr]</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>* Run 1000 simulations <span class="kw">using</span> <span class="kw">simulate</span> <span class="kw">prefix</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="kw">simulate</span> true_eff = <span class="fu">r</span>(true_eff) collider_eff = <span class="fu">r</span>(collider_eff) <span class="co">///</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>         se = <span class="fu">r</span>(se), reps(1000) <span class="dv">seed</span>(050472) <span class="kw">saving</span>(sim_results, <span class="kw">replace</span>): sim_collider_sbp</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>* Load simulation results and compute summaries</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> sim_results, <span class="kw">clear</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>* Mean <span class="kw">estimates</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> true_eff</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> mean_true = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> collider_eff</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> mean_coll = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> se</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> mean_se = <span class="fu">r</span>(<span class="kw">mean</span>)</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="kw">display</span> <span class="st">"True effect (mean): `mean_true'"</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="kw">display</span> <span class="st">"Collider-biased effect (mean): `mean_coll'"</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="kw">display</span> <span class="st">"Mean standard error: `mean_se'"</span></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>* Confidence interval <span class="kw">for</span> collider effect</span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> lci = <span class="ot">`mean_coll'</span> - 1.96 * <span class="ot">`mean_se'</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> uci = <span class="ot">`mean_coll'</span> + 1.96 * <span class="ot">`mean_se'</span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a><span class="kw">display</span> <span class="st">"95% CI for collider effect: (`lci', `uci')"</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>* Bias and relative bias</span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> bias = true_eff - <span class="fu">abs</span>(collider_eff)</span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a><span class="kw">generate</span> relBias = 100 * (true_eff - <span class="fu">abs</span>(collider_eff)) / true_eff</span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a><span class="kw">summarize</span> bias relBias</span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>* Histogram <span class="kw">of</span> relative bias</span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="kw">histogram</span> relBias, <span class="bn">name</span>(bias_hist, <span class="kw">replace</span>) <span class="co">///</span></span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a>    <span class="bn">title</span>(<span class="st">"Distribution of relative bias (%)"</span>) <span class="co">///</span></span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a>    <span class="bn">xtitle</span>(<span class="st">"Relative bias (%)"</span>) <span class="bn">ytitle</span>(<span class="st">"Frequency"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Within the framework of this data-generating structure, the presence of a collider variable introduces regression dilution bias (also known as regression attenuation), reducing the observed association between sodium intake and SBP compared to the true causal effect. To induce a paradoxically negative association (i.e., sodium intake protective against SBP), the strength of the collider-exposure association (<span class="math inline">\(\alpha_{1}\)</span>) and collider-outcome association (<span class="math inline">\(\alpha_{2}\)</span>) must increase relative to the magnitude of the true causal effect. While equating <span class="math inline">\(\alpha_{1}\)</span>and<span class="math inline">\(\alpha_{2}\)</span> may not be entirely realistic, it serves as a useful simplification for illustrating how bias magnitude changes as these associations vary.</p>
+<p>Beyond the classic scenario of conditioning on a collider in the analysis, two further situations warrant attention:</p>
+<ol type="1">
+<li><p>Collider Effect and Sample Selection: When sample selection is guided by either a measured or unmeasured common effect of the exposure and outcome, collider bias can emerge. Recent studies highlight the potential for even subtle influences on sample selection to induce misleading estimates. Unfortunately, addressing this bias can be challenging, as information on selection mechanisms may be lacking.</p></li>
+<li><p>M-Bias: Balancing Collider and Confounder Control: M-bias arises when the collider also functions as a confounder. In this setting, understanding the trade-off between collider and confounder control becomes crucial. M-bias, while potentially comparable in magnitude to classical confounding, is often negligible unless associations between the collider and confounders are very strong (e.g., relative risk <span class="math inline">\(&gt;\)</span> 8). Therefore, prioritizing confounder control is generally recommended in M-bias situations.</p></li>
+</ol>
+<p><strong>Collider Inclusion in Regressions:</strong></p>
+<p>These investigations explored situations where adding a collider variable to a linear regression model improved model fit but introduced bias in coefficient estimates. It is important to note that</p>
+<ul>
+<li>Collider Identification: DAGs, informed by subject-matter knowledge, play a vital role in identifying colliders. This involves critically examining the unobserved data-generation process and variable relationships within the specific research context.</li>
+<li>Prediction vs.&nbsp;Explanation: The decision to include or exclude a collider depends on the study’s objective. In studies seeking causal understanding in epidemiology, colliders should generally be excluded to avoid biased effect estimates and confounding through back-door paths. Conversely, for purely predictive purposes, including colliders may be beneficial if it improves model accuracy.</li>
+</ul>
+<p><strong>Implications for Epidemiological Research:</strong></p>
+<p>Given that most epidemiological research aims to explain causal relationships, awareness of collider variables is crucial to avoid paradoxical associations. By carefully considering collider effects and potential biases, epidemiologists can ensure the robustness and interpretability of their causal estimates.</p>
+</section>
+<section id="conclusion" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">2.5</span> Conclusion</h2>
+<p>Regression adjustment is the most widely used method for controlling confounding in observational studies. Its simplicity and familiarity make it an essential tool, but its validity depends critically on correct model specification. When the outcome model is correctly specified and there is no effect modification by confounders, regression provides unbiased estimates of the average treatment effect. However, when effect modification is present, the regression coefficient does not, in general, equal the marginal ATE — a subtle but important point that motivates the g-formula and other standardization-based methods presented in subsequent chapters.</p>
+<p>Key takeaways from this chapter: - Confounding can be addressed by conditioning on measured confounders in a regression model. - The regression coefficient for treatment equals the ATE only under effect homogeneity (no interaction between treatment and confounders). - Model diagnostics — including residual analysis, influence measures, and specification tests — are essential for credible inference. - When the goal is marginal causal effects in the presence of effect modification, more flexible methods such as the g-formula are needed.</p>
+</section>
+<section id="glossary" class="level2" data-number="2.6">
+<h2 data-number="2.6" class="anchored" data-anchor-id="glossary"><span class="header-section-number">2.6</span> Glossary</h2>
+<dl>
+<dt><strong>AIC</strong></dt>
+<dd>
+Akaike Information Criterion — a measure of model fit penalized by the number of parameters.
+</dd>
+<dt><strong>DAG</strong></dt>
+<dd>
+Directed Acyclic Graph — a graphical representation of causal relationships among variables.
+</dd>
+<dt><strong>GLM</strong></dt>
+<dd>
+Generalized Linear Model — a flexible generalization of ordinary linear regression.
+</dd>
+<dt><strong>OR</strong></dt>
+<dd>
+Odds Ratio — the ratio of the odds of an outcome in the treated group to the odds in the control group.
+</dd>
+<dt><strong>RD</strong></dt>
+<dd>
+Risk Difference — the absolute difference in risk between treated and control groups.
+</dd>
+<dt><strong>RR</strong></dt>
+<dd>
+Risk Ratio — the ratio of the risk in the treated group to the risk in the control group.
+</dd>
+</dl>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-Withcomb2021" class="csl-entry" role="listitem">
+Brian W Whitcomb, A. I. N. (2021). Defining, quantifying, and interpreting <span>“noncollapsibility”</span> in epidemiologic studies of measures of <span>“effect.”</span> <em>American Journal of Epidemiology</em>, <em>190</em>(5), 697–700. <a href="https://doi.org/10.1093/aje/kwaa267">https://doi.org/10.1093/aje/kwaa267</a>
+</div>
+<div id="ref-doi:10.2105/AJPH.2018.304916_f08f" class="csl-entry" role="listitem">
+Luque-Fernandez, M. A., Redondo-Sanchez, D., &amp; Schomaker, M. (2019). <span class="nocase">Effect Modification and Collapsibility in Evaluations of Public Health Interventions</span>. <em>American Journal of Public Health</em>, <em>109</em>(3), e12–e13. <a href="https://doi.org/10.2105/AJPH.2018.304916">https://doi.org/10.2105/AJPH.2018.304916</a>
+</div>
+<div id="ref-Luque-Fernandez2018" class="csl-entry" role="listitem">
+Luque-Fernandez, M. A., Schomaker, M., Rachet, B., &amp; Schnitzer, M. E. (2018). Targeted maximum likelihood estimation for a binary treatment: A tutorial. <em>Statistics in Medicine</em>, <em>37</em>(16), 2530–2546. <a href="https://doi.org/10.1002/sim.7628">https://doi.org/10.1002/sim.7628</a>
+</div>
+<div id="ref-Pearce2014" class="csl-entry" role="listitem">
+N. Pearce, L. R. (2014). Commentary: Three worlds collide: Berkson’s bias, selection bias and collider bias. <em>International Journal of Epidemiology</em>, <em>43</em>(2), 521–524. <a href="https://doi.org/10.1093/ije/dyu025">https://doi.org/10.1093/ije/dyu025</a>
+</div>
+<div id="ref-pearl09causality" class="csl-entry" role="listitem">
+Pearl, J. (2009). <em>Causality: Models, reasoning, and inference</em>. Cambridge University Press.
+</div>
+<div id="ref-robins86new" class="csl-entry" role="listitem">
+Robins, J. M. (1986). A new approach to causal inference in mortality studies with sustained exposure periods – application to control of the healthy worker survivor effect. <em>Mathematical Modeling</em>, <em>7</em>, 1393–1512.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/chapter1/index.html" class="pagination-link" aria-label="Introduction">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/chapter3/index.html" class="pagination-link" aria-label="G-formula">
+        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">G-formula</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Computational Causal Inference for Applied Researchers, M.A.&nbsp;Luque-Fernandez &amp; M.J. Smith</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/migariane/Causal-Inference-Book/edit/main/chapters/chapter2/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/migariane/Causal-Inference-Book/blob/main/chapters/chapter2/index.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>© 2026 Universidad de Granada</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
