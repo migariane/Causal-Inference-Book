@@ -829,7 +829,7 @@ w_i^{ATU} = \begin{cases}
 </section>
 <section id="stabilized-vs.-unstabilized-weights" class="level4">
 <h4 class="anchored" data-anchor-id="stabilized-vs.-unstabilized-weights">Stabilized vs.&nbsp;Unstabilized Weights</h4>
-<p>There is a modified version of the IPTW estimator (<a href="#eq-iptw" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-iptw</span></a>) consisting of stabilised weights proposed by <span class="citation" data-cites="Hajek1971CommentEds">(<a href="#ref-Hajek1971CommentEds" role="doc-biblioref"><strong>Hajek1971CommentEds?</strong></a>)</span>, which is more commonly used in practice when treatment and exposure vary over time (i.e., time dependent confounding). Stabilised weights should have a mean of 1, but some values could be higher (i.e., large weights). Unstabilized weights can sometimes have large variability, particularly when propensity scores are close to 0 or 1. Stabilized weights help mitigate this by multiplying the numerator of the weight by the marginal probability of treatment: <span class="math display">\[
+<p>There is a modified version of the IPTW estimator (<a href="#eq-iptw" class="quarto-xref">Equation&nbsp;<span class="quarto-unresolved-ref">eq-iptw</span></a>) consisting of stabilised weights proposed by <span class="citation" data-cites="Hajek1971CommentEds">(<a href="#ref-Hajek1971CommentEds" role="doc-biblioref">Hajek, 1971</a>.)</span>, which is more commonly used in practice when treatment and exposure vary over time (i.e., time dependent confounding). Stabilised weights should have a mean of 1, but some values could be higher (i.e., large weights). Unstabilized weights can sometimes have large variability, particularly when propensity scores are close to 0 or 1. Stabilized weights help mitigate this by multiplying the numerator of the weight by the marginal probability of treatment: <span class="math display">\[
 w_i^{stab} = \begin{cases}
 \frac{P(A = 1)}{\hat{e}(W_i)} &amp; \text{if } A_i = 1, \\
 \frac{P(A = 0)}{1 - \hat{e}(W_i)} &amp; \text{if } A_i = 0.
@@ -1178,6 +1178,9 @@ Austin, P. C. (2009). Balance diagnostics for comparing the distribution of base
 </div>
 <div id="ref-Cole2008" class="csl-entry" role="listitem">
 Cole, S. R., &amp; Hernán, M. A. (2008). <em>Constructing inverse probability weights for marginal structural models</em> (No. 6; Vol. 168, pp. 656–664). Oxford Academic. <a href="https://doi.org/10.1093/aje/kwn164">https://doi.org/10.1093/aje/kwn164</a>
+</div>
+<div id="ref-Hajek1971CommentEds" class="csl-entry" role="listitem">
+Hajek, J. (1971). <em>Comment on an essay on the logical foundations of survey sampling by <span>Basu</span>, <span>D</span>. In <span class="nocase">Foundations of Statistical Inference</span> (<span>Godambe</span>, <span>V</span>.<span>P</span>. And <span>Sprott</span>, <span>D</span>.<span>A</span>. eds.)</em> (p. 236). Holt, Rinehart; Winston.
 </div>
 <div id="ref-Horvitz1952" class="csl-entry" role="listitem">
 Horvitz, D. G., &amp; Thompson, D. J. (1952). A generalization of sampling without replacement from a finite universe. <em>Journal of the American Statistical Association</em>, <em>47</em>(260), 663. <a href="https://doi.org/10.2307/2280784">https://doi.org/10.2307/2280784</a>
