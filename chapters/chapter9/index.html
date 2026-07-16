@@ -24,7 +24,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -340,7 +360,7 @@ MathJax = {
 </header>
 
 
-<p>This book has presented a computational introduction to causal inference for applied researchers, progressing from foundational concepts through to advanced methods for estimating causal effects in observational studies. We have covered classical approaches—regression adjustment, the g-formula, and propensity score methods—as well as modern doubly-robust estimators, longitudinal methods, mediation analysis, and sensitivity analysis. This final chapter reflects on the themes that emerge across the book, offers practical guidance for choosing among methods, and outlines directions for future development.</p>
+<p>This book has presented a computational introduction to causal inference for applied researchers, progressing from foundational concepts through to advanced methods for estimating causal effects in observational studies <span class="citation" data-cites="Hernan2020">(<a href="#ref-Hernan2020" role="doc-biblioref">Hernán &amp; Robins, 2020</a>)</span>. We have covered classical approaches—regression adjustment, the g-formula, and propensity score methods—as well as modern doubly-robust estimators, longitudinal methods, mediation analysis, and sensitivity analysis. This final chapter reflects on the themes that emerge across the book, offers practical guidance for choosing among methods, and outlines directions for future development.</p>
 <section id="summary-of-methods-and-their-relationships" class="level2" data-number="9.1">
 <h2 data-number="9.1" class="anchored" data-anchor-id="summary-of-methods-and-their-relationships"><span class="header-section-number">9.1</span> Summary of Methods and Their Relationships</h2>
 <p>The methods presented in this book form a natural progression. Each advance was motivated by limitations of the preceding approach.</p>
@@ -382,7 +402,7 @@ MathJax = {
 <h2 data-number="9.3" class="anchored" data-anchor-id="limitations-and-caveats"><span class="header-section-number">9.3</span> Limitations and Caveats</h2>
 <section id="assumptions" class="level3" data-number="9.3.1">
 <h3 data-number="9.3.1" class="anchored" data-anchor-id="assumptions"><span class="header-section-number">9.3.1</span> Assumptions</h3>
-<p>All causal inference methods from observational data rely on three core assumptions:</p>
+<p>All causal inference methods from observational data rely on three core assumptions <span class="citation" data-cites="Rubin1974 Hernan2004">(<a href="#ref-Hernan2004" role="doc-biblioref">Hernán, 2004</a>; <a href="#ref-Rubin1974" role="doc-biblioref">Rubin, 1974</a>)</span>:</p>
 <ol type="1">
 <li><strong>Exchangeability (no unmeasured confounding):</strong> All confounders of the treatment-outcome relationship have been measured and correctly included in the analysis.</li>
 <li><strong>Positivity:</strong> Every individual has a non-zero probability of receiving each treatment level, given their covariates.</li>
@@ -495,6 +515,17 @@ Targeted Maximum Likelihood Estimation — a doubly-robust, semiparametric effic
 </dl>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-Hernan2004" class="csl-entry" role="listitem">
+Hernán, M. A. (2004). A definition of causal effect for epidemiological research. <em>Journal of Epidemiology and Community Health</em>, <em>58</em>(4), 265–271. <a href="https://doi.org/10.1136/jech.2002.006361">https://doi.org/10.1136/jech.2002.006361</a>
+</div>
+<div id="ref-Hernan2020" class="csl-entry" role="listitem">
+Hernán, M. A., &amp; Robins, J. M. (2020). <em>Causal inference: What if</em>. Chapman &amp; Hall/CRC.
+</div>
+<div id="ref-Rubin1974" class="csl-entry" role="listitem">
+Rubin, D. B. (1974). Estimating causal effects of treatments in randomized and nonrandomized studies. <em>Journal of Educational Psychology</em>, <em>66</em>(5), 688.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

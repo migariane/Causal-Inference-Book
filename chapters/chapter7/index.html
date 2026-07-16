@@ -59,7 +59,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -425,12 +445,12 @@ window.Quarto = {
 </header>
 
 
-<p>So far we have considered causal effects of a treatment on an outcome when a covariate is not on the causal pathway. Covariates that are on the causal pathway are termed “mediators”. They are so named because a cause (e.g., the treatment) affects the mediator that, in turn, affects the outcome. In this chapter, we will (i) explore the role of mediators in causal analyses, (ii) describe statistical techniques for estimating causal effects in the presence of mediators, and (iii) understand how to interpret the various effect estimates.</p>
+<p>So far we have considered causal effects of a treatment on an outcome when a covariate is not on the causal pathway. Covariates that are on the causal pathway are termed “mediators”. They are so named because a cause (e.g., the treatment) affects the mediator that, in turn, affects the outcome <span class="citation" data-cites="Baron1986 VanderWeele2017">(<a href="#ref-Baron1986" role="doc-biblioref">Baron &amp; Kenny, 1986</a>; <a href="#ref-VanderWeele2017" role="doc-biblioref">VanderWeele, 2015</a>)</span>. In this chapter, we will (i) explore the role of mediators in causal analyses, (ii) describe statistical techniques for estimating causal effects in the presence of mediators, and (iii) understand how to interpret the various effect estimates.</p>
 <section id="introduction-to-mediation" class="level2" data-number="7.1">
 <h2 data-number="7.1" class="anchored" data-anchor-id="introduction-to-mediation"><span class="header-section-number">7.1</span> Introduction to Mediation</h2>
 <section id="motivation-and-overview" class="level3" data-number="7.1.1">
 <h3 data-number="7.1.1" class="anchored" data-anchor-id="motivation-and-overview"><span class="header-section-number">7.1.1</span> Motivation and Overview</h3>
-<p>In causal inference, we often seek not only to estimate the total effect of an exposure or treatment on an outcome but also to understand the mechanisms through which this effect operates. <em>Mediation analysis</em> allows us to decompose the total effect into components that correspond to different causal pathways. This is particularly important in biomedical, social, and behavioural sciences, where identifying how and why a treatment works can inform intervention design, policy decisions, and scientific understanding.</p>
+<p>In causal inference, we often seek not only to estimate the total effect of an exposure or treatment on an outcome but also to understand the mechanisms through which this effect operates. <em>Mediation analysis</em> allows us to decompose the total effect into components that correspond to different causal pathways <span class="citation" data-cites="Imai2010 Pearl2001">(<a href="#ref-Imai2010" role="doc-biblioref">Imai et al., 2010</a>; <a href="#ref-Pearl2001" role="doc-biblioref">Pearl, 2001</a>)</span>. This is particularly important in biomedical, social, and behavioural sciences, where identifying how and why a treatment works can inform intervention design, policy decisions, and scientific understanding.</p>
 <p>For example, suppose a new drug improves patient outcomes. We may want to know whether the improvement occurs primarily by reducing inflammation, improving immune function, or some other biological process. Mediation analysis aims to quantify how much of the treatment’s effect is explained by a specific intermediate variable—known as the <em>mediator</em>.</p>
 </section>
 <section id="total-direct-and-indirect-effects" class="level3" data-number="7.1.2">
@@ -568,7 +588,7 @@ Figure&nbsp;7.2: Mediation DAG showing total effect decomposition into direct an
 </figcaption>
 </figure>
 </div>
-<p>Early proponents of evaluating this model suggested using the “product of coefficients method” (also known as “product method”) (Baron and Kenny, 1986). Let M and Y be continuous variables, consider the following regression models: <span id="eq-ContMed"><span class="math display">\[
+<p>Early proponents of evaluating this model suggested using the “product of coefficients method” (also known as “product method”) <span class="citation" data-cites="Baron1986">(<a href="#ref-Baron1986" role="doc-biblioref">Baron &amp; Kenny, 1986</a>)</span>. Let M and Y be continuous variables, consider the following regression models: <span id="eq-ContMed"><span class="math display">\[
 E(M \mid X=x) = \beta_{0} + \beta_{1}x
 \tag{7.1}\]</span></span> <span id="eq-ContOut"><span class="math display">\[
 E(Y \mid X=x, M=m) = \theta_{0} + \theta_{1}x + \theta_{2}m
@@ -1597,6 +1617,20 @@ Total Effect — the sum of the direct and indirect effects; the overall causal 
 </dl>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-Baron1986" class="csl-entry" role="listitem">
+Baron, R. M., &amp; Kenny, D. A. (1986). The moderator-mediator variable distinction in social psychological research: Conceptual, strategic, and statistical considerations. <em>Journal of Personality and Social Psychology</em>, <em>51</em>(6), 1173–1182. <a href="https://doi.org/10.1037/0022-3514.51.6.1173">https://doi.org/10.1037/0022-3514.51.6.1173</a>
+</div>
+<div id="ref-Imai2010" class="csl-entry" role="listitem">
+Imai, K., Keele, L., &amp; Tingley, D. (2010). A general approach to causal mediation analysis. <em>Psychological Methods</em>, <em>15</em>(4), 309–334. <a href="https://doi.org/10.1037/a0020761">https://doi.org/10.1037/a0020761</a>
+</div>
+<div id="ref-Pearl2001" class="csl-entry" role="listitem">
+Pearl, J. (2001). Direct and indirect effects. <em>Proceedings of the Seventeenth Conference on Uncertainty in Artificial Intelligence</em>, 411–420.
+</div>
+<div id="ref-VanderWeele2017" class="csl-entry" role="listitem">
+VanderWeele, T. J. (2015). <em>Explanation in causal inference: Methods for mediation and interaction</em>. Oxford University Press.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

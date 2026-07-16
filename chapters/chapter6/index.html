@@ -524,7 +524,7 @@ Figure&nbsp;6.1: Time-varying confounding DAG: <span class="math inline">\(L_1\)
 </section>
 <section id="g-computation-and-the-g-formula-for-longitudinal-data" class="level3" data-number="6.1.4">
 <h3 data-number="6.1.4" class="anchored" data-anchor-id="g-computation-and-the-g-formula-for-longitudinal-data"><span class="header-section-number">6.1.4</span> G-computation and the G-formula for Longitudinal Data</h3>
-<p>The g-formula, introduced by Robins (1986), provides a way to estimate causal effects from longitudinal data in the presence of time-varying confounding. In longitudinal studies, standard regression methods often fail to provide valid causal estimates when time-varying confounders are also affected by prior treatment. This situation arises commonly in practice, especially in observational studies where treatment decisions are made based on intermediate health status, which itself may be influenced by earlier treatments. The g-formula resolves this problem by using a model-based standardisation approach to compute counterfactual outcomes under hypothetical treatment interventions.</p>
+<p>The g-formula, introduced by Robins <span class="citation" data-cites="Robins1986 Robins2000">(<a href="#ref-Robins1986" role="doc-biblioref">J. Robins, 1986</a>; <a href="#ref-Robins2000" role="doc-biblioref">J. M. Robins et al., 2000</a>)</span>, provides a way to estimate causal effects from longitudinal data in the presence of time-varying confounding. In longitudinal studies, standard regression methods often fail to provide valid causal estimates when time-varying confounders are also affected by prior treatment. This situation arises commonly in practice, especially in observational studies where treatment decisions are made based on intermediate health status, which itself may be influenced by earlier treatments. The g-formula resolves this problem by using a model-based standardisation approach to compute counterfactual outcomes under hypothetical treatment interventions.</p>
 <section id="motivating-setting" class="level4">
 <h4 class="anchored" data-anchor-id="motivating-setting">Motivating Setting</h4>
 <p>Suppose data are collected over <span class="math inline">\(K\)</span> time points. At each time <span class="math inline">\(t\)</span> <span class="math inline">\((t = 0, \dots, K)\)</span>, we observe time-varying covariates <span class="math inline">\(L_t\)</span>, treatment variables <span class="math inline">\(A_t\)</span>, and eventually an outcome <span class="math inline">\(Y\)</span>. The goal is to estimate the causal effect of a treatment strategy <span class="math inline">\(\bar{a} = (a_0, a_1, \ldots, a_K)\)</span> on the outcome <span class="math inline">\(Y\)</span>.</p>
@@ -660,12 +660,12 @@ Y^{\bar{a}} \perp A_t \mid \bar{A}_{t-1}, \bar{L}_t \quad \text{for all } t
 </section>
 <section id="summary" class="level4">
 <h4 class="anchored" data-anchor-id="summary">Summary</h4>
-<p>The longitudinal g-formula is a foundational method for estimating causal effects in the presence of time-varying confounding. It is well-suited for estimating population-level effects of hypothetical interventions in longitudinal data, especially when conventional regression methods are biased due to treatment-confounder feedback. Although computationally intensive and model-dependent, it serves as a conceptual and methodological precursor to more robust estimators like TMLE.</p>
+<p>The longitudinal g-formula is a foundational method for estimating causal effects in the presence of time-varying confounding <span class="citation" data-cites="Robins1986 Daniel2018DoubleRobustness">(<a href="#ref-Daniel2018DoubleRobustness" role="doc-biblioref">Daniel, 2018</a>; <a href="#ref-Robins1986" role="doc-biblioref">J. Robins, 1986</a>)</span>. It is well-suited for estimating population-level effects of hypothetical interventions in longitudinal data, especially when conventional regression methods are biased due to treatment-confounder feedback. Although computationally intensive and model-dependent, it serves as a conceptual and methodological precursor to more robust estimators like TMLE.</p>
 </section>
 </section>
 <section id="marginal-structural-models" class="level3" data-number="6.1.5">
 <h3 data-number="6.1.5" class="anchored" data-anchor-id="marginal-structural-models"><span class="header-section-number">6.1.5</span> Marginal Structural Models</h3>
-<p>Marginal Structural Models (MSMs) are a class of causal models designed to estimate the marginal effect of a time-varying treatment or exposure on an outcome in the presence of time-varying confounding. Unlike traditional regression models, which condition on time-varying confounders that may be affected by prior treatment, MSMs allow for valid causal inference by modeling the treatment-outcome relationship marginally – that is, without conditioning on such intermediate variables.</p>
+<p>Marginal Structural Models (MSMs) are a class of causal models designed to estimate the marginal effect of a time-varying treatment or exposure on an outcome in the presence of time-varying confounding <span class="citation" data-cites="Robins2000 Hernan2020">(<a href="#ref-Hernan2020" role="doc-biblioref">Hernán &amp; Robins, 2020</a>; <a href="#ref-Robins2000" role="doc-biblioref">J. M. Robins et al., 2000</a>)</span>. Unlike traditional regression models, which condition on time-varying confounders that may be affected by prior treatment, MSMs allow for valid causal inference by modeling the treatment-outcome relationship marginally – that is, without conditioning on such intermediate variables.</p>
 <p>In longitudinal settings, the central challenge arises when confounders are affected by prior treatment. Adjusting for these confounders in a standard regression model can introduce bias, because it blocks part of the causal pathway from treatment to outcome. MSMs overcome this problem by modeling the counterfactual mean outcomes under different treatment regimes, while using inverse probability weighting (IPW) to account for confounding.</p>
 <p>Let <span class="math inline">\(\bar{A}_t = (A_0, A_1, \ldots, A_t)\)</span> be the history of treatments up to time <span class="math inline">\(t\)</span>, and let <span class="math inline">\(Y\)</span> be the outcome measured at a final time point <span class="math inline">\(T\)</span>. The goal of an MSM is to estimate: <span class="math display">\[
 \mathbb{E}[Y^{\bar{a}}]
@@ -1565,8 +1565,20 @@ Confounding by a variable that changes over time and is affected by prior treatm
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-Daniel2018DoubleRobustness" class="csl-entry" role="listitem">
+Daniel, R. M. (2018). Double robustness. In <em>Wiley StatsRef: Statistics reference online</em> (pp. 1–14). Wiley. <a href="https://doi.org/10.1002/9781118445112.stat08068">https://doi.org/10.1002/9781118445112.stat08068</a>
+</div>
+<div id="ref-Hernan2020" class="csl-entry" role="listitem">
+Hernán, M. A., &amp; Robins, J. M. (2020). <em>Causal inference: What if</em>. Chapman &amp; Hall/CRC.
+</div>
 <div id="ref-Lendle2017Ltmle:Data" class="csl-entry" role="listitem">
 Lendle, S. D., Schwab, J., Petersen, M. L., &amp; Der Laan, M. J. van. (2017). Ltmle: An r package implementing targeted minimum loss-based estimation for longitudinal data. <em>Journal of Statistical Software</em>, <em>81</em>, 1–21. <a href="https://doi.org/10.18637/JSS.V081.I01">https://doi.org/10.18637/JSS.V081.I01</a>
+</div>
+<div id="ref-Robins1986" class="csl-entry" role="listitem">
+Robins, J. (1986). A new approach to causal inference in mortality studies with a sustained exposure period—application to control of the healthy worker survivor effect. <em>Mathematical Modelling</em>, <em>7</em>(9), 1393–1512. https://doi.org/<a href="https://doi.org/10.1016/0270-0255(86)90088-6">https://doi.org/10.1016/0270-0255(86)90088-6</a>
+</div>
+<div id="ref-Robins2000" class="csl-entry" role="listitem">
+Robins, J. M., Hernán, M. Á., &amp; Brumback, B. (2000). Marginal structural models and causal inference in epidemiology. <em>Epidemiology</em>, <em>11</em>(5). <a href="https://journals.lww.com/epidem/Fulltext/2000/09000/Marginal_Structural_Models_and_Causal_Inference_in.11.aspx">https://journals.lww.com/epidem/Fulltext/2000/09000/Marginal_Structural_Models_and_Causal_Inference_in.11.aspx</a>
 </div>
 </div>
 </section>
