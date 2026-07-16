@@ -50,8 +50,6 @@ book:
       chapters:
         - chapters/chapter8/index.qmd
         - chapters/chapter9/index.qmd
-    - references.qmd
-
 bibliography: references.bib
 csl: apa.csl
 

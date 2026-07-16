@@ -276,13 +276,12 @@ Traditional causal estimators, such as propensity score methods and inverse prob
 
 Targeted Maximum Likelihood Estimation (TMLE) is a plug-in, semi-parametric, double-robust estimator that incorporates machine learning to refine an initial estimate, targeting it toward the parameter of interest. TMLE has been widely described in both theoretical and practical tutorials.[@vanderLaan2011; @Gruber2009TargetedIntroduction; @Gruber2011; @Gruber2012Tmle:Estimation; @Schuler2017TargetedStudies; @Luque-Fernandez2018] In simulation and applied studies, TMLE has shown lower bias than other double-robust estimators such as IPTW-RA and AIPTW, especially in small samples.[@vanderLaan2011; @Luque-Fernandez2018Data-AdaptivePresentation] Although asymptotically equivalent to AIPTW, TMLE generally performs better in finite samples and is often used in combination with ensemble machine learning to further mitigate model specification issues.
 
-::: {.callout-tip}
-## The Substitution Property: Why "Plug-In" Matters
+> **Tip:** ## The Substitution Property: Why "Plug-In" Matters
+>
+> TMLE is a **substitution** (or **plug-in**) estimator: it estimates the target parameter by plugging the updated outcome predictions into the same formula that defines the parameter. This means TMLE estimates *always stay within the bounds of the original outcome variable* — a risk difference cannot exceed $[-1, 1]$, and a predicted probability cannot fall outside $[0, 1]$.
+>
+> This property, which follows from TMLE being a plug-in estimator, contrasts with **one-step estimators** like AIPW, which add a correction term to an initial estimate and can sometimes yield final estimates outside the outcome scale (e.g., a risk difference of 1.3 or $-0.04$ for a binary outcome). The substitution property is particularly valuable for binary or bounded outcomes, where out-of-bounds estimates are scientifically meaningless. For a deeper discussion of why TMLE's construction guarantees this property, see @Luque-Fernandez2018Data-AdaptivePresentation and the companion tutorials referenced in the Further Reading section below.
 
-TMLE is a **substitution** (or **plug-in**) estimator: it estimates the target parameter by plugging the updated outcome predictions into the same formula that defines the parameter. This means TMLE estimates *always stay within the bounds of the original outcome variable* — a risk difference cannot exceed $[-1, 1]$, and a predicted probability cannot fall outside $[0, 1]$.
-
-This property, which follows from TMLE being a plug-in estimator, contrasts with **one-step estimators** like AIPW, which add a correction term to an initial estimate and can sometimes yield final estimates outside the outcome scale (e.g., a risk difference of 1.3 or $-0.04$ for a binary outcome). The substitution property is particularly valuable for binary or bounded outcomes, where out-of-bounds estimates are scientifically meaningless. For a deeper discussion of why TMLE's construction guarantees this property, see @Luque-Fernandez2018Data-AdaptivePresentation and the companion tutorials referenced in the Further Reading section below.
-:::
 
 The targeted learning framework was designed to overcome limitations of traditional estimators. It ensures double robustness and facilitates the integration of machine learning to model complex, high-dimensional relationships. The central goal is to produce an accurate and efficient estimate of a causal parameter---such as the average treatment effect---by aligning the estimation process with that specific target. A key innovation is the targeting step, which updates the initial estimate using information from the treatment mechanism. This is guided by the efficient influence curve, ensuring that the final estimator is not only unbiased but also has minimal variance given the observed data.
 
@@ -633,19 +632,15 @@ display "ATE:" %05.4f $ATE _col(15) "95%CI: " %05.4f $LCI "," %05.4f $UCI
 
 We obtain an estimate of 0.0837, corresponding to a risk difference of 8.37% (95% CI: 5.85 - 10.90). This is interpreted as "the risk of death at 30 days is 8.37% higher if everyone was treated with RHC compared to if no one was treated with RHC". Note that our interpretation is a comparison of two hypothetical worlds.
 
-::: {.callout-note}
-## How Much Does the Targeting Step Adjust the Estimate?
-
-To appreciate what the targeting step accomplishes, it is helpful to compare the TMLE estimate with the **untargeted G-computation estimate** obtained directly from Step 1 — that is, $\frac{1}{N} \sum (\widehat{Q}^0(1, W_i) - \widehat{Q}^0(0, W_i))$ using the initial outcome predictions without any fluctuation update.
-
-In the RHC example, the untargeted G-computation estimate differs from the TMLE estimate, though the difference is modest because the treatment groups are relatively well-balanced on observed covariates. In datasets with stronger confounding or more complex outcome--treatment relationships, the gap between the untargeted and targeted estimates can be substantially larger. The targeting step is what ensures the final estimator solves the efficient influence curve equation — moving from a pure prediction task (Step 1) to valid causal estimation.
-
-::: {.callout-tip}
+> **Note:** ## How Much Does the Targeting Step Adjust the Estimate?
+>
+> To appreciate what the targeting step accomplishes, it is helpful to compare the TMLE estimate with the **untargeted G-computation estimate** obtained directly from Step 1 — that is, $\frac{1}{N} \sum (\widehat{Q}^0(1, W_i) - \widehat{Q}^0(0, W_i))$ using the initial outcome predictions without any fluctuation update.
+>
+> In the RHC example, the untargeted G-computation estimate differs from the TMLE estimate, though the difference is modest because the treatment groups are relatively well-balanced on observed covariates. In datasets with stronger confounding or more complex outcome--treatment relationships, the gap between the untargeted and targeted estimates can be substantially larger. The targeting step is what ensures the final estimator solves the efficient influence curve equation — moving from a pure prediction task (Step 1) to valid causal estimation.
+ {.callout-tip}
 ## A Note on the Targeting Step
 
 The targeting step — fitting a logistic regression with `offset(qlogis(Q_A))` and the clever covariate `H_A` as the sole predictor — is **easy to code but difficult to understand** without a background in semiparametric theory. The logistic form has nothing to do with the outcome being binary; it happens to be the right functional form for solving the estimating equation derived from the efficient influence function. Readers encountering this step for the first time should not be discouraged if the rationale is not immediately clear — it typically takes several exposures to the material before the concepts begin to settle. The important practical takeaway is that this step adjusts the initial outcome predictions *just enough* to eliminate first-order bias for the target parameter, while preserving the flexibility of the initial machine learning fits.
-:::
-:::
 
 #### Automating the TMLE process
 
@@ -763,21 +758,20 @@ D^{*}(P_0)(O) = \left( \frac{A}{g_0(1 \mid W)} - \frac{1-A}{g_0(0 \mid W)} \righ
 $$
 where $g_0(a \mid W) = \mathbb{P}_0(A = a \mid W)$ is the true propensity score.
 
-::: {.callout-note}
-## Anatomy of the ATE Influence Function
+> **Note:** ## Anatomy of the ATE Influence Function
+>
+> The EIF for the ATE has a natural decomposition into three orthogonal components:
+>
+> 1. **The IPW residual term:** $\left( \frac{A}{g(1|W)} - \frac{1-A}{g(0|W)} \right) (Y - \bar{Q}(A, W))$ — this term lives in the tangent space $T_{Y|A,W}$ (functions of $Y$ given $A,W$ with conditional mean zero). It captures the information about the outcome that is not explained by the outcome regression.
+>
+> 2. **The outcome regression term:** $\bar{Q}(1, W) - \bar{Q}(0, W)$ — this term lives in the tangent space $T_W$ (functions of $W$ only). It captures the covariate-specific treatment effect.
+>
+> 3. **The centering term:** $-\Psi(P_0)$ — ensures the EIF has mean zero.
+>
+> This decomposition is not arbitrary; it follows from the **orthogonal factorization of the tangent space** in the nonparametric model: $L^0_2(P) = T_{Y|A,W} \oplus T_{A|W} \oplus T_W$, where each subspace contains scores (directions) that perturb a different component of the likelihood — the outcome conditional density, the treatment mechanism, and the covariate marginal distribution, respectively [@Bickel97semiparam; @Tsiatis2006; @kennedy2022semiparametric].
+>
+> In the ATE parameter, the component in $T_{A|W}$ is zero because perturbing the treatment mechanism alone does not change the ATE (it only changes *how many* people get treated, not *what happens* when they do). This is why the treatment mechanism appears only as a weight in the EIF, not as a separate additive term.
 
-The EIF for the ATE has a natural decomposition into three orthogonal components:
-
-1. **The IPW residual term:** $\left( \frac{A}{g(1|W)} - \frac{1-A}{g(0|W)} \right) (Y - \bar{Q}(A, W))$ — this term lives in the tangent space $T_{Y|A,W}$ (functions of $Y$ given $A,W$ with conditional mean zero). It captures the information about the outcome that is not explained by the outcome regression.
-
-2. **The outcome regression term:** $\bar{Q}(1, W) - \bar{Q}(0, W)$ — this term lives in the tangent space $T_W$ (functions of $W$ only). It captures the covariate-specific treatment effect.
-
-3. **The centering term:** $-\Psi(P_0)$ — ensures the EIF has mean zero.
-
-This decomposition is not arbitrary; it follows from the **orthogonal factorization of the tangent space** in the nonparametric model: $L^0_2(P) = T_{Y|A,W} \oplus T_{A|W} \oplus T_W$, where each subspace contains scores (directions) that perturb a different component of the likelihood — the outcome conditional density, the treatment mechanism, and the covariate marginal distribution, respectively [@Bickel97semiparam; @Tsiatis2006; @kennedy2022semiparametric].
-
-In the ATE parameter, the component in $T_{A|W}$ is zero because perturbing the treatment mechanism alone does not change the ATE (it only changes *how many* people get treated, not *what happens* when they do). This is why the treatment mechanism appears only as a weight in the EIF, not as a separate additive term.
-:::
 
 The EIC has three fundamental properties:
 1. It is a **gradient** for the parameter $\Psi$: it satisfies the central identity $\nabla_h \Psi = \mathbb{E}_P[D^{*}(P) \cdot h]$ for any score $h$, characterizing how $\Psi(P)$ changes under perturbations of $P$.
@@ -822,50 +816,47 @@ $$
 $$
 Wald-type 95% confidence intervals are constructed as $\hat{\Psi}_{\text{TMLE}} \pm 1.96 \cdot \hat{\sigma} / \sqrt{n}$.
 
-::: {.callout-tip}
-## Key Insight
+> **Tip:** ## Key Insight
+>
+> The EIC is both a **blueprint for estimation** (it tells us how to construct the clever covariate and targeting step) and a **tool for inference** (its variance gives the standard error). This dual role makes it the central object in semiparametric efficient estimation.
 
-The EIC is both a **blueprint for estimation** (it tells us how to construct the clever covariate and targeting step) and a **tool for inference** (its variance gives the standard error). This dual role makes it the central object in semiparametric efficient estimation.
-:::
 
-::: {.callout-note}
-## How to Derive an Efficient Influence Function: Three Strategies
-
-When the parameter of interest is not the ATE but something else (e.g., a conditional odds ratio, a quantile treatment effect, or a longitudinal parameter), one needs to derive the EIF from first principles. The following three strategies, summarized from @kennedy2022semiparametric and the foundational texts @Tsiatis2006 and @Bickel97semiparam, cover most practical situations.
-
-### Strategy 1: Point Mass Contamination (Gâteaux Derivative)
-
-This is the most direct approach and works well in **nonparametric (saturated) models**, where there are no restrictions on the tangent space. The idea is to:
-
-1. Consider a path $P_{\epsilon} = (1-\epsilon) P + \epsilon \cdot \mathbf{1}_{\tilde{z}}$ that contaminates $P$ by placing extra mass at a point $\tilde{z}$.
-2. Compute the derivative $\frac{d}{d\epsilon} \Psi(P_{\epsilon}) \big|_{\epsilon=0}$.
-3. Evaluate the resulting expression at $\tilde{z} = Z$ to obtain $\phi(Z)$.
-
-For a saturated model, there is **only one influence function, and it is automatically the efficient one**. This is why the ATE's EIF was derived above under the nonparametric model — in that setting, every valid RAL estimator shares the same influence function (up to asymptotic equivalence).
-
-For **semiparametric (non-saturated) models**, point mass contamination requires care: the contaminated path may immediately leave the model space. In such cases, one of the next two strategies is preferred.
-
-### Strategy 2: Gradient Algebra (Building from Simpler Pieces)
-
-Once influence functions for basic building blocks are known (e.g., the mean, conditional mean, and density ratio), more complex EIFs can be constructed using algebraic rules. The **EIF operator** $\Phi$ satisfies:
-
-- **Linearity:** $\Phi(a_1 \psi_1 + a_2 \psi_2) = a_1 \Phi(\psi_1) + a_2 \Phi(\psi_2)$
-- **Product rule:** $\Phi(\psi_1 \psi_2) = \Phi(\psi_1) \psi_2 + \psi_1 \Phi(\psi_2)$
-- **Chain rule:** $\Phi(g(\psi)) = g'(\psi)\,\Phi(\psi)$
-
-This is how the ATE's EIF was built up in the examples above: starting from the influence function of the mean, applying the rules to obtain the conditional mean, and then combining terms for $A=1$ and $A=0$ via linearity. The gradient algebra approach is particularly useful when the target parameter is a composite of simpler estimands.
-
-### Strategy 3: Projection Approach (for Restricted Models)
-
-When the model is **not saturated** — for example, in a randomized trial where the propensity score is known by design — there may be a whole space of valid influence functions, only one of which is efficient. The projection approach finds it:
-
-1. Start with the influence function $\phi$ of **any** valid RAL estimator for $\Psi$ (e.g., the IPW estimator).
-2. Project $\phi$ onto the tangent space $\mathcal{T}$ of the model: $\phi^{\dagger} = \Pi(\phi \mid \mathcal{T})$.
-3. The projection is the EIF.
-
-For a randomized trial, the tangent space excludes scores that perturb the treatment mechanism (since $P(A|W)$ is known), so the projection step removes the component of the IPW influence function that lies in $T_{A|W}$ and adds back the efficient augmentation term $\bar{Q}(A,W)$. The result is identical to the observational-study EIF — an important fact: **the canonical gradient for the ATE is the same in observational studies and randomized trials under nonparametric assumptions about the outcome and covariate distributions**.
-
-::: {.callout-tip}
+> **Note:** ## How to Derive an Efficient Influence Function: Three Strategies
+>
+> When the parameter of interest is not the ATE but something else (e.g., a conditional odds ratio, a quantile treatment effect, or a longitudinal parameter), one needs to derive the EIF from first principles. The following three strategies, summarized from @kennedy2022semiparametric and the foundational texts @Tsiatis2006 and @Bickel97semiparam, cover most practical situations.
+>
+> ### Strategy 1: Point Mass Contamination (Gâteaux Derivative)
+>
+> This is the most direct approach and works well in **nonparametric (saturated) models**, where there are no restrictions on the tangent space. The idea is to:
+>
+> 1. Consider a path $P_{\epsilon} = (1-\epsilon) P + \epsilon \cdot \mathbf{1}_{\tilde{z}}$ that contaminates $P$ by placing extra mass at a point $\tilde{z}$.
+> 2. Compute the derivative $\frac{d}{d\epsilon} \Psi(P_{\epsilon}) \big|_{\epsilon=0}$.
+> 3. Evaluate the resulting expression at $\tilde{z} = Z$ to obtain $\phi(Z)$.
+>
+> For a saturated model, there is **only one influence function, and it is automatically the efficient one**. This is why the ATE's EIF was derived above under the nonparametric model — in that setting, every valid RAL estimator shares the same influence function (up to asymptotic equivalence).
+>
+> For **semiparametric (non-saturated) models**, point mass contamination requires care: the contaminated path may immediately leave the model space. In such cases, one of the next two strategies is preferred.
+>
+> ### Strategy 2: Gradient Algebra (Building from Simpler Pieces)
+>
+> Once influence functions for basic building blocks are known (e.g., the mean, conditional mean, and density ratio), more complex EIFs can be constructed using algebraic rules. The **EIF operator** $\Phi$ satisfies:
+>
+> - **Linearity:** $\Phi(a_1 \psi_1 + a_2 \psi_2) = a_1 \Phi(\psi_1) + a_2 \Phi(\psi_2)$
+> - **Product rule:** $\Phi(\psi_1 \psi_2) = \Phi(\psi_1) \psi_2 + \psi_1 \Phi(\psi_2)$
+> - **Chain rule:** $\Phi(g(\psi)) = g'(\psi)\,\Phi(\psi)$
+>
+> This is how the ATE's EIF was built up in the examples above: starting from the influence function of the mean, applying the rules to obtain the conditional mean, and then combining terms for $A=1$ and $A=0$ via linearity. The gradient algebra approach is particularly useful when the target parameter is a composite of simpler estimands.
+>
+> ### Strategy 3: Projection Approach (for Restricted Models)
+>
+> When the model is **not saturated** — for example, in a randomized trial where the propensity score is known by design — there may be a whole space of valid influence functions, only one of which is efficient. The projection approach finds it:
+>
+> 1. Start with the influence function $\phi$ of **any** valid RAL estimator for $\Psi$ (e.g., the IPW estimator).
+> 2. Project $\phi$ onto the tangent space $\mathcal{T}$ of the model: $\phi^{\dagger} = \Pi(\phi \mid \mathcal{T})$.
+> 3. The projection is the EIF.
+>
+> For a randomized trial, the tangent space excludes scores that perturb the treatment mechanism (since $P(A|W)$ is known), so the projection step removes the component of the IPW influence function that lies in $T_{A|W}$ and adds back the efficient augmentation term $\bar{Q}(A,W)$. The result is identical to the observational-study EIF — an important fact: **the canonical gradient for the ATE is the same in observational studies and randomized trials under nonparametric assumptions about the outcome and covariate distributions**.
+ {.callout-tip}
 ## The Central Identity
 
 All three strategies rest on the same fundamental relationship, known as the **central identity**:
@@ -877,34 +868,31 @@ $$
 where $\nabla_h \Psi$ is the pathwise derivative of $\Psi$ in direction $h$ (a score), and $\phi$ is the influence function. This identity states that the influence function is the **Riesz representer** of the derivative functional in the Hilbert space $L^0_2(P)$ of mean-zero, finite-variance functions. Once this identity is verified — by computing $\nabla_h \Psi$ from the left and checking it equals $\mathbb{E}[\phi \cdot h]$ for arbitrary $h$ — the candidate $\phi$ is confirmed as a valid influence function.
 
 For the nonparametric model, the candidate is automatically the efficient one. For restricted models, one must additionally verify that $\phi$ lies in the (closed) tangent space.
-:::
-:::
 
-::: {.callout-tip}
-## Further Reading on TMLE and Semiparametric Theory
+> **Tip:** ## Further Reading on TMLE and Semiparametric Theory
+>
+> TMLE sits at the intersection of causal inference, machine learning, and semiparametric efficiency theory. Readers who wish to deepen their understanding beyond this chapter may find the following resources helpful, ordered from most applied to most theoretical:
+>
+> 1. **Schuler & Rose (2016)** — "Targeted maximum likelihood estimation for causal inference in observational studies" (*American Journal of Epidemiology*). A step-by-step written explanation aimed at applied epidemiologists. An excellent starting point after this chapter.
+>
+> 2. **Miguel Angel Luque-Fernandez's bookdown tutorial** — "Targeted Learning in R" — a hands-on, code-forward tutorial with reproducible examples in R, available at [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
+>
+> 3. **The `tlverse` Handbook** — The targeted learning ecosystem in R (`tmle3`, `sl3`, `tlverse`), available at [https://tlverse.org/](https://tlverse.org/). Covers modern implementations of TMLE, CV-TMLE, and Super Learner with worked examples.
+>
+> 4. **Kennedy (2023)** — "Semiparametric Theory" — a concise, accessible introduction to influence functions, efficiency bounds, and the theory behind TMLE (available at [arxiv.org/abs/1709.06418](https://arxiv.org/abs/1709.06418)). Kennedy's [slideshow tutorial](https://www.ehkennedy.com/uploads/5/8/4/5/58450265/tutorial.pdf) is a particularly gentle on-ramp to the semiparametric theory concepts.
+>
+> 5. **Fisher & Kennedy (2021)** — "Visually Communicating Influence Functions" — offers an intuitive, graphical understanding of influence functions. Best approached after working through Herb Susmann's [interactive Observable tutorial](https://observablehq.com/@herbps10/one-step-estimators-and-pathwise-derivatives) on one-step estimators and pathwise derivatives.
+>
+> 6. **van der Laan & Rose (2011)** — *Targeted Learning: Causal Inference for Observational and Experimental Data* [@vanderLaan2011] — the foundational text. The prose is accessible, though the mathematics assumes graduate-level statistics.
+>
+> 7. **Schuler (2024)** — "Modern Causal Inference" — a comprehensive, freely available course covering the derivation of efficient influence functions for a range of causal parameters. The [EIF derivation chapter](https://alejandroschuler.github.io/mci/0cb2ffe5e5cc4cf59a5fe6d896d221d1.html) is particularly relevant: it walks through point mass contamination, gradient algebra, and projection approaches with worked examples from the population mean up to the ATE. The full course is available at [https://alejandroschuler.github.io/mci/](https://alejandroschuler.github.io/mci/).
+>
+> 8. **Hines, Diaz-Ordaz, Vansteelandt, & Jamthikar (2021–2022)** — "Demystifying Statistical Learning Based on Efficient Influence Functions" — a two-part tutorial that provides a clear, step-by-step exposition of influence function theory and its role in constructing efficient estimators (available at [arxiv.org/abs/2107.00681](https://arxiv.org/abs/2107.00681)).
+>
+> 9. **Kennedy (2022)** — "Semiparametric doubly robust targeted double machine learning: a review" [@kennedy2022semiparametric] — a review paper that covers the theoretical foundations behind the EIF derivation strategies discussed above, with a focus on the interplay between semiparametric theory and machine learning.
+>
+> If you are new to semiparametric theory, expect to revisit these materials several times. The concepts build on each other, and it is normal for the targeting step and influence functions to feel opaque on first encounter. The important practical takeaway is that TMLE provides valid inference while allowing flexible machine learning — a combination that parametric alternatives do not offer.
 
-TMLE sits at the intersection of causal inference, machine learning, and semiparametric efficiency theory. Readers who wish to deepen their understanding beyond this chapter may find the following resources helpful, ordered from most applied to most theoretical:
-
-1. **Schuler & Rose (2016)** — "Targeted maximum likelihood estimation for causal inference in observational studies" (*American Journal of Epidemiology*). A step-by-step written explanation aimed at applied epidemiologists. An excellent starting point after this chapter.
-
-2. **Miguel Angel Luque-Fernandez's bookdown tutorial** — "Targeted Learning in R" — a hands-on, code-forward tutorial with reproducible examples in R, available at [https://github.com/migariane/TutorialComputationalCausalInferenceEstimators](https://github.com/migariane/TutorialComputationalCausalInferenceEstimators).
-
-3. **The `tlverse` Handbook** — The targeted learning ecosystem in R (`tmle3`, `sl3`, `tlverse`), available at [https://tlverse.org/](https://tlverse.org/). Covers modern implementations of TMLE, CV-TMLE, and Super Learner with worked examples.
-
-4. **Kennedy (2023)** — "Semiparametric Theory" — a concise, accessible introduction to influence functions, efficiency bounds, and the theory behind TMLE (available at [arxiv.org/abs/1709.06418](https://arxiv.org/abs/1709.06418)). Kennedy's [slideshow tutorial](https://www.ehkennedy.com/uploads/5/8/4/5/58450265/tutorial.pdf) is a particularly gentle on-ramp to the semiparametric theory concepts.
-
-5. **Fisher & Kennedy (2021)** — "Visually Communicating Influence Functions" — offers an intuitive, graphical understanding of influence functions. Best approached after working through Herb Susmann's [interactive Observable tutorial](https://observablehq.com/@herbps10/one-step-estimators-and-pathwise-derivatives) on one-step estimators and pathwise derivatives.
-
-6. **van der Laan & Rose (2011)** — *Targeted Learning: Causal Inference for Observational and Experimental Data* [@vanderLaan2011] — the foundational text. The prose is accessible, though the mathematics assumes graduate-level statistics.
-
-7. **Schuler (2024)** — "Modern Causal Inference" — a comprehensive, freely available course covering the derivation of efficient influence functions for a range of causal parameters. The [EIF derivation chapter](https://alejandroschuler.github.io/mci/0cb2ffe5e5cc4cf59a5fe6d896d221d1.html) is particularly relevant: it walks through point mass contamination, gradient algebra, and projection approaches with worked examples from the population mean up to the ATE. The full course is available at [https://alejandroschuler.github.io/mci/](https://alejandroschuler.github.io/mci/).
-
-8. **Hines, Diaz-Ordaz, Vansteelandt, & Jamthikar (2021–2022)** — "Demystifying Statistical Learning Based on Efficient Influence Functions" — a two-part tutorial that provides a clear, step-by-step exposition of influence function theory and its role in constructing efficient estimators (available at [arxiv.org/abs/2107.00681](https://arxiv.org/abs/2107.00681)).
-
-9. **Kennedy (2022)** — "Semiparametric doubly robust targeted double machine learning: a review" [@kennedy2022semiparametric] — a review paper that covers the theoretical foundations behind the EIF derivation strategies discussed above, with a focus on the interplay between semiparametric theory and machine learning.
-
-If you are new to semiparametric theory, expect to revisit these materials several times. The concepts build on each other, and it is normal for the targeting step and influence functions to feel opaque on first encounter. The important practical takeaway is that TMLE provides valid inference while allowing flexible machine learning — a combination that parametric alternatives do not offer.
-:::
 
 ### Super Learner {#sec-SuperLearner}
 
@@ -1034,26 +1022,25 @@ In small to moderate samples, the benefits of CV-TMLE become especially clear. T
 
 Empirical studies have shown that CV-TMLE achieves better coverage of confidence intervals and lower mean squared error in small samples, particularly when the complexity of the outcome or treatment models is high [@Smith2025CVTMLE]. The Donsker class condition discussed above provides the theoretical explanation: cross-validating the targeting step ensures the empirical process of the nuisance estimators remains well-behaved, even when the individual learners themselves fall outside the Donsker class. As such, CV-TMLE is now regarded as a default strategy in many machine-learning-integrated causal inference pipelines, especially when flexible Super Learner libraries or near-positivity problems are anticipated.
 
-::: {.callout-note}
-## Two Layers of Cross-Validation in CV-TMLE
+> **Note:** ## Two Layers of Cross-Validation in CV-TMLE
+>
+> **1. Cross-validation in the Super Learner:**
+> Used to optimize *prediction* of nuisance parameters:
+> - Outcome regression: $Q(A, X) = \mathbb{E}[Y \mid A, X]$
+> - Propensity score: $g(A \mid X) = \mathbb{P}(A = 1 \mid X)$
+>
+> Super Learner performs internal $V$-fold cross-validation to evaluate and combine learners based on predictive performance. This layer is solely focused on choosing the best-fitting models for the nuisance functions.
+>
+> **2. Cross-validation in CV-TMLE:**
+> Used to improve *estimation* of the target parameter (e.g., ATE) and valid inference:
+> - The dataset is split into $V$ folds.
+> - Nuisance functions are trained on $V-1$ folds and predictions are made on the held-out fold.
+> - The TMLE targeting step and influence curve calculations are performed on the held-out fold.
+>
+> This ensures that the targeted update and standard error are based on out-of-sample predictions, reducing overfitting and improving the validity of inference.
+>
+> **In summary:** Cross-validation in the Super Learner is for *better prediction*; cross-validation of TMLE is for *valid estimation and inference*.
 
-**1. Cross-validation in the Super Learner:**
-Used to optimize *prediction* of nuisance parameters:
-- Outcome regression: $Q(A, X) = \mathbb{E}[Y \mid A, X]$
-- Propensity score: $g(A \mid X) = \mathbb{P}(A = 1 \mid X)$
-
-Super Learner performs internal $V$-fold cross-validation to evaluate and combine learners based on predictive performance. This layer is solely focused on choosing the best-fitting models for the nuisance functions.
-
-**2. Cross-validation in CV-TMLE:**
-Used to improve *estimation* of the target parameter (e.g., ATE) and valid inference:
-- The dataset is split into $V$ folds.
-- Nuisance functions are trained on $V-1$ folds and predictions are made on the held-out fold.
-- The TMLE targeting step and influence curve calculations are performed on the held-out fold.
-
-This ensures that the targeted update and standard error are based on out-of-sample predictions, reducing overfitting and improving the validity of inference.
-
-**In summary:** Cross-validation in the Super Learner is for *better prediction*; cross-validation of TMLE is for *valid estimation and inference*.
-:::
 
 ### Summary
 
